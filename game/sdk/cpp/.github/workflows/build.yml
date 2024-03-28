@@ -1,0 +1,48 @@
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      matrix:
+        include:
+          - architecture: x86_64
+            platform: linux
+            runs-on: ubuntu-latest
+          - architecture: x86_64
+            platform: macosx
+            runs-on: macos-latest
+          - architecture: x64
+            platform: windows
+            runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: xmake-io/github-action-setup-xmake@v1
+
+      - run: |
+          xmake repo -u -y
+
+      - run: |
+          xmake f -m release -v -y
+
+      - run: |
+          xmake -v -y
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ matrix.platform }}-${{ matrix.architecture }}-${{ github.sha }}
+          path: build/${{ matrix.platform }}/${{ matrix.architecture }}/release/
+
+  check-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jidicula/clang-format-action@v4.11.0
+        with:
+          check-path: src
+          clang-format-version: 18

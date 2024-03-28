@@ -1,0 +1,55 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneOSX
+          - StandaloneWindows64
+          - StandaloneLinux64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}
+
+      - uses: game-ci/unity-builder@v4
+        with:
+          projectPath: .
+          unityVersion: 2022.3.9f1
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: GameClient
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gameclient-${{ matrix.targetPlatform }}-${{ github.sha }}
+          path: build/
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: .
+          unityVersion: 2022.3.9f1
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-results-${{ github.sha }}
+          path: artifacts/test-results.xml

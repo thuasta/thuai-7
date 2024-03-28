@@ -1,0 +1,571 @@
+asyncapi: 3.0.0
+info:
+  title: THU API
+  version: ''
+servers:
+  production:
+    host: broker.mycompany.com
+    protocol: qwee
+    security:
+      - $ref: '#/components/securitySchemes/user-password'
+channels:
+  /competition/control:
+    address: /competition/control
+    messages:
+      PlayerPerform:
+        $ref: '#/components/messages/PlayerPerform'
+      Error:
+        $ref: '#/components/messages/Error'
+      CompetitionUpdate:
+        $ref: '#/components/messages/CompetitionUpdate'
+      Map:
+        $ref: '#/components/messages/Map'
+      Supplies:
+        $ref: '#/components/messages/Supplies'
+operations:
+  /competition/control.publish:
+    action: receive
+    channel:
+      $ref: '#/channels/~1competition~1control'
+    messages:
+      - $ref: '#/channels/~1competition~1control/messages/PlayerPerform'
+  /competition/control.subscribe:
+    action: send
+    channel:
+      $ref: '#/channels/~1competition~1control'
+    messages:
+      - $ref: '#/channels/~1competition~1control/messages/Error'
+      - $ref: '#/channels/~1competition~1control/messages/CompetitionUpdate'
+      - $ref: '#/channels/~1competition~1control/messages/Map'
+      - $ref: '#/channels/~1competition~1control/messages/Supplies'
+components:
+  securitySchemes:
+    user-password:
+      type: userPassword
+  messages:
+    CompetitionUpdate:
+      payload:
+        type: object
+        additionalProperties: false
+        properties:
+          messageType:
+            type: string
+            const: COMPETITION_UPDATE
+          info:
+            type: object
+            additionalProperties: false
+            required:
+              - elapsedTicks
+              - stage
+            properties:
+              elapsedTicks:
+                type: integer
+              stage:
+                type: integer
+                enum:
+                  - READY
+                  - RUNNING
+                  - FINISHED
+                  - ENDED
+          players:
+            type: array
+            additionalProperties: false
+            required:
+              - playerId
+              - armor
+              - health
+              - speed
+              - firearm
+              - inventory
+              - position
+            properties:
+              playerId:
+                type: integer
+              armor:
+                type: string
+                enum:
+                  - NO_ARMOR
+                  - PRIMARY_ARMOR
+                  - PREMIUM_ARMOR
+              health:
+                type: integer
+              speed:
+                type: number
+              firearm:
+                type: object
+                required:
+                  - name
+                  - windup
+                  - distance
+                properties:
+                  name:
+                    type: string
+                    enum:
+                      - S686
+                      - VECTOR
+                      - M16
+                      - AWM
+                  windup:
+                    type: number
+                  distance:
+                    type: number
+              inventory:
+                type: array
+                items:
+                  type: object
+                additionalProperties: false
+                required:
+                  - name
+                  - num
+                properties:
+                  name:
+                    type: string
+                    enum:
+                      - BULLET
+                      - FIRST_AID
+                      - BANDAGE
+                      - BEVERAGE
+                      - GRENADE
+                  num:
+                    type: integer
+              position:
+                $ref: '#/components/schemas/Position'
+          Events:
+            type: array
+            items:
+              oneOf:
+                - $ref: '#/components/schemas/PlayerAttackEvent'
+                - $ref: '#/components/schemas/PlayerSwitchArmEvent'
+                - $ref: '#/components/schemas/PlayerPickUpEvent'
+                - $ref: '#/components/schemas/PlayerUseMedicineEvent'
+                - $ref: '#/components/schemas/PlayerUseGrenadeEvent'
+                - $ref: '#/components/schemas/PlayerAbandonEvent'
+    PlayerPerform:
+      payload:
+        type: array
+        items:
+          oneOf:
+            - $ref: '#/components/schemas/PerformAbandon'
+            - $ref: '#/components/schemas/PerformPickUp'
+            - $ref: '#/components/schemas/PerformSwitchArm'
+            - $ref: '#/components/schemas/PerformUseMedicine'
+            - $ref: '#/components/schemas/PerformUseGrenade'
+            - $ref: '#/components/schemas/PerformMove'
+            - $ref: '#/components/schemas/PerformAttack'
+            - $ref: '#/components/schemas/GetPlayerInfo'
+            - $ref: '#/components/schemas/GetMap'
+            - $ref: '#/components/schemas/ChooseOrigin'
+    Map:
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - length
+          - walls
+        properties:
+          length:
+            type: integer
+          walls:
+            type: array
+            items:
+              type: object
+              required:
+                - wallPositions
+              properties:
+                wallPositions:
+                  $ref: '#/components/schemas/PositionInt'
+    PoisonousCircle:
+      payload:
+        type: object
+        required:
+          - center
+          - radius
+        properties:
+          center:
+            $ref: '#/components/schemas/Position'
+          radius:
+            $ref: '#/components/schemas/Position'
+    Supplies:
+      payload:
+        type: array
+        items:
+          type: object
+          required:
+            - name
+            - position
+          properties:
+            name:
+              type: string
+              enum:
+                - BULLET
+                - FIRST_AID
+                - BANDAGE
+                - BEVERAGE
+                - GRENADE
+                - PRIMARY_ARMOR
+                - PREMIUM_ARMOR
+                - S686
+                - VECTOR
+                - M16
+                - AWM
+            position:
+              $ref: '#/components/schemas/Position'
+    Error:
+      payload:
+        type: object
+        additionalProperties: false
+        required:
+          - messageType
+          - errorCode
+          - message
+        properties:
+          messageType:
+            type: string
+            const: ERROR
+          errorCode:
+            type: integer
+          message:
+            type: string
+  schemas:
+    ChooseOrigin:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+        - originPosition
+      properties:
+        messageType:
+          type: string
+          const: CHOOSE_ORIGIN
+        token:
+          type: string
+        originPosition:
+          $ref: '#/components/schemas/Position'
+    GetMap:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+      properties:
+        messageType:
+          type: string
+          const: GET_MAP
+        token:
+          type: string
+    GetPlayerInfo:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+      properties:
+        messageType:
+          type: string
+          const: GET_PLAYER_INFO
+        token:
+          type: string
+    PerformAttack:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+        - targetPosition
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_ATTACK
+        token:
+          type: string
+        targetPosition:
+          $ref: '#/components/schemas/Position'
+    PerformMove:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+        - direction
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_MOVE
+        token:
+          type: string
+        direction:
+          description: a vector
+          $ref: '#/components/schemas/Position'
+    PerformUseGrenade:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+        - targetPosition
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_USE_GRENADE
+        token:
+          type: string
+        targetPosition:
+          $ref: '#/components/schemas/Position'
+    PerformUseMedicine:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+        - medicineName
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_USE_MEDICINE
+        token:
+          type: string
+        medicineName:
+          type: string
+          enum:
+            - BEVERAGE
+            - BANDAGE
+            - FIRST_AID
+    PerformSwitchArm:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+        - targetFirearm
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_SWITCH_ARM
+        token:
+          type: string
+        targetFirearm:
+          type: string
+          enum:
+            - S686
+            - VECTORY
+            - AWM
+            - M16
+    PerformPickUp:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+        - targetSupply
+        - targetPosition
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_PICK_UP
+        token:
+          type: string
+        targetSupply:
+          type: string
+          enum:
+            - S686
+            - VECTORY
+            - AWM
+            - M16
+            - BULLET
+            - BEVERAGE
+            - BANDAGE
+            - PRIMARY_ARMOR
+            - PREMIUM_ARMOR
+            - FIRST_AID
+            - GRENADE
+        targetPosition:
+          $ref: '#/components/schemas/Position'
+    PerformAbandon:
+      type: object
+      additionalProperties: false
+      required:
+          - messageType
+          - token
+          - targetSupply
+          - numb
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_ABANDON
+        numb:
+          type: integer
+        token:
+          type: string
+        targetSupply:
+          type: string
+          enum:
+            - S686
+            - VECTORY
+            - AWM
+            - M16
+            - BULLET
+            - BEVERAGE
+            - BANDAGE
+            - PRIMARY_ARMOR
+            - PREMIUM_ARMOR
+            - FIRST_AID
+            - GRENADE
+    PlayerAttackEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetPosition
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_ATTACK
+        playerId:
+          type: integer
+        targetPosition:
+          $ref: '#/components/schemas/Position'
+    PlayerSwitchArmEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetFirearm
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_SWITCH_ARM
+        playerId:
+          type: integer
+        targetFirearm:
+          type: string
+          enum:
+            - S686
+            - VECTORY
+            - AWM
+            - M16
+    PlayerPickUpEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetSupply
+        - targetPosition
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_PICK_UP
+        playerId:
+          type: integer
+        targetSupply:
+          type: string
+          enum:
+            - BULLET
+            - FIRST_AID
+            - BANDAGE
+            - BEVERAGE
+            - GRENADE
+            - PRIMARY_ARMOR
+            - PREMIUM_ARMOR
+            - S686
+            - VECTOR
+            - M16
+            - AWM
+        targetPosition:
+          $ref: '#/components/schemas/Position'
+    PlayerUseMedicineEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - medicine
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_USE_MEDICINE
+        playerId:
+          type: integer
+        medicine:
+          type: string
+          enum:
+            - FIRST_AID
+            - BANDAGE
+            - BEVERAGE
+    PlayerUseGrenadeEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetPosition
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_USE_GRENADE
+        playerId:
+          type: integer
+        targetPosition:
+          $ref: '#/components/schemas/Position'
+    PlayerAbandonEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - abandonedSupplies
+        - numb
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_ABANDON
+        playerId:
+          type: integer
+        numb:
+          type: integer
+        abandonedSupplies:
+          type: array
+          items:
+            type: string
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                enum:
+                  - BULLET
+                  - FIRST_AID
+                  - BANDAGE
+                  - BEVERAGE
+                  - GRENADE
+                  - PRIMARY_ARMOR
+                  - PREMIUM_ARMOR
+                  - S686
+                  - VECTOR
+                  - M16
+                  - AWM
+    Position:
+      type: object
+      additionalProperties: false
+      required:
+        - x
+        - 'y'
+      properties:
+        x:
+          type: number
+        'y':
+          type: number
+    PositionInt:
+      type: object
+      additionalProperties: false
+      required:
+        - x
+        - 'y'
+      properties:
+        x:
+          type: integer
+        'y':
+          type: integer

@@ -1,0 +1,64 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        runtime:
+          - linux-arm
+          - linux-arm64
+          - ubuntu-x64
+          - win-arm64
+          - win-x64
+          - win-x86
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - run: |
+          dotnet publish src/GameServer/GameServer.csproj -c Release -o bin \
+          --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
+          -p:PublishSingleFile=true
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gameserver-${{ matrix.runtime }}-${{ github.sha }}
+          path: bin
+
+  check-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - run: dotnet format --verify-no-changes src/GameServer
+
+      - run: dotnet format --verify-no-changes src/GameServer.Tests
+
+  test:
+    strategy:
+      matrix:
+        runs-on:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - run: |
+          dotnet test src/GameServer.Tests/GameServer.Tests.csproj

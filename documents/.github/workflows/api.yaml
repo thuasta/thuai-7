@@ -1,0 +1,31 @@
+on:
+    push:
+
+jobs:
+  generate-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          mkdir -p site/api/
+
+      - uses: asyncapi/github-action-for-cli@v3.1.1
+        with:
+          command: generate
+          filepath: api/asyncapi.yaml
+          template: '@asyncapi/html-template@2.1.7'
+          output: site/api/
+
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: site/
+
+  deploy-documentation:
+    needs: generate-documentation
+    permissions:
+      id-token: write
+      pages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v2
