@@ -1,6 +1,10 @@
 on:
   push:
+    paths:
+      - 'game/client/**'
   pull_request:
+    paths:
+      - 'game/client/**'
   workflow_dispatch:
 
 env:
@@ -18,6 +22,7 @@ jobs:
           - StandaloneOSX
           - StandaloneWindows64
           - StandaloneLinux64
+          - WebGL
 
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +34,7 @@ jobs:
 
       - uses: game-ci/unity-builder@v4
         with:
-          projectPath: .
+          projectPath: game/client
           unityVersion: 2022.3.9f1
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: GameClient
@@ -46,7 +51,7 @@ jobs:
 
       - uses: game-ci/unity-test-runner@v4
         with:
-          projectPath: .
+          projectPath: game/client
           unityVersion: 2022.3.9f1
 
       - uses: actions/upload-artifact@v2

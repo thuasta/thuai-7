@@ -1,8 +1,12 @@
 on:
-  pull_request:
   push:
+    paths:
+      - 'game/sdk/cpp/**'
+  pull_request:
+    paths:
+      - 'game/sdk/cpp/**'
   workflow_dispatch:
-  
+
 jobs:
   build:
     runs-on: ${{ matrix.runs-on }}
@@ -20,6 +24,8 @@ jobs:
             runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - run: |
+          cd game/sdk/cpp
 
       - uses: xmake-io/github-action-setup-xmake@v1
 
@@ -44,5 +50,5 @@ jobs:
 
       - uses: jidicula/clang-format-action@v4.11.0
         with:
-          check-path: src
+          check-path: game/sdk/cpp/src
           clang-format-version: 18

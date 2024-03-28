@@ -1,0 +1,244 @@
+on:
+  release:
+    types:
+      - published
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+jobs:
+  game-server-build:
+    strategy:
+      matrix:
+        runtime:
+          - linux-arm
+          - linux-arm64
+          - ubuntu-x64
+          - win-arm64
+          - win-x64
+          - win-x86
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - run: |
+          VERSION=$(echo ${GITHUB_REF#refs/tags/})
+          dotnet publish game/server/src/GameServer/GameServer.csproj -c Release -o bin \
+          --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
+          -p:PublishSingleFile=true -p:Version=$VERSION
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gameserver-${{ matrix.runtime }}-${{ github.sha }}
+          path: bin
+
+  game-server-release:
+    needs:
+      - game-server-build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime:
+          - linux-arm
+          - linux-arm64
+          - ubuntu-x64
+          - win-arm64
+          - win-x64
+          - win-x86
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: gameserver-${{ matrix.runtime }}-${{ github.sha }}
+          path: server
+
+      - run: |
+          cp CHANGELOG.md LICENSE README.md server/
+
+      - name: Pack artifact (Windows)
+        if: startsWith(matrix.runtime, 'win')
+        run: |
+          cd server
+          zip -r ../gameserver-${{ matrix.runtime }}.zip *
+          cd ..
+
+      - name: Pack artifact (Others)
+        if: startsWith(matrix.runtime, 'win') == false
+        run: |
+          cd server
+          chmod +x GameServer
+          tar -czvf ../gameserver-${{ matrix.runtime }}.tar.gz *
+          cd ..
+
+      - name: Upload artifact to release (Windows)
+        if: startsWith(matrix.runtime, 'win')
+        uses: softprops/action-gh-release@v1
+        with:
+          append_body: true
+          files: |
+            gameserver-${{ matrix.runtime }}.zip
+
+      - name: Upload artifact to release (Others)
+        if: startsWith(matrix.runtime, 'win') == false
+        uses: softprops/action-gh-release@v1
+        with:
+          append_body: true
+          files: |
+            gameserver-${{ matrix.runtime }}.tar.gz
+
+  game-client-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneOSX64
+          - StandaloneWindows64
+          - StandaloneLinux64
+          - WebGL
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}
+
+      - uses: game-ci/unity-builder@v4
+        with:
+          projectPath: .
+          unityVersion: 2022.3.9f1
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: GameClient
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gameclient-${{ matrix.targetPlatform }}-${{ github.sha }}
+          path: build/
+
+  game-client-release:
+    needs:
+      - game-client-build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        targetPlatform:
+          - StandaloneOSX
+          - StandaloneWindows64
+          - StandaloneLinux64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: gameclient-${{ matrix.targetPlatform }}-${{ github.sha }}
+          path: client
+
+      - run: |
+          cp CHANGELOG.md LICENSE README.md client/
+
+      - name: Pack artifact (Windows)
+        if: contains(matrix.targetPlatform, 'Windows')
+        run: |
+          cd client
+          zip -r ../gameclient-${{ matrix.targetPlatform }}.zip *
+          cd ..
+
+      - name: Pack artifact (Others)
+        if: contains(matrix.targetPlatform, 'Windows') == false
+        run: |
+          cd client
+          tar -czvf ../gameclient-${{ matrix.targetPlatform }}.tar.gz *
+          cd ..
+
+      - name: Upload artifact to release (Windows)
+        if: contains(matrix.targetPlatform, 'Windows')
+        uses: softprops/action-gh-release@v1
+        with:
+          append_body: true
+          files: |
+            gameclient-${{ matrix.targetPlatform }}.zip
+
+      - name: Upload artifact to release (Others)
+        if: contains(matrix.targetPlatform, 'Windows') == false
+        uses: softprops/action-gh-release@v1
+        with:
+          append_body: true
+          files: |
+            gameclient-${{ matrix.targetPlatform }}.tar.gz
+
+  package-sdk:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language:
+          - python
+          - cpp
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          mkdir -p sdk-${{ matrix.language }}/src
+          cp -r game/sdk/${{ matrix.language }}/src sdk-${{ matrix.language }}/src
+      - if: contains(matrix.language, 'cpp') == true
+        run:
+          cp game/sdk/${{ matrix.language }}/xmake.lua sdk-${{ matrix.language }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: sdk-${{ matrix.language }}-${{ github.sha }}
+          path: sdk-${{ matrix.language }}
+
+  release-sdk:
+    needs:
+      - package-sdk
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language:
+          - python
+          - cpp
+        extension:
+          - zip
+          - tar.gz
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: sdk-${{ matrix.language }}-${{ github.sha }}
+          path: sdk-${{ matrix.language }}
+
+      - run:
+          cp game/sdk/${{ matrix.language }}/README.md sdk-${{ matrix.language }}
+          cp game/sdk/${{ matrix.language }}/LICENSE sdk-${{ matrix.language }}
+          cp game/sdk/${{ matrix.language }}/CHANGELOG.md sdk-${{ matrix.language }}
+
+      - name: Pack artifact (zip)
+        if: startsWith(matrix.extension, 'zip')
+        run: |
+          zip -r sdk-${{ matrix.language }}.zip sdk-python/*
+
+      - name: Pack artifact (tar)
+        if: startsWith(matrix.extension, 'tar')
+        run: |
+          tar -czvf sdk-${{ matrix.language }}.tar.gz sdk-python/*
+
+      - name: Upload artifact to release
+        uses: softprops/action-gh-release@v1
+        with:
+          append_body: true
+          files: |
+            sdk-${{ matrix.language }}.${{ matrix.extension }}

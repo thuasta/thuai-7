@@ -1,6 +1,10 @@
 on:
   push:
+    paths:
+      - 'game/server/**'
   pull_request:
+    paths:
+      - 'game/server/**'
   workflow_dispatch:
 
 jobs:
@@ -23,7 +27,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - run: |
-          dotnet publish src/GameServer/GameServer.csproj -c Release -o bin \
+          dotnet publish game/server/src/GameServer/GameServer.csproj -c Release -o bin \
           --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
           -p:PublishSingleFile=true
 
@@ -41,9 +45,9 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - run: dotnet format --verify-no-changes src/GameServer
+      - run: dotnet format --verify-no-changes game/server/src/GameServer
 
-      - run: dotnet format --verify-no-changes src/GameServer.Tests
+      - run: dotnet format --verify-no-changes game/server/src/GameServer.Tests
 
   test:
     strategy:
@@ -61,4 +65,4 @@ jobs:
           dotnet-version: 6.0.x
 
       - run: |
-          dotnet test src/GameServer.Tests/GameServer.Tests.csproj
+          dotnet test game/server/src/GameServer.Tests/GameServer.Tests.csproj
