@@ -24,18 +24,13 @@ jobs:
             runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          cd game/sdk/cpp
 
       - uses: xmake-io/github-action-setup-xmake@v1
 
       - run: |
+          cd game/sdk/cpp
           xmake repo -u -y
-
-      - run: |
           xmake f -m release -v -y
-
-      - run: |
           xmake -v -y
 
       - uses: actions/upload-artifact@v4
