@@ -43,7 +43,7 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: game/client
+          projectPath: client
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: 2022.3.9f1
 
@@ -122,7 +122,7 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: game/client
+          projectPath: client
           unityVersion: 2022.3.9f1
 
   test-server:
