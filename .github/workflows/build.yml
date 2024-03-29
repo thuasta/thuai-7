@@ -1,0 +1,146 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-api-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          mkdir -p site/
+
+      - uses: asyncapi/github-action-for-cli@v3.1.1
+        with:
+          command: generate
+          filepath: docs/api/asyncapi.yaml
+          template: '@asyncapi/html-template@2.1.7'
+          output: site/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-api-docs-${{ github.sha }}
+          path: site/
+
+  build-client:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneLinux64
+          - StandaloneOSX
+          - StandaloneWindows64
+          - WebGL
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: game/client
+          targetPlatform: ${{ matrix.targetPlatform }}
+          unityVersion: 2022.3.9f1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-client-${{ matrix.targetPlatform }}-${{ github.sha }}
+          path: build
+
+  build-server:
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime:
+          - linux-arm
+          - linux-arm64
+          - ubuntu-x64
+          - win-arm64
+          - win-x64
+          - win-x86
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - run: |
+          dotnet publish src/GameServer -c Release -o bin \
+          --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
+          -p:PublishSingleFile=true
+        working-directory: server
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-server-${{ matrix.runtime }}-${{ github.sha }}
+          path: server/bin
+
+  deploy-pages:
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build-api-docs
+    permissions:
+      id-token: write
+      pages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-api-docs-${{ github.sha }}
+          path: site/api
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  test-client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: game/client
+          unityVersion: 2022.3.9f1
+
+  test-server:
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - run: |
+          dotnet test src/GameServer.Tests
+        working-directory: server

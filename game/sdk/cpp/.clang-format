@@ -1,3 +1,0 @@
-BasedOnStyle: LLVM
-SortIncludes: CaseSensitive
-IncludeBlocks: Regroup
