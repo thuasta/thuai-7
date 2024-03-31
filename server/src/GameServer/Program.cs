@@ -4,7 +4,7 @@ namespace GameServer;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
