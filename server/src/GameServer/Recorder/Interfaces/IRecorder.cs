@@ -1,10 +1,21 @@
 using GameServer.GameLogic;
+using System.Text.Json.Nodes;
 
 namespace GameServer.Recorder;
 
-public interface IRecorder
-{
-    public void CreateNewRecord(string recordName);
-    public void RecordInitialInformation(IGame game);
-    public void RecordEvents(EventArgs e);
+public interface IRecorder {
+  /// <summary>
+  /// Gets the JSON representation of all records in the recorder.
+  /// </summary>
+  public JsonNode Json { get; }
+
+  /// <summary>
+  /// Records a record.
+  /// </summary>
+  public void Record(IRecord record);
+
+  /// <summary>
+  /// Saves all records to a file.
+  /// </summary>
+  public void Save();
 }
