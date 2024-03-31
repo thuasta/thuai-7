@@ -3,7 +3,7 @@ using Fleck;
 using System.Collections.Concurrent;
 using System.Text;
 
-namespace GameServer.Connction;
+namespace GameServer.Connection;
 
 public partial class AgentServer : IServer
 {

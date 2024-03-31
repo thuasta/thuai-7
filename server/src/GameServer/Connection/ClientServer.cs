@@ -1,4 +1,4 @@
-namespace GameServer.Connction;
+namespace GameServer.Connection;
 
 public class ClientServer : IServer
 {
