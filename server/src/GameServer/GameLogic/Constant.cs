@@ -15,5 +15,7 @@ public class Constant
     //玩家初始背包大小
     public const int PLAYER_INITIAL_BACKPACK_SIZE = 150;
 
-    public const int MEDICINE_HEAL = 30;
+    public const int BANDAGE_HEAL = 10;
+
+    public const int FIRST_AID_HEAL = 75;
 }

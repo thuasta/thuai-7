@@ -3,7 +3,7 @@ namespace GameServer.GameLogic;
 public class Item : IItem
 {
     public IItem.ItemKind Kind { get; }
-    public int ItemSpecificId { get; }
+    public string ItemSpecificName { get; }
     public int Count { get; set; }
     public int WeightOfSingleItem
     {
@@ -21,12 +21,12 @@ public class Item : IItem
     /// Constructor for an item.
     /// </summary>
     /// <param name="kind"></param>
-    /// <param name="itemSpecificId"></param>
+    /// <param name="itemSpecificName"></param>
     /// <param name="count"></param>
-    public Item(IItem.ItemKind kind, int itemSpecificId, int count)
+    public Item(IItem.ItemKind kind, string itemSpecificName, int count)
     {
         Kind = kind;
-        ItemSpecificId = itemSpecificId;
+        ItemSpecificName = itemSpecificName;
         Count = count;
     }
 }

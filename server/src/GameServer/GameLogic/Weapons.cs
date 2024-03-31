@@ -11,7 +11,7 @@ public class WeaponFactory
             throw new ArgumentException($"Item kind {Item.Kind} is not a weapon.");
         }
 
-        return Item.ItemSpecificId switch
+        return Item.ItemSpecificName switch
         {
             // TODO: Implement
             _ => throw new NotImplementedException()

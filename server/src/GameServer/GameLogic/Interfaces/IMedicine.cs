@@ -6,7 +6,8 @@ public interface IMedicine
     /// Use the medicine.
     /// </summary>
     /// <param name="owner">Owner of the medicine.</param>
-    
-    public int ItemSpecificId { get; }
-    public void Use(IPlayer owner);
+
+    public string ItemSpecificName { get; }
+
+    public int Heal { get; }
 }

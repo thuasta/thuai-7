@@ -26,15 +26,15 @@ public interface IBlock
     /// Generate items in the block.
     /// </summary>
     /// <param name="kind"></param>
-    /// <param name="itemSpecificId"></param>
+    /// <param name="itemSpecificName"></param>
     /// <param name="count"></param>
-    public void GenerateItems(IItem.ItemKind kind, int itemSpecificId, int count);
+    public void GenerateItems(IItem.ItemKind kind, string itemSpecificName, int count);
 
     /// <summary>
     /// Remove items from the block.
     /// </summary>
     /// <param name="kind"></param>
-    /// <param name="itemSpecificId"></param>
+    /// <param name="itemSpecificName"></param>
     /// <param name="count"></param>
-    public void RemoveItems(IItem.ItemKind kind, int itemSpecificId, int count);
+    public void RemoveItems(IItem.ItemKind kind, string itemSpecificName, int count);
 }

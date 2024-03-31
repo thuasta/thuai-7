@@ -10,7 +10,12 @@ public class MedicineFactory
     /// <exception cref="NotImplementedException"></exception>
     public static IMedicine CreateFromItem(IItem item)
     {
-        return new Medicine(item.ItemSpecificId);
+        return item.ItemSpecificName switch
+        {
+            "BANDAGE" => new Medicine(item.ItemSpecificName, Constant.BANDAGE_HEAL),
+            "FIRST_AID_KIT" => new Medicine(item.ItemSpecificName, Constant.FIRST_AID_HEAL),
+            _ => throw new NotImplementedException(),
+        };
     }
 
     /// <summary>
@@ -21,20 +26,17 @@ public class MedicineFactory
     /// <exception cref="NotImplementedException"></exception>
     public static IItem ToItem(IMedicine medicine)
     {
-        return new Item(IItem.ItemKind.Medicine, medicine.ItemSpecificId, 1);
+        return new Item(IItem.ItemKind.Medicine, medicine.ItemSpecificName, 1);
     }
 }
 
 public class Medicine : IMedicine
 {
-    public int ItemSpecificId { get; }
-    public Medicine(int itemSpecificId)
+    public string ItemSpecificName { get; }
+    public int Heal { get; }
+    public Medicine(string itemSpecificName, int heal)
     {
-        ItemSpecificId = itemSpecificId;
-    }
-
-    public void Use(IPlayer owner)
-    {
-        owner.TakeHeal(Constant.MEDICINE_HEAL);
+        ItemSpecificName = itemSpecificName;
+        Heal = heal;
     }
 }
