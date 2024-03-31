@@ -5,7 +5,7 @@ namespace GameServer.GameController;
 public interface IGameRunner
 {
     // Game to be controlled.
-    public IGame Game { get; }
+    public Game Game { get; }
 
     // Start the game.
     public void Start();
