@@ -1,11 +1,16 @@
 using GameServer.GameLogic;
+using Serilog;
 
 namespace GameServer.GameController;
 
 public class GameRunner : IGameRunner
 {
-    public IGame Game { get; } = new Game();
+    public Game Game { get; }
 
+    public GameRunner(IConfig config, ILogger logger)
+    {
+        Game = new Game(config, logger);
+    }
     public void Start()
     {
         // TODO: Implement
