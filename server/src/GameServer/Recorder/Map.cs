@@ -19,13 +19,10 @@ public record Map {
 
 
     public record wallsPositionType {
-         [JsonPropertyName("playerId")]
-        public int? PlayerId { get; init; }
+       [JsonPropertyName("x")]
+        public double x { get; init; }
 
-        [JsonPropertyName("numb")]
-        public int? numb { get; init; }
-
-        [JsonPropertyName("abandonedSupplies")]
-        public string? abandonedSupplies { get; init; }
+        [JsonPropertyName("y")]
+        public double y { get; init; }
     }
 }

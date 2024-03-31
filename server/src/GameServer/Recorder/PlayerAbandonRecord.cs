@@ -8,9 +8,6 @@ public record PlayerAbandonRecord : IRecord {
     [JsonPropertyName("eventType")]
     public string eventType => "PLAYER_ABANDON";
 
-    [JsonPropertyName("tick")]
-    public int Tick { get; init; }
-
     [JsonIgnore]
     public JsonNode Json => JsonNode.Parse(JsonSerializer.Serialize(this))!;
 
