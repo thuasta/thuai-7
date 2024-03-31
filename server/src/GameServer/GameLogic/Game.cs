@@ -1,10 +1,10 @@
+using Serilog;
+
 namespace GameServer.GameLogic;
 
 public partial class Game
 {
-
-    private readonly Logger _logger = new("Server");
-
+    private readonly ILogger _logger;
     /// <summary>
     /// The default time gap between ticks.
     /// </summary>
@@ -46,13 +46,15 @@ public partial class Game
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
     /// </summary>
-    public Game(IConfig config)
+    public Game(IConfig config, ILogger logger)
     {
+        _logger = logger;
         Config = config;
         TicksPerSecond = config.TicksPerSecond;
 
         _tickTask = new Task(Tick);
     }
+
     #endregion
 
 
@@ -154,12 +156,7 @@ public partial class Game
     private void UpdateObjects()
     {
         // The object will be deleted if it is picked up by the player.
-        // foreach (var obj in _objects)
+        throw new NotImplementedException();
     }
-    // public void Tick()
-    // {
-    //     // TODO:Implement
-    //     throw new NotImplementedException();
-    // }
     # endregion
 }

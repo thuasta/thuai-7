@@ -41,3 +41,5 @@ msbuild.wrn
 ## Repository specific ignores
 
 *.sln
+
+.fake
