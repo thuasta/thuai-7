@@ -25,6 +25,7 @@ jobs:
           path: site/
 
   build-client:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -89,7 +90,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs:
       - build-api-docs
       - build-client
@@ -121,6 +122,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   test-client:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
