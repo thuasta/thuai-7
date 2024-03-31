@@ -40,7 +40,7 @@ public class Fist : IWeapon
     }
     public int TicksUntilAvailable { get; private set; }
 
-    public void Attack(IPlayer owner, Point<float> target)
+    public void Attack(IPlayer owner, Position target)
     {
         throw new NotImplementedException();
     }
@@ -64,7 +64,7 @@ public class ShotGun : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Point<float> target)
+    public void Attack(IPlayer owner, Position target)
     {
         throw new NotImplementedException();
     }
@@ -88,7 +88,7 @@ public class SubMachineGun : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Point<float> target)
+    public void Attack(IPlayer owner, Position target)
     {
         throw new NotImplementedException();
     }
@@ -112,7 +112,7 @@ public class SniperRifle : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Point<float> target)
+    public void Attack(IPlayer owner, Position target)
     {
         throw new NotImplementedException();
     }
@@ -136,7 +136,7 @@ public class AssaultRifle : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Point<float> target)
+    public void Attack(IPlayer owner, Position target)
     {
         throw new NotImplementedException();
     }

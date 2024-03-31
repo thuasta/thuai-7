@@ -10,7 +10,7 @@ public class MedicineFactory
     /// <exception cref="NotImplementedException"></exception>
     public static IMedicine CreateFromItem(IItem item)
     {
-        throw new NotImplementedException();
+        return new Medicine(item.ItemSpecificId);
     }
 
     /// <summary>
@@ -21,15 +21,16 @@ public class MedicineFactory
     /// <exception cref="NotImplementedException"></exception>
     public static IItem ToItem(IMedicine medicine)
     {
-        throw new NotImplementedException();
+        return new Item(IItem.ItemKind.Medicine, medicine.ItemSpecificId, 1);
     }
 }
 
 public class Medicine : IMedicine
 {
-    public Medicine()
+    public int ItemSpecificId { get; }
+    public Medicine(int itemSpecificId)
     {
-        // Do nothing
+        ItemSpecificId = itemSpecificId;
     }
 
     public void Use(IPlayer owner)
