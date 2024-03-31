@@ -2,7 +2,7 @@ namespace GameServer.Connction;
 
 public class ClientServer : IServer
 {
-    public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent;
+    public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
     public string IpAddress { get; } = "0.0.0.0";
     public int Port { get; } = 8100;

@@ -7,7 +7,7 @@ namespace GameServer.Connction;
 
 public partial class AgentServer : IServer
 {
-    public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent;
+    public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
     public string IpAddress { get; } = "0.0.0.0";
     public int Port { get; } = 8080;
