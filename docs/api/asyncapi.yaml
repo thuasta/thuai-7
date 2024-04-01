@@ -2,18 +2,20 @@ asyncapi: 3.0.0
 info:
   title: THU API
   version: ''
+
 servers:
   production:
     host: broker.mycompany.com
     protocol: qwee
     security:
-      - $ref: '#/components/securitySchemes/user-password'
+      - $ref: "#/components/securitySchemes/user-password"
+
 channels:
   /competition/control:
     address: /competition/control
     messages:
       PlayerPerform:
-        $ref: '#/components/messages/PlayerPerform'
+         $ref: '#/components/messages/PlayerPerform'
       Error:
         $ref: '#/components/messages/Error'
       CompetitionUpdate:
@@ -22,6 +24,7 @@ channels:
         $ref: '#/components/messages/Map'
       Supplies:
         $ref: '#/components/messages/Supplies'
+
 operations:
   /competition/control.publish:
     action: receive
@@ -29,6 +32,7 @@ operations:
       $ref: '#/channels/~1competition~1control'
     messages:
       - $ref: '#/channels/~1competition~1control/messages/PlayerPerform'
+
   /competition/control.subscribe:
     action: send
     channel:
@@ -38,11 +42,15 @@ operations:
       - $ref: '#/channels/~1competition~1control/messages/CompetitionUpdate'
       - $ref: '#/channels/~1competition~1control/messages/Map'
       - $ref: '#/channels/~1competition~1control/messages/Supplies'
+
 components:
+
   securitySchemes:
     user-password:
       type: userPassword
+
   messages:
+
     CompetitionUpdate:
       payload:
         type: object
@@ -61,7 +69,7 @@ components:
               elapsedTicks:
                 type: integer
               stage:
-                type: integer
+                type: string
                 enum:
                   - READY
                   - RUNNING
@@ -113,24 +121,22 @@ components:
                 type: array
                 items:
                   type: object
-                additionalProperties: false
-                required:
-                  - name
-                  - num
-                properties:
-                  name:
-                    type: string
-                    enum:
-                      - BULLET
-                      - FIRST_AID
-                      - BANDAGE
-                      - BEVERAGE
-                      - GRENADE
-                  num:
-                    type: integer
+                  required:
+                    - name
+                    - num
+                  properties:
+                    name:
+                      type: string
+                      enum:
+                        - BULLET
+                        - FIRST_AID
+                        - BANDAGE
+                        - GRENADE
+                    num:
+                      type: integer
               position:
                 $ref: '#/components/schemas/Position'
-          Events:
+          events:
             type: array
             items:
               oneOf:
@@ -140,6 +146,8 @@ components:
                 - $ref: '#/components/schemas/PlayerUseMedicineEvent'
                 - $ref: '#/components/schemas/PlayerUseGrenadeEvent'
                 - $ref: '#/components/schemas/PlayerAbandonEvent'
+                - $ref: '#/components/schemas/PlayerPrepareEvent'
+          
     PlayerPerform:
       payload:
         type: array
@@ -155,14 +163,20 @@ components:
             - $ref: '#/components/schemas/GetPlayerInfo'
             - $ref: '#/components/schemas/GetMap'
             - $ref: '#/components/schemas/ChooseOrigin'
+
+    
     Map:
       payload:
         type: object
         additionalProperties: false
         required:
+          - messageType
           - length
           - walls
         properties:
+          messageType:
+            type: string
+            const: MAP
           length:
             type: integer
           walls:
@@ -174,42 +188,58 @@ components:
               properties:
                 wallPositions:
                   $ref: '#/components/schemas/PositionInt'
-    PoisonousCircle:
+
+    SafeZone:
       payload:
         type: object
         required:
+          - messageType
           - center
           - radius
         properties:
+          messageType:
+            type: string
+            const: SAFE_ZONE
           center:
             $ref: '#/components/schemas/Position'
           radius:
-            $ref: '#/components/schemas/Position'
+            type: number
+
     Supplies:
       payload:
-        type: array
-        items:
-          type: object
-          required:
-            - name
-            - position
-          properties:
-            name:
-              type: string
-              enum:
-                - BULLET
-                - FIRST_AID
-                - BANDAGE
-                - BEVERAGE
-                - GRENADE
-                - PRIMARY_ARMOR
-                - PREMIUM_ARMOR
-                - S686
-                - VECTOR
-                - M16
-                - AWM
-            position:
-              $ref: '#/components/schemas/Position'
+        type: object
+        required:
+          - messageType
+          - supplies
+        properties:
+          messageType:
+            type: string
+            const: SUPPLIES
+          supplies:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - position
+              properties:
+                name:
+                  type: string
+                  enum:
+                    - BULLET
+                    - FIRST_AID
+                    - BANDAGE
+                     
+                    - GRENADE
+                    - PRIMARY_ARMOR
+                    - PREMIUM_ARMOR
+                    - S686
+                    - VECTOR
+                    - M16
+                    - AWM
+                position:
+                  $ref: '#/components/schemas/Position'
+          
     Error:
       payload:
         type: object
@@ -242,6 +272,7 @@ components:
           type: string
         originPosition:
           $ref: '#/components/schemas/Position'
+
     GetMap:
       type: object
       additionalProperties: false
@@ -254,6 +285,8 @@ components:
           const: GET_MAP
         token:
           type: string
+
+
     GetPlayerInfo:
       type: object
       additionalProperties: false
@@ -266,6 +299,7 @@ components:
           const: GET_PLAYER_INFO
         token:
           type: string
+
     PerformAttack:
       type: object
       additionalProperties: false
@@ -281,6 +315,7 @@ components:
           type: string
         targetPosition:
           $ref: '#/components/schemas/Position'
+
     PerformMove:
       type: object
       additionalProperties: false
@@ -295,8 +330,9 @@ components:
         token:
           type: string
         direction:
-          description: a vector
+          "description": "a vector"
           $ref: '#/components/schemas/Position'
+
     PerformUseGrenade:
       type: object
       additionalProperties: false
@@ -312,6 +348,7 @@ components:
           type: string
         targetPosition:
           $ref: '#/components/schemas/Position'
+
     PerformUseMedicine:
       type: object
       additionalProperties: false
@@ -328,9 +365,10 @@ components:
         medicineName:
           type: string
           enum:
-            - BEVERAGE
+             
             - BANDAGE
             - FIRST_AID
+
     PerformSwitchArm:
       type: object
       additionalProperties: false
@@ -351,6 +389,7 @@ components:
             - VECTOR
             - AWM
             - M16
+
     PerformPickUp:
       type: object
       additionalProperties: false
@@ -359,6 +398,7 @@ components:
         - token
         - targetSupply
         - targetPosition
+        - num
       properties:
         messageType:
           type: string
@@ -373,14 +413,17 @@ components:
             - AWM
             - M16
             - BULLET
-            - BEVERAGE
+             
             - BANDAGE
             - PRIMARY_ARMOR
             - PREMIUM_ARMOR
             - FIRST_AID
             - GRENADE
+        num:
+          type: integer 
         targetPosition:
           $ref: '#/components/schemas/Position'
+
     PerformAbandon:
       type: object
       additionalProperties: false
@@ -405,7 +448,7 @@ components:
             - AWM
             - M16
             - BULLET
-            - BEVERAGE
+             
             - BANDAGE
             - PRIMARY_ARMOR
             - PREMIUM_ARMOR
@@ -422,6 +465,21 @@ components:
         eventType:
           type: string
           const: PLAYER_ATTACK
+        playerId:
+          type: integer
+        targetPosition:
+          $ref: '#/components/schemas/Position'
+    PlayerPrepareEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - eventType
+        - playerId
+        - targetPosition
+      properties:
+        eventType:
+          type: string
+          const: PLAYER_PREPARE
         playerId:
           type: integer
         targetPosition:
@@ -466,7 +524,7 @@ components:
             - BULLET
             - FIRST_AID
             - BANDAGE
-            - BEVERAGE
+             
             - GRENADE
             - PRIMARY_ARMOR
             - PREMIUM_ARMOR
@@ -494,7 +552,7 @@ components:
           enum:
             - FIRST_AID
             - BANDAGE
-            - BEVERAGE
+             
     PlayerUseGrenadeEvent:
       type: object
       additionalProperties: false
@@ -527,26 +585,24 @@ components:
         numb:
           type: integer
         abandonedSupplies:
-          type: array
-          items:
-            type: string
-            required:
-              - name
-            properties:
-              name:
-                type: string
-                enum:
-                  - BULLET
-                  - FIRST_AID
-                  - BANDAGE
-                  - BEVERAGE
-                  - GRENADE
-                  - PRIMARY_ARMOR
-                  - PREMIUM_ARMOR
-                  - S686
-                  - VECTOR
-                  - M16
-                  - AWM
+          type: string
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              enum:
+                - BULLET
+                - FIRST_AID
+                - BANDAGE
+                 
+                - GRENADE
+                - PRIMARY_ARMOR
+                - PREMIUM_ARMOR
+                - S686
+                - VECTOR
+                - M16
+                - AWM
     Position:
       type: object
       additionalProperties: false
@@ -569,3 +625,4 @@ components:
           type: integer
         'y':
           type: integer
+
