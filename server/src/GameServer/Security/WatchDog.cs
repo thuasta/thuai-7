@@ -22,7 +22,7 @@ public class WatchDog
         _maxFeedInterval = maxFeedInterval;
     }
 
-    public void Watch(string taskName, Task task)
+    public void Watch(string taskName, Task task, Action actionForRestartingTask)
     {
         if (_taskForWatching is not null)
         {
@@ -32,7 +32,7 @@ public class WatchDog
 
         _taskForWatching = Task.Run(() =>
         {
-            while (true)
+            while (task.Status == TaskStatus.Running)
             {
                 Task.Delay(_maxFeedInterval).Wait();
 
@@ -41,8 +41,9 @@ public class WatchDog
                     _logger.Error(
                         $"\"{taskName}\" (with Task Id {task.Id}) doesn't feed dog for more than {_maxFeedInterval} ms."
                     );
+                    _logger.Error("Restarting the task.");
                     task.Dispose();
-                    break;
+                    task = Task.Run(actionForRestartingTask);
                 }
             }
         });
