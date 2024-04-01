@@ -30,7 +30,7 @@ public class WeaponFactory
             ShotGun _ => new Item(IItem.ItemKind.Weapon, "S686", 1),
             AssaultRifle _ => new Item(IItem.ItemKind.Weapon, "M16", 1),
             SubMachineGun _ => new Item(IItem.ItemKind.Weapon, "VECTOR", 1),
-            SniperRifle _ => new Item(IItem.ItemKind.Weapon, "AWM", 1),    
+            SniperRifle _ => new Item(IItem.ItemKind.Weapon, "AWM", 1),
             _ => throw new ArgumentException($"Weapon is not of valid weapon-class.")
         };
     }
@@ -39,9 +39,9 @@ public class WeaponFactory
 public class Fist : IWeapon
 {
     // TODO: Implement
-    public float Range {get;}
-    public int Damage {get;}
-    public int CoolDownTicks {get;}
+    public float Range { get; }
+    public int Damage { get; }
+    public int CoolDownTicks { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
@@ -50,8 +50,8 @@ public class Fist : IWeapon
 
     public void Attack(IPlayer owner, Position target)
     {
-        if(TicksUntilAvailable>0) return;
-        TicksUntilAvailable=CoolDownTicks;
+        if (TicksUntilAvailable > 0) return;
+        TicksUntilAvailable = CoolDownTicks;
         throw new NotImplementedException();
     }
     public void UpdateCoolDown()
@@ -73,11 +73,11 @@ public class Fist : IWeapon
 
 public class ShotGun : IWeapon
 {
-    private int BulletNum {get;}
-    private int DeltaDegree{get;}
-    public float Range {get;}
-    public int Damage {get;}
-    public int CoolDownTicks {get;}
+    private int BulletNum { get; }
+    private int DeltaDegree { get; }
+    public float Range { get; }
+    public int Damage { get; }
+    public int CoolDownTicks { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
@@ -98,7 +98,7 @@ public class ShotGun : IWeapon
     {
         Range = Constant.S686_RANGE;
         BulletNum = Constant.S686_BULLET_NUM;
-        DeltaDegree=Constant.S686_DELTA_DEG;
+        DeltaDegree = Constant.S686_DELTA_DEG;
         Damage = Constant.S686_SINGLE_BULLET_DAMAGE;
         CoolDownTicks = Constant.S686_COOLDOWNTICKS;
         TicksUntilAvailable = 0;

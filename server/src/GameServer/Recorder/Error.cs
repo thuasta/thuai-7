@@ -4,8 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record Error {
-     [JsonPropertyName("messageType")]
+public record Error
+{
+    [JsonPropertyName("messageType")]
     public string messageType => "ERROR";
 
     [JsonIgnore]

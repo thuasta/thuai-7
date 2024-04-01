@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record PlayerPrepareRecord : IRecord {
+public record PlayerPrepareRecord : IRecord
+{
     [JsonPropertyName("eventType")]
     public string eventType => "PLAYER_PREPARE";
 
@@ -14,15 +15,17 @@ public record PlayerPrepareRecord : IRecord {
     [JsonPropertyName("data")]
     public DataType? Data { get; init; }
 
-    public record DataType {
-         [JsonPropertyName("playerId")]
+    public record DataType
+    {
+        [JsonPropertyName("playerId")]
         public int? PlayerId { get; init; }
 
         [JsonPropertyName("turgetPosition")]
         public positionType? turgetPosition { get; init; }
     }
 
-    public record positionType {
+    public record positionType
+    {
         [JsonPropertyName("x")]
         public double x { get; init; }
 

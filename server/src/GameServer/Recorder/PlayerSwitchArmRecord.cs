@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record PlayerSwitchArmRecord : IRecord {
+public record PlayerSwitchArmRecord : IRecord
+{
     [JsonPropertyName("eventType")]
     public string eventType => "PLAYER_SWITCH_ARM";
 
@@ -14,8 +15,9 @@ public record PlayerSwitchArmRecord : IRecord {
     [JsonPropertyName("data")]
     public DataType? Data { get; init; }
 
-    public record DataType {
-         [JsonPropertyName("playerId")]
+    public record DataType
+    {
+        [JsonPropertyName("playerId")]
         public int? AttackerUniqueId { get; init; }
 
         [JsonPropertyName("turgetFirearm")]

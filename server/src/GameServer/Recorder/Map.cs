@@ -4,8 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record Map {
-     [JsonPropertyName("messageType")]
+public record Map
+{
+    [JsonPropertyName("messageType")]
     public string messageType => "MAP";
 
     [JsonIgnore]
@@ -18,8 +19,9 @@ public record Map {
     public List<wallsPositionType>? walls { get; init; }
 
 
-    public record wallsPositionType {
-       [JsonPropertyName("x")]
+    public record wallsPositionType
+    {
+        [JsonPropertyName("x")]
         public double x { get; init; }
 
         [JsonPropertyName("y")]

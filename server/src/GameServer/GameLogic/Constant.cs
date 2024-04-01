@@ -1,7 +1,7 @@
 namespace GameServer.GameLogic;
 public partial class Constant
 {
-    public const int TICKS_PER_SECOND=20;
+    public const int TICKS_PER_SECOND = 20;
     //手榴弹爆炸延时的tick数
     public const int GRENADE_EXPLODE_TICK = 100;
     //手雷爆炸的伤害的线性衰减参数
