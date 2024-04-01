@@ -9,8 +9,8 @@ public partial class AgentServer : IServer
 {
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
-    public string IpAddress { get; } = "0.0.0.0";
-    public int Port { get; } = 8080;
+    public string IpAddress { get; init; } = "0.0.0.0";
+    public int Port { get; init; } = 8080;
     public Task? TaskForPublishingMessage { get; private set; } = null;
 
     private readonly ILogger _logger = Log.Logger.ForContext("Component", "AgentServer");

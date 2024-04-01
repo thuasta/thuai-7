@@ -15,12 +15,12 @@ public interface IServer
     /// <summary>
     /// IP address of the server
     /// </summary>
-    public string IpAddress { get; }
+    public string IpAddress { get; init; }
 
     /// <summary>
     /// Port of the server
     /// </summary>
-    public int Port { get; }
+    public int Port { get; init; }
 
     public Task? TaskForPublishingMessage { get; }
 
