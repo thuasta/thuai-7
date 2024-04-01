@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record PlayerAbandonRecord : IRecord {
+public record PlayerAbandonRecord : IRecord
+{
     [JsonPropertyName("eventType")]
     public string eventType => "PLAYER_ABANDON";
 
@@ -14,8 +15,9 @@ public record PlayerAbandonRecord : IRecord {
     [JsonPropertyName("data")]
     public DataType? Data { get; init; }
 
-    public record DataType {
-         [JsonPropertyName("playerId")]
+    public record DataType
+    {
+        [JsonPropertyName("playerId")]
         public int? PlayerId { get; init; }
 
         [JsonPropertyName("numb")]

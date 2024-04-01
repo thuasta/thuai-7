@@ -4,8 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record SafeZone {
-     [JsonPropertyName("messageType")]
+public record SafeZone
+{
+    [JsonPropertyName("messageType")]
     public string messageType => "SAFE_ZONE";
 
     [JsonIgnore]
@@ -18,7 +19,8 @@ public record SafeZone {
     public double? radius { get; init; }
 
 
-    public record positionType {
+    public record positionType
+    {
 
         [JsonPropertyName("x")]
         public double x { get; init; }

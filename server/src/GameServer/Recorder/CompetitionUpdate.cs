@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record CompetitionUpdate {
+public record CompetitionUpdate
+{
     [JsonPropertyName("messageType")]
     public string messageType => "COMPETITION_UPDATE";
 
@@ -23,25 +24,27 @@ public record CompetitionUpdate {
     [JsonPropertyName("events")]
     public List<IRecord>? events { get; init; }
 
-    public record infoType {
-         [JsonPropertyName("elapsedTicks")]
+    public record infoType
+    {
+        [JsonPropertyName("elapsedTicks")]
         public int? elapsedTicks { get; init; }
 
         [JsonPropertyName("stage")]
         public string? stage { get; init; }
     }
 
-    public record playersType{
-         [JsonPropertyName("playerId")]
+    public record playersType
+    {
+        [JsonPropertyName("playerId")]
         public int? playerId { get; init; }
 
-         [JsonPropertyName("armor")]
-        public string?  armor{ get; init; }
+        [JsonPropertyName("armor")]
+        public string? armor { get; init; }
 
-         [JsonPropertyName("health")]
+        [JsonPropertyName("health")]
         public int? health { get; init; }
 
-         [JsonPropertyName("speed")]
+        [JsonPropertyName("speed")]
         public double? speed { get; init; }
 
         [JsonPropertyName("firearm")]
@@ -54,18 +57,20 @@ public record CompetitionUpdate {
         public positionType? position { get; init; }
     }
 
-    public record firearmType{
-         [JsonPropertyName("name")]
+    public record firearmType
+    {
+        [JsonPropertyName("name")]
         public string? speed { get; init; }
 
-         [JsonPropertyName("windup")]
+        [JsonPropertyName("windup")]
         public double? windup { get; init; }
 
-         [JsonPropertyName("distance")]
+        [JsonPropertyName("distance")]
         public double? distance { get; init; }
     }
 
-    public record positionType {
+    public record positionType
+    {
         [JsonPropertyName("x")]
         public double x { get; init; }
 
@@ -73,7 +78,8 @@ public record CompetitionUpdate {
         public double y { get; init; }
     }
 
-    public record inventoryType{
+    public record inventoryType
+    {
         [JsonPropertyName("name")]
         public string? name { get; init; }
 

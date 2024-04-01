@@ -2,6 +2,6 @@ namespace GameServer.GameLogic;
 
 public interface IConfig
 {
-  public int TicksPerSecond { get; }
+    public int TicksPerSecond { get; }
 
 }

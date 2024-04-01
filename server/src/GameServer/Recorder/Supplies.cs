@@ -4,8 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record Supplies {
-     [JsonPropertyName("messageType")]
+public record Supplies
+{
+    [JsonPropertyName("messageType")]
     public string messageType => "SUPPLIES";
 
     [JsonIgnore]
@@ -14,7 +15,8 @@ public record Supplies {
     [JsonPropertyName("supplies")]
     public List<suppliesType>? supplies { get; init; }
 
-    public record suppliesType{
+    public record suppliesType
+    {
         [JsonPropertyName("name")]
         public string? name { get; init; }
 
@@ -22,7 +24,8 @@ public record Supplies {
         public positionType? position { get; init; }
     }
 
-    public record positionType {
+    public record positionType
+    {
 
         [JsonPropertyName("x")]
         public double x { get; init; }

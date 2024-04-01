@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record PlayerPickUpRecord : IRecord {
+public record PlayerPickUpRecord : IRecord
+{
     [JsonPropertyName("eventType")]
     public string eventType => "PLAYER_PICK_UP";
 
@@ -14,8 +15,9 @@ public record PlayerPickUpRecord : IRecord {
     [JsonPropertyName("data")]
     public DataType? Data { get; init; }
 
-    public record DataType {
-         [JsonPropertyName("playerId")]
+    public record DataType
+    {
+        [JsonPropertyName("playerId")]
         public int? PlayerId { get; init; }
 
         [JsonPropertyName("turgetSupply")]
@@ -28,7 +30,8 @@ public record PlayerPickUpRecord : IRecord {
         public int? num { get; init; }
     }
 
-    public record positionType {
+    public record positionType
+    {
         [JsonPropertyName("x")]
         public double x { get; init; }
 

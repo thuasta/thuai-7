@@ -1,5 +1,5 @@
-﻿using Serilog;
-using System.Text.Json;
+﻿using System.Text.Json;
+using Serilog;
 
 namespace GameServer;
 

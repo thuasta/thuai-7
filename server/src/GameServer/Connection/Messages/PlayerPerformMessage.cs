@@ -50,7 +50,7 @@ public record PerformSwitchArmMessage : Message
     public string Token { get; init; } = "";
 
     [JsonPropertyName("targetFirearm")]
-    public string TargetFirearm{ get; init; } = "";
+    public string TargetFirearm { get; init; } = "";
 }
 
 public record PerformUseMedicineMessage : Message
@@ -107,4 +107,62 @@ public record PerformMoveMessage : Message
     }
 }
 
-// TODO: Implement other messages
+public record PreformAttackMessage : Message
+{
+    [JsonPropertyName("messageType")]
+    public override string MessageType { get; init; } = "PERFORM_ATTACK";
+
+    [JsonPropertyName("token")]
+    public string Token { get; init; } = "";
+
+    [JsonPropertyName("targetPosition")]
+    public TargetPosition TargetPos { get; init; } = new();
+
+    public record TargetPosition
+    {
+        [JsonPropertyName("x")]
+        public int X { get; init; }
+
+        [JsonPropertyName("y")]
+        public int Y { get; init; }
+    }
+}
+
+public record GetPlayerInfoMessage : Message
+{
+    [JsonPropertyName("messageType")]
+    public override string MessageType { get; init; } = "GET_PLAYER_INFO";
+
+    [JsonPropertyName("token")]
+    public string Token { get; init; } = "";
+}
+
+public record GetMapMessage : Message
+{
+    [JsonPropertyName("messageType")]
+    public override string MessageType { get; init; } = "GET_MAP";
+
+    [JsonPropertyName("token")]
+    public string Token { get; init; } = "";
+}
+
+public record ChooseOriginMessage : Message
+{
+    [JsonPropertyName("messageType")]
+    public override string MessageType { get; init; } = "CHOOSE_ORIGIN";
+
+    [JsonPropertyName("token")]
+    public string Token { get; init; } = "";
+
+    [JsonPropertyName("originPosition")]
+    public OriginPosition OriginPos { get; init; } = new();
+
+    public record OriginPosition
+    {
+        [JsonPropertyName("x")]
+        public int X { get; init; }
+
+        [JsonPropertyName("y")]
+        public int Y { get; init; }
+    }
+}
