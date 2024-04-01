@@ -348,7 +348,7 @@ components:
           type: string
           enum:
             - S686
-            - VECTORY
+            - VECTOR
             - AWM
             - M16
     PerformPickUp:
@@ -369,7 +369,7 @@ components:
           type: string
           enum:
             - S686
-            - VECTORY
+            - VECTOR
             - AWM
             - M16
             - BULLET
@@ -401,7 +401,7 @@ components:
           type: string
           enum:
             - S686
-            - VECTORY
+            - VECTOR
             - AWM
             - M16
             - BULLET
@@ -443,7 +443,7 @@ components:
           type: string
           enum:
             - S686
-            - VECTORY
+            - VECTOR
             - AWM
             - M16
     PlayerPickUpEvent:

@@ -10,7 +10,12 @@ public class MedicineFactory
     /// <exception cref="NotImplementedException"></exception>
     public static IMedicine CreateFromItem(IItem item)
     {
-        throw new NotImplementedException();
+        return item.ItemSpecificName switch
+        {
+            "BANDAGE" => new Medicine(item.ItemSpecificName, Constant.BANDAGE_HEAL),
+            "FIRST_AID_KIT" => new Medicine(item.ItemSpecificName, Constant.FIRST_AID_HEAL),
+            _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for medicine."),
+        };
     }
 
     /// <summary>
@@ -21,19 +26,17 @@ public class MedicineFactory
     /// <exception cref="NotImplementedException"></exception>
     public static IItem ToItem(IMedicine medicine)
     {
-        throw new NotImplementedException();
+        return new Item(IItem.ItemKind.Medicine, medicine.ItemSpecificName, 1);
     }
 }
 
 public class Medicine : IMedicine
 {
-    public Medicine()
+    public string ItemSpecificName { get; }
+    public int Heal { get; }
+    public Medicine(string itemSpecificName, int heal)
     {
-        // Do nothing
-    }
-
-    public void Use(IPlayer owner)
-    {
-        owner.TakeHeal(Constant.MEDICINE_HEAL);
+        ItemSpecificName = itemSpecificName;
+        Heal = heal;
     }
 }

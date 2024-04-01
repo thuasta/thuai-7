@@ -43,9 +43,10 @@ public class Player : IPlayer
 
     public bool playerAttack()
     {
-        if (PlayerBackPack.FindItems(ItemKind.Bullet, 1) > 0)
+        IItem? item = PlayerBackPack.FindItems(ItemKind.Bullet, "BULLET");
+        if (item != null && item.Count > 0)
         {
-            PlayerBackPack.RemoveItems(ItemKind.Bullet, 1, 1);
+            PlayerBackPack.RemoveItems(ItemKind.Bullet, "BULLET", 1);
             return true;
         }
         else
@@ -56,9 +57,10 @@ public class Player : IPlayer
 
     public bool playerUseGrenade()
     {
-        if (PlayerBackPack.FindItems(ItemKind.Grenade, 1) > 0)
+        IItem? item = PlayerBackPack.FindItems(ItemKind.Grenade, "GRENADE");
+        if (item != null && item.Count > 0)
         {
-            PlayerBackPack.RemoveItems(ItemKind.Grenade, 1, 1);
+            PlayerBackPack.RemoveItems(ItemKind.Grenade, "GRENADE", 1);
             return true;
         }
         else
@@ -67,13 +69,14 @@ public class Player : IPlayer
         }
     }
 
-    public bool playerUseMedicine()
+    public bool playerUseMedicine(string medicineName)
     {
-        if (PlayerBackPack.FindItems(ItemKind.Medicine, 1) > 0)
+        IItem? item = PlayerBackPack.FindItems(ItemKind.Medicine, medicineName);
+        if (item != null && item.Count > 0)
         {
-            PlayerBackPack.RemoveItems(ItemKind.Medicine, 1, 1);
+            PlayerBackPack.RemoveItems(ItemKind.Medicine, medicineName, 1);
 
-            //Health += Medicine.Heal;
+            Health += MedicineFactory.CreateFromItem(item).Heal;
 
             return true;
         }
@@ -92,14 +95,14 @@ public class Player : IPlayer
         // TODO:Implement
         throw new NotImplementedException();
     }
-    public void SwitchWeapon(int weaponItemId)
+    public void SwitchWeapon(string weaponItemId)
     {
         //iterate player's backpack to find the weapon with weaponItemId
         //if found, set PlayerWeapon to the weapon
         //if not found, throw new ArgumentException("Weapon not found in backpack.");
         foreach (IItem item in PlayerBackPack.Items)
         {
-            if (item.ItemSpecificId == weaponItemId)
+            if (item.ItemSpecificName == weaponItemId)
             {
                 PlayerWeapon = WeaponFactory.CreateFromItem(item);
                 return;

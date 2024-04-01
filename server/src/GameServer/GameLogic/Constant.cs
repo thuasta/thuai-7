@@ -1,8 +1,8 @@
 namespace GameServer.GameLogic;
-public class Constant
+public partial class Constant
 {
+    public const int TICKS_PER_SECOND=20;
     //手榴弹爆炸延时的tick数
-    //TODO 待修改
     public const int GRENADE_EXPLODE_TICK = 100;
     //手雷爆炸的伤害的线性衰减参数
     public const double GRENADE_DAMAGE_DECAY = 13.83;
@@ -15,5 +15,11 @@ public class Constant
     //玩家初始背包大小
     public const int PLAYER_INITIAL_BACKPACK_SIZE = 150;
 
-    public const int MEDICINE_HEAL = 30;
+    public const int BANDAGE_HEAL = 10;
+
+    public const int FIRST_AID_HEAL = 75;
+
+    public const int PRIMARY_ARMOR_DEFENSE = 50;
+
+    public const int PREMIUM_ARMOR_DEFENSE = 100;
 }

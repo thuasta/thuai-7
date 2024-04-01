@@ -37,7 +37,7 @@ public interface IWeapon
     /// </summary>
     /// <param name="owner"></param>
     /// <param name="target"></param>
-    public void Attack(IPlayer owner, Point<float> target);
+    public void Attack(IPlayer owner, Position target);
 
     /// <summary>
     /// Update the cooldown of the weapon.
