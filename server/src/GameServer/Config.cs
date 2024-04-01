@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace GameServer;
 
-public record Config : GameServer.GameLogic.IConfig
+public record Config
 {
     [JsonPropertyName("server_port")]
     public int ServerPort { get; init; } = 14514;

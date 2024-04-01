@@ -107,7 +107,7 @@ public record PerformMoveMessage : Message
     }
 }
 
-public record PreformAttackMessage : Message
+public record PerformAttackMessage : Message
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_ATTACK";

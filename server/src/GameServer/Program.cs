@@ -33,6 +33,11 @@ class Program
 
         GameController.IGameRunner gameRunner = new GameController.GameRunner(config, _logger);
 
+        AgentServer agentServer = new()
+        {
+            Port = config.ServerPort
+        };
+
         try
         {
             // TODO: Activate and run game server
