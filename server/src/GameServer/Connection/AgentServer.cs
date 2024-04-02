@@ -41,7 +41,7 @@ public partial class AgentServer : IServer
 
             _isRunning = true;
 
-            TaskForPublishingMessage = Task.Run(() =>
+            void actionForPublishingMessage()
             {
                 while (_isRunning)
                 {
@@ -52,7 +52,9 @@ public partial class AgentServer : IServer
                         Publish(_messageToPublish);
                     }
                 }
-            });
+            }
+
+            TaskForPublishingMessage = Task.Run(actionForPublishingMessage);
 
             _logger.Information("AgentServer started.");
         }
@@ -66,7 +68,7 @@ public partial class AgentServer : IServer
     {
         if (!_isRunning)
         {
-            _logger.Error("Cannot Stop AgentServer: AgentServer is not running.");
+            _logger.Error("Cannot stop AgentServer: AgentServer is not running.");
             return;
         }
 
