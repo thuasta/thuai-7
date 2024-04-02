@@ -35,9 +35,9 @@ public interface IWeapon
     /// <summary>
     /// Attack the target.
     /// </summary>
-    /// <param name="owner"></param>
     /// <param name="target"></param>
-    public void Attack(IPlayer owner, Position target);
+    /// <returns>The normalized directions of the bullets</returns>
+    public List<Position>? Attack(Position start,Position direction);
 
     /// <summary>
     /// Update the cooldown of the weapon.

@@ -51,8 +51,21 @@ public partial class Game
     }
     private void OnPlayerAttack(object? sender, Player.PlayerAttackEventArgs e)
     {
-        // Check if the player has enough bullets
-        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, "BULLET");
+        // Check if the type weapon is not "Fist"
+        if (e.Player.PlayerWeapon is not Fist)
+        {
+            // Check if the player has enough bullets
+            IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, "BULLET");
+            if (bullet != null && bullet.Count > 0)
+            {
+                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, "BULLET", 1);
+            }
+            else
+            {
+                throw new InvalidOperationException("Player has no bullet.");
+            }
+        }
+
     }
     private void OnPlayerPickUp(object? sender, Player.PlayerPickUpEventArgs e)
     {
@@ -64,13 +77,26 @@ public partial class Game
     }
     private void OnPlayerUseGrenade(object? sender, Player.PlayerUseGrenadeEventArgs e)
     {
+        // Check if the player has grenade
+        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Grenade, "GRENADE");
+        if (item != null && item.Count > 0)
+        {
+            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Grenade, "GRENADE", 1);
+        }
+        else
+        {
+            throw new InvalidOperationException("Player has no grenade.");
+        }
 
+        // Generate the grenade
+        _allGrenades.Add(new Grenade(e.Player.PlayerPosition, CurrentTick));
     }
     private void UpdatePlayers()
     {
         foreach (Player player in _allPlayers)
         {
-            // 
+            // Update cooldown of weapons
+            player.PlayerWeapon.UpdateCoolDown();
         }
     }
 }

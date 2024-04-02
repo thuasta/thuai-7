@@ -38,7 +38,6 @@ public partial class Game
 
     private DateTime _lastTpsCheckTime = DateTime.Now;
     private DateTime? _lastTickTime = null; // In microseconds.
-    private readonly Task _tickTask;
 
     #endregion
 
@@ -56,7 +55,6 @@ public partial class Game
         _map = new Map(config.MapWidth, config.MapHeight);
         _allPlayers = new List<Player>();
 
-        _tickTask = new Task(Tick);
 
     }
 
@@ -84,7 +82,6 @@ public partial class Game
         _map.GenerateMap();
         _logger.Information("The game is running...");
 
-        _tickTask.Start();
     }
 
     /// <summary>
@@ -105,62 +102,59 @@ public partial class Game
             _lastTickTime = null;
         }
 
-        _tickTask.Wait();
     }
 
     /// <summary>
     /// Ticks the game. This method is called every tick to update the game.
     /// </summary>
-    private void Tick()
+    public void Tick()
     {
-        while (true)
+        try
         {
-            try
+            lock (this)
             {
-                lock (this)
+                if (_lastTickTime is null)
                 {
-                    if (_lastTickTime is null)
-                    {
-                        break;
-                    }
-
-                    DateTime currentTime = DateTime.Now;
-
-                    if (currentTime - _lastTickTime < TimeSpan.FromSeconds((double)(1.0m / Config.TicksPerSecond)))
-                    {
-                        continue;
-                    }
-
-                    TicksPerSecond = 1.0m / (decimal)(currentTime - _lastTickTime.Value).TotalSeconds;
-                    _lastTickTime = currentTime;
-
-                    // Check TPS.
-                    if (DateTime.Now - _lastTpsCheckTime > TimeSpan.FromSeconds((double)TpsCheckInterval))
-                    {
-                        _lastTpsCheckTime = DateTime.Now;
-                        if (TicksPerSecond < Config.TicksPerSecond * 0.9m)
-                        {
-                            _logger.Warning($"Insufficient simulation rate: {TicksPerSecond:0.00} tps < {Config.TicksPerSecond} tps");
-                        }
-                    }
-                    UpdateObjects();
-                    // UpdateCircle();
-                    UpdatePlayers();
-                    // UpdateBullets();
-                    // UpdateGrenades();
-
-                    // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
-
-                    // Accumulate the current tick at the end of the tick.
-                    CurrentTick++;
+                    return;
                 }
 
+                DateTime currentTime = DateTime.Now;
+
+                if (currentTime - _lastTickTime < TimeSpan.FromSeconds((double)(1.0m / Config.TicksPerSecond)))
+                {
+                    return;
+                }
+
+                TicksPerSecond = 1.0m / (decimal)(currentTime - _lastTickTime.Value).TotalSeconds;
+                _lastTickTime = currentTime;
+
+                // Check TPS.
+                if (DateTime.Now - _lastTpsCheckTime > TimeSpan.FromSeconds((double)TpsCheckInterval))
+                {
+                    _lastTpsCheckTime = DateTime.Now;
+                    if (TicksPerSecond < Config.TicksPerSecond * 0.9m)
+                    {
+                        _logger.Warning($"Insufficient simulation rate: {TicksPerSecond:0.00} tps < {Config.TicksPerSecond} tps");
+                    }
+                }
+                UpdateObjects();
+                // UpdateCircle();
+                UpdatePlayers();
+                // UpdateBullets();
+                UpdateGrenades();
+
+                // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
+
+                // Accumulate the current tick at the end of the tick.
+                CurrentTick++;
             }
-            catch (Exception e)
-            {
-                _logger.Error($"An exception occurred while ticking the game: {e}");
-            }
+
         }
+        catch (Exception e)
+        {
+            _logger.Error($"An exception occurred while ticking the game: {e}");
+        }
+
     }
 
     private void UpdateObjects()

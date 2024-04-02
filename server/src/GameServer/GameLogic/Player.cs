@@ -66,32 +66,12 @@ public partial class Player : IPlayer
     public void PlayerAttack(Position targetPosition)
     {
         PlayerAttackEvent?.Invoke(this, new PlayerAttackEventArgs(this, targetPosition));
-
-        // IItem? item = PlayerBackPack.FindItems(ItemKind.Bullet, "BULLET");
-        // if (item != null && item.Count > 0)
-        // {
-        //     PlayerBackPack.RemoveItems(ItemKind.Bullet, "BULLET", 1);
-        //     return true;
-        // }
-        // else
-        // {
-        //     return false;
-        // }
     }
 
     public void PlayerUseGrenade(Position targetPosition)
     {
         PlayerUseGrenadeEvent?.Invoke(this, new PlayerUseGrenadeEventArgs(this, targetPosition));
-        // IItem? item = PlayerBackPack.FindItems(ItemKind.Grenade, "GRENADE");
-        // if (item != null && item.Count > 0)
-        // {
-        //     PlayerBackPack.RemoveItems(ItemKind.Grenade, "GRENADE", 1);
-        //     return true;
-        // }
-        // else
-        // {
-        //     return false;
-        // }
+        
     }
 
     public bool PlayerUseMedicine(string medicineName)
