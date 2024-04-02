@@ -24,4 +24,11 @@ public record Config
 
     [JsonPropertyName("max_tick")]
     public int? MaxTick { get; init; } = null;
+
+    [JsonPropertyName("map_width")]
+    public int MapWidth { get; init; } = 256;
+    
+    [JsonPropertyName("map_height")]
+    public int MapHeight { get; init; } = 256;
+
 }

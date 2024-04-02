@@ -42,7 +42,7 @@ public class BackPack : IBackPack
                 return;
             }
         }
-
+        // Inventory does not contain the item
         Items.Add(new Item(kind, itemSpecificName, count));
     }
 

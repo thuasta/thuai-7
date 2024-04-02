@@ -39,6 +39,7 @@ public partial class Game
     private DateTime _lastTpsCheckTime = DateTime.Now;
     private DateTime? _lastTickTime = null; // In microseconds.
     private readonly Task _tickTask;
+
     #endregion
 
 
@@ -52,7 +53,11 @@ public partial class Game
         Config = config;
         TicksPerSecond = config.TicksPerSecond;
 
+        _map = new Map(config.MapWidth, config.MapHeight);
+        _allPlayers = new List<Player>();
+
         _tickTask = new Task(Tick);
+
     }
 
     #endregion
@@ -73,6 +78,11 @@ public partial class Game
         }
 
         _lastTickTime = DateTime.Now;
+        // Clear the map.
+        _map.Clear();
+        // Regenerate the map.
+        _map.GenerateMap();
+        _logger.Information("The game is running...");
 
         _tickTask.Start();
     }
@@ -135,7 +145,7 @@ public partial class Game
                     }
                     UpdateObjects();
                     // UpdateCircle();
-                    // UpdatePlayers();
+                    UpdatePlayers();
                     // UpdateBullets();
                     // UpdateGrenades();
 
@@ -158,5 +168,6 @@ public partial class Game
         // The object will be deleted if it is picked up by the player.
         throw new NotImplementedException();
     }
+
     # endregion
 }
