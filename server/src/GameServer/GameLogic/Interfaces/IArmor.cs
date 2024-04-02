@@ -8,7 +8,7 @@ public interface IArmor
     /// <summary>
     /// Id of the armor corresponding to the item.
     /// </summary>
-    public int ItemSpecificId { get; }
+    public string ItemSpecificName { get; }
 
     /// <summary>
     /// Health of the armor.

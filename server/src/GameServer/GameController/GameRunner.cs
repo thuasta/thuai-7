@@ -7,7 +7,7 @@ public class GameRunner : IGameRunner
 {
     public Game Game { get; }
 
-    public GameRunner(IConfig config, ILogger logger)
+    public GameRunner(Config config, ILogger logger)
     {
         Game = new Game(config, logger);
     }

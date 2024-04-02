@@ -22,7 +22,7 @@ public class Grenade : IGrenade
     //否则return false
     public bool Explode(int tick, IPlayer[] players, Map map)
     {
-        if (tick >= explodeTick)
+        if (tick >= explodeTick && !hasExploded)
         {
             hasExploded = true;
             foreach (IPlayer player in players)
