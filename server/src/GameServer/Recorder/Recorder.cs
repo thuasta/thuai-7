@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Text.Json.Nodes;
+using Serilog;
 
 namespace GameServer.Recorder;
 
@@ -29,7 +30,7 @@ public class Recorder : IRecorder, IDisposable
         }
     }
 
-    private readonly GameServer.Utilities.Logger.Logger _logger = new("Server.Recorder");
+    private readonly ILogger _logger = Log.Logger.ForContext("Component", "Recorder");
     private readonly string _recordsDir;
     private readonly ConcurrentQueue<IRecord> _recordQueue = new();
     private readonly object _saveLock = new();

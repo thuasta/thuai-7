@@ -41,7 +41,7 @@ public class WatchDog
                     _logger.Error(
                         $"\"{taskName}\" (with Task Id {task.Id}) doesn't feed dog for more than {_maxFeedInterval} ms."
                     );
-                    _logger.Error("Restarting the task.");
+                    _logger.Error("Restarting \"{taskName}\".");
                     task.Dispose();
                     task = Task.Run(actionForRestartingTask);
                 }
