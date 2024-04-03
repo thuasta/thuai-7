@@ -36,7 +36,6 @@ public partial class Game
 
     private DateTime _lastTpsCheckTime = DateTime.Now;
     private DateTime? _lastTickTime = null; // In microseconds.
-    private readonly Task _tickTask;
 
     private readonly ILogger _logger;
 
