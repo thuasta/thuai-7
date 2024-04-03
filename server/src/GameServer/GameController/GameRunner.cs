@@ -6,21 +6,32 @@ namespace GameServer.GameController;
 public class GameRunner : IGameRunner
 {
     public Game Game { get; }
+    private readonly Task _tickTask;
 
     public GameRunner(Config config, ILogger logger)
     {
         Game = new Game(config, logger);
+
+        _tickTask = new Task(() =>
+        {
+            while (true)
+            {
+                Game.Tick();
+            }
+        });
     }
+
     public void Start()
     {
+
+        _tickTask.Start();
         // TODO: Implement
-        throw new NotImplementedException();
     }
 
     public void Stop()
     {
-        // TODO: Implement
-        throw new NotImplementedException();
+        _tickTask.Wait();
+        Game.Stop();
     }
 
     public void Reset()

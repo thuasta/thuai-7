@@ -48,11 +48,12 @@ public class Fist : IWeapon
     }
     public int TicksUntilAvailable { get; private set; }
 
-    public void Attack(IPlayer owner, Position target)
+    public List<Position>? GetBulletDirections(Position start, Position target)
     {
-        if (TicksUntilAvailable > 0) return;
+        if (TicksUntilAvailable > 0) return null;
+
         TicksUntilAvailable = CoolDownTicks;
-        throw new NotImplementedException();
+        return new List<Position> { (target - start).Normalize() };
     }
     public void UpdateCoolDown()
     {
@@ -83,9 +84,26 @@ public class ShotGun : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Position target)
+    public List<Position>? GetBulletDirections(Position start, Position target)
     {
-        throw new NotImplementedException();
+        if (TicksUntilAvailable > 0) return null;
+
+        TicksUntilAvailable = CoolDownTicks;
+
+        // Calculate the direction of the bullets
+        List<Position> directions = new List<Position>();
+
+        for (int i = 0; i < BulletNum; i++)
+        {
+            // Calculate the direction based on the root direction: (target - start)
+            Position rootDirection = target - start;
+            double angle = Math.Atan2(rootDirection.y, rootDirection.x);
+            double deltaAngle = (i - BulletNum / 2) * DeltaDegree * Math.PI / 180;
+            Position direction = new Position(Math.Cos(angle + deltaAngle), Math.Sin(angle + deltaAngle));
+            directions.Add(direction);
+        }
+
+        return directions;
     }
     public void UpdateCoolDown()
     {
@@ -116,9 +134,12 @@ public class SubMachineGun : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Position target)
+    public List<Position>? GetBulletDirections(Position start, Position target)
     {
-        throw new NotImplementedException();
+        if (TicksUntilAvailable > 0) return null;
+
+        TicksUntilAvailable = CoolDownTicks;
+        return new List<Position> { (target - start).Normalize() };
     }
     public void UpdateCoolDown()
     {
@@ -147,9 +168,12 @@ public class SniperRifle : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Position target)
+    public List<Position>? GetBulletDirections(Position start, Position target)
     {
-        throw new NotImplementedException();
+        if (TicksUntilAvailable > 0) return null;
+
+        TicksUntilAvailable = CoolDownTicks;
+        return new List<Position> { (target - start).Normalize() };
     }
     public void UpdateCoolDown()
     {
@@ -178,9 +202,12 @@ public class AssaultRifle : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
-    public void Attack(IPlayer owner, Position target)
+    public List<Position>? GetBulletDirections(Position start, Position target)
     {
-        throw new NotImplementedException();
+        if (TicksUntilAvailable > 0) return null;
+
+        TicksUntilAvailable = CoolDownTicks;
+        return new List<Position> { (target - start).Normalize() };
     }
     public void UpdateCoolDown()
     {

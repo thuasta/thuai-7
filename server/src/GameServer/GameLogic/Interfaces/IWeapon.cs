@@ -33,11 +33,11 @@ public interface IWeapon
     public int TicksUntilAvailable { get; }
 
     /// <summary>
-    /// Attack the target.
+    /// Get Bullet Directions.
     /// </summary>
-    /// <param name="owner"></param>
     /// <param name="target"></param>
-    public void Attack(IPlayer owner, Position target);
+    /// <returns>The normalized directions of the bullets</returns>
+    public List<Position>? GetBulletDirections(Position start, Position direction);
 
     /// <summary>
     /// Update the cooldown of the weapon.
