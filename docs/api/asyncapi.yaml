@@ -11,11 +11,9 @@ servers:
       - $ref: "#/components/securitySchemes/user-password"
 
 channels:
-  /competition/control:
-    address: /competition/control
+  /competition/recorder:
+    address: /competition/recorder
     messages:
-      PlayerPerform:
-         $ref: '#/components/messages/PlayerPerform'
       Error:
         $ref: '#/components/messages/Error'
       CompetitionUpdate:
@@ -24,25 +22,55 @@ channels:
         $ref: '#/components/messages/Map'
       Supplies:
         $ref: '#/components/messages/Supplies'
+  
+  /competition/player:
+    address: /competition/player
+    messages:
+      PlayerPerform:
+         $ref: '#/components/messages/PlayerPerform'
+      Error:
+        $ref: '#/components/messages/Error'
+      PlayersInfo:
+        $ref: '#/components/messages/PlayersInfo'
+      Map:
+        $ref: '#/components/messages/Map'
+      Supplies:
+        $ref: '#/components/messages/Supplies'
 
 operations:
-  /competition/control.publish:
+  /competition/recorder.publish:
     action: receive
     channel:
-      $ref: '#/channels/~1competition~1control'
+      $ref: '#/channels/~1competition~1recorder'
     messages:
-      - $ref: '#/channels/~1competition~1control/messages/PlayerPerform'
+      - $ref: '#/channels/~1competition~1recorder/messages/Error'
 
-  /competition/control.subscribe:
+  /competition/recorder.subscribe:
     action: send
     channel:
-      $ref: '#/channels/~1competition~1control'
+      $ref: '#/channels/~1competition~1recorder'
     messages:
-      - $ref: '#/channels/~1competition~1control/messages/Error'
-      - $ref: '#/channels/~1competition~1control/messages/CompetitionUpdate'
-      - $ref: '#/channels/~1competition~1control/messages/Map'
-      - $ref: '#/channels/~1competition~1control/messages/Supplies'
+      - $ref: '#/channels/~1competition~1recorder/messages/Error'
+      - $ref: '#/channels/~1competition~1recorder/messages/CompetitionUpdate'
+      - $ref: '#/channels/~1competition~1recorder/messages/Map'
+      - $ref: '#/channels/~1competition~1recorder/messages/Supplies'
+  
+  /competition/player.publish:
+    action: receive
+    channel:
+      $ref: '#/channels/~1competition~1player'
+    messages:
+      - $ref: '#/channels/~1competition~1player/messages/PlayerPerform'
 
+  /competition/player.subscribe:
+    action: send
+    channel:
+      $ref: '#/channels/~1competition~1player'
+    messages:
+      - $ref: '#/channels/~1competition~1player/messages/Error'
+      - $ref: '#/channels/~1competition~1player/messages/PlayersInfo'
+      - $ref: '#/channels/~1competition~1player/messages/Map'
+      - $ref: '#/channels/~1competition~1player/messages/Supplies'
 components:
 
   securitySchemes:
@@ -50,6 +78,56 @@ components:
       type: userPassword
 
   messages:
+    PlayersInfo:
+      payload:
+        type: object
+        required:
+          - messagetype
+          - players
+        properties:
+          messageType:
+            type: string
+            const: PLAYERS_INFO
+          players:
+            type: array
+            additionalProperties: false
+            required:
+              - playerId
+              - armor
+              - health
+              - speed
+              - firearm
+              - position
+            properties:
+              playerId:
+                type: integer
+              armor:
+                type: string
+                enum:
+                  - NO_ARMOR
+                  - PRIMARY_ARMOR
+                  - PREMIUM_ARMOR
+              health:
+                type: integer
+              speed:
+                type: number
+              firearm:
+                type: object
+                required:
+                  - name
+                  - distance
+                properties:
+                  name:
+                    type: string
+                    enum:
+                      - S686
+                      - VECTOR
+                      - M16
+                      - AWM
+                  distance:
+                    type: number
+              position:
+                $ref: '#/components/schemas/Position'
 
     CompetitionUpdate:
       payload:
@@ -103,7 +181,6 @@ components:
                 type: object
                 required:
                   - name
-                  - windup
                   - distance
                 properties:
                   name:
@@ -113,8 +190,6 @@ components:
                       - VECTOR
                       - M16
                       - AWM
-                  windup:
-                    type: number
                   distance:
                     type: number
               inventory:
@@ -159,6 +234,7 @@ components:
             - $ref: '#/components/schemas/PerformUseMedicine'
             - $ref: '#/components/schemas/PerformUseGrenade'
             - $ref: '#/components/schemas/PerformMove'
+            - $ref: '#/components/schemas/PerformStop'
             - $ref: '#/components/schemas/PerformAttack'
             - $ref: '#/components/schemas/GetPlayerInfo'
             - $ref: '#/components/schemas/GetMap'
@@ -322,16 +398,28 @@ components:
       required:
         - messageType
         - token
-        - direction
+        - destination
       properties:
         messageType:
           type: string
           const: PERFORM_MOVE
         token:
           type: string
-        direction:
-          "description": "a vector"
+        destination:
           $ref: '#/components/schemas/Position'
+
+    PerformStop:
+      type: object
+      additionalProperties: false
+      required:
+        - messageType
+        - token
+      properties:
+        messageType:
+          type: string
+          const: PERFORM_STOP
+        token:
+          type: string
 
     PerformUseGrenade:
       type: object
@@ -413,7 +501,6 @@ components:
             - AWM
             - M16
             - BULLET
-             
             - BANDAGE
             - PRIMARY_ARMOR
             - PREMIUM_ARMOR
@@ -448,7 +535,6 @@ components:
             - AWM
             - M16
             - BULLET
-             
             - BANDAGE
             - PRIMARY_ARMOR
             - PREMIUM_ARMOR
@@ -512,6 +598,7 @@ components:
         - playerId
         - targetSupply
         - targetPosition
+        - num
       properties:
         eventType:
           type: string
@@ -534,6 +621,8 @@ components:
             - AWM
         targetPosition:
           $ref: '#/components/schemas/Position'
+        num:
+          type: integer
     PlayerUseMedicineEvent:
       type: object
       additionalProperties: false
