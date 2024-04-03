@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record PlayerUseMedicineRecord : IRecord {
+public record PlayerUseMedicineRecord : IRecord
+{
     [JsonPropertyName("eventType")]
     public string eventType => "PLAYER_USE_MEDICINE";
 
@@ -14,8 +15,9 @@ public record PlayerUseMedicineRecord : IRecord {
     [JsonPropertyName("data")]
     public DataType? Data { get; init; }
 
-    public record DataType {
-         [JsonPropertyName("playerId")]
+    public record DataType
+    {
+        [JsonPropertyName("playerId")]
         public int? PlayerId { get; init; }
 
         [JsonPropertyName("medicine")]

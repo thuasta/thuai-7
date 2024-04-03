@@ -18,17 +18,18 @@ public class ArmorFactory
             throw new ArgumentException($"Item kind {item.Kind} is not an armor.");
         }
 
-        int maxHealth = item.ItemSpecificId switch
+        int maxHealth = item.ItemSpecificName switch
         {
-            // TODO: Create a mapping from item specific id to max health
-            _ => throw new ArgumentException($"Item specific id {item.ItemSpecificId} is not valid for armor.")
+            "PRIMARY_ARMOR" => Constant.PRIMARY_ARMOR_DEFENSE,
+            "PREMIUM_ARMOR" => Constant.PREMIUM_ARMOR_DEFENSE,
+            _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for armor.")
         };
-        return new Armor(item.ItemSpecificId, maxHealth);
+        return new Armor(item.ItemSpecificName, maxHealth);
     }
 
     public static IItem ToItem(IArmor armor, int count)
     {
-        return new Item(IItem.ItemKind.Armor, armor.ItemSpecificId, count);
+        return new Item(IItem.ItemKind.Armor, armor.ItemSpecificName, count);
 
     }
 }
@@ -38,13 +39,13 @@ public class ArmorFactory
 /// </summary>
 public class Armor : IArmor
 {
-    public int ItemSpecificId { get; }
+    public string ItemSpecificName { get; }
     public int Health { get; private set; }
     public int MaxHealth { get; }
 
-    public Armor(int itemSpecificId, int maxHealth)
+    public Armor(string itemSpecificName, int maxHealth)
     {
-        ItemSpecificId = itemSpecificId;
+        ItemSpecificName = itemSpecificName;
         MaxHealth = maxHealth;
         Health = maxHealth;
     }

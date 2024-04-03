@@ -27,40 +27,40 @@ public class BackPack : IBackPack
         Items = new();
     }
 
-    public void AddItems(IItem.ItemKind kind, int itemSpecificId, int count)
+    public void AddItems(IItem.ItemKind kind, string itemSpecificName, int count)
     {
-        if (CurrentWeight + new Item(kind, itemSpecificId, count).Weight > Capacity)
+        if (CurrentWeight + new Item(kind, itemSpecificName, count).Weight > Capacity)
         {
-            throw new InvalidOperationException($"No enough capacity for the item {itemSpecificId}");
+            throw new InvalidOperationException($"No enough capacity for the item {itemSpecificName}");
         }
 
         for (int i = 0; i < Items.Count; i++)
         {
-            if (Items[i].Kind == kind && Items[i].ItemSpecificId == itemSpecificId)
+            if (Items[i].Kind == kind && Items[i].ItemSpecificName == itemSpecificName)
             {
                 Items[i].Count += count;
                 return;
             }
         }
 
-        Items.Add(new Item(kind, itemSpecificId, count));
+        Items.Add(new Item(kind, itemSpecificName, count));
     }
 
-    public void RemoveItems(IItem.ItemKind kind, int itemSpecificId, int count)
+    public void RemoveItems(IItem.ItemKind kind, string itemSpecificName, int count)
     {
 
-        if (!Items.Any(item => item.Kind == kind && item.ItemSpecificId == itemSpecificId))
+        if (!Items.Any(item => item.Kind == kind && item.ItemSpecificName == itemSpecificName))
         {
-            throw new ArgumentException($"Item {itemSpecificId} not found");
+            throw new ArgumentException($"Item {itemSpecificName} not found");
         }
 
         for (int i = 0; i < Items.Count; i++)
         {
-            if (Items[i].Kind == kind && Items[i].ItemSpecificId == itemSpecificId)
+            if (Items[i].Kind == kind && Items[i].ItemSpecificName == itemSpecificName)
             {
                 if (Items[i].Count < count)
                 {
-                    throw new ArgumentException($"No enough items: {itemSpecificId}");
+                    throw new ArgumentException($"No enough items: {itemSpecificName}");
                 }
 
                 Items[i].Count -= count;
@@ -72,15 +72,15 @@ public class BackPack : IBackPack
         }
     }
 
-    public int FindItems(IItem.ItemKind kind, int itemSpecificId)
+    public IItem? FindItems(IItem.ItemKind kind, string itemSpecificName)
     {
         for (int i = 0; i < Items.Count; i++)
         {
-            if (Items[i].Kind == kind && Items[i].ItemSpecificId == itemSpecificId)
+            if (Items[i].Kind == kind && Items[i].ItemSpecificName == itemSpecificName)
             {
-                return Items[i].Count;
+                return Items[i];
             }
         }
-        return 0;
+        return null;
     }
 }

@@ -19,7 +19,7 @@ public interface IItem
     /// <summary>
     /// Specific id of the item.
     /// </summary>
-    public int ItemSpecificId { get; }
+    public string ItemSpecificName { get; }
 
     /// <summary>
     /// Count of the item.

@@ -23,22 +23,22 @@ public interface IBackPack
     /// Add items to the backpack.
     /// </summary>
     /// <param name="kind"></param>
-    /// <param name="itemSpecificId"></param>
+    /// <param name="itemSpecificName"></param>
     /// <param name="count"></param>
-    public void AddItems(IItem.ItemKind kind, int itemSpecificId, int count);
+    public void AddItems(IItem.ItemKind kind, string itemSpecificName, int count);
 
     /// <summary>
     /// Remove items from the backpack.
     /// </summary>
     /// <param name="kind"></param>
-    /// <param name="itemSpecificId"></param>
+    /// <param name="itemSpecificName"></param>
     /// <param name="count"></param>
-    public void RemoveItems(IItem.ItemKind kind, int itemSpecificId, int count);
+    public void RemoveItems(IItem.ItemKind kind, string itemSpecificName, int count);
 
     /// <summary>
-    /// Remove items from the backpack£¬return it's count
+    /// Remove items from the backpackï¿½ï¿½return it's count
     /// </summary>
     /// <param name="kind"></param>
-    /// <param name="itemSpecificId"></param>
-    public int FindItems(IItem.ItemKind kind, int itemSpecificId);
+    /// <param name="itemSpecificName"></param>
+    public IItem? FindItems(IItem.ItemKind kind, string itemSpecificName);
 }

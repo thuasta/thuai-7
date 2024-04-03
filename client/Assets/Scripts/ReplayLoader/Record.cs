@@ -1,15 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.IO.Compression;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Linq;
-using System;
 using Thubg.Sdk;
-using System.Data;
-using Mono.Data.Sqlite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Runtime.CompilerServices;
+using Mono.Data.Sqlite;
+using Unity.IO.LowLevel.Unsafe;
+
 
 public class Record : MonoBehaviour
 {
@@ -70,9 +70,8 @@ public class Record : MonoBehaviour
             JumpTargetTick = int.MaxValue;
         }
     }
-
     // meta info
-    private readonly RecordInfo _recordInfo;
+    public RecordInfo _recordInfo;
 
     // GUI
     private readonly Button _stopButton;
@@ -85,30 +84,111 @@ public class Record : MonoBehaviour
     private readonly TMP_Text _jumpTargetTickText;
     private readonly TMP_Text _maxTickText;
 
-    // database
-    private readonly Sqlite _dbManager;
-    private IDataReader _dataReader;
-
-    // game status
+    // record data
+    private readonly string _recordFilePath = null;
+    private List<CompetitionUpdate> _competitionUpdates;
     private Map _map;
-    private readonly List<Supply> _supplies;
-    private readonly JArray _recordArray;
-    private void LoadMapData()
-    {
-        _dataReader = _dbManager.ReadFromDatabase("Map");
-        while (_dataReader.Read())
-        {
-            _map = JsonConvert.DeserializeObject<Map>(_dataReader.GetString(0));
-        }
-    }
+    private List<Supply> _supplies;
+    
+    // viewer
+
+
     private void LoadRecordData()
     {
-        _dataReader = _dbManager.ReadFromDatabase("CompetitionUpdate");
-        while (_dataReader.Read())
+        JObject recordJsonObject = JsonUtility.UnzipRecord(_recordFilePath);
+        JObject mapJsonObject = (JObject)recordJsonObject["map"];
+        JArray suppliesJsonObject = (JArray)recordJsonObject["supplies"];
+        JArray recordArray = (JArray)recordJsonObject["competitionUpdates"];
+        if (mapJsonObject == null || suppliesJsonObject == null || recordArray == null)
         {
-            _recordArray.Add(JObject.Parse(_dataReader.GetString(1)));
+            Debug.Log("Initialization Failed!");
+            return;
         }
-        _dataReader.Close();
+        Debug.Log(recordArray.ToString());
+        _map = mapJsonObject.ToObject<Map>();
+        _supplies = suppliesJsonObject.ToObject<List<Supply>>();
+        _competitionUpdates = recordArray.ToObject<List<CompetitionUpdate>>();
+    }
+
+    #region Event Definition
+
+    private void GenerateMap()
+    {
+        
+    }
+
+    private void UpdatePlayers(CompetitionUpdate update)
+    {
+        foreach (CompetitionUpdate.Player player in update.players)
+        {
+            Dictionary<Items, int> inventory = new();
+            foreach (CompetitionUpdate.Player.Inventory item in player.inventory)
+            {
+                switch(item.name)
+                {
+                    default:
+                        break;
+                }
+            }
+
+            PlayerSource.UpdatePlayer(
+                new Player(
+                    player.playerId,
+                    player.health,
+                    player.armor switch
+                    {
+                        "NO_ARMOR" => ArmorTypes.NoArmor,
+                        "PRIMARY_ARMOR" => ArmorTypes.PrimaryArmor,
+                        "PREMIUM_ARMOR" => ArmorTypes.PremiumArmor,
+                        _ => ArmorTypes.NoArmor
+                    },
+                    player.speed,
+                    player.firearm.name switch
+                    {
+
+                        _ => FirearmTypes.Fists,
+                    },
+                    player.position,
+                    inventory
+                )
+            );
+        }
+    }
+
+    private void AfterPlayerPickUpEvent()
+    {
+        
+    }
+
+    private void AfterPlayerAbandonEvent()
+    {
+        
+    }
+
+    private void AfterPlayerAttackEvent()
+    {
+        
+    }
+
+    private void AfterPlayerUseMedicineEvent()
+    {
+    }
+
+    private void AfterPlayerSwitchArmEvent()
+    {
+        
+    }
+
+    private void AfterPlayerUseGrenadeEvent()
+    {
+
+    }
+
+    #endregion
+
+    private void Start()
+    {
+
     }
 
     private void UpdateTick()
@@ -117,7 +197,7 @@ public class Record : MonoBehaviour
         {
             if (_recordInfo.RecordSpeed > 0)
             {
-                
+
             }
         }
         catch

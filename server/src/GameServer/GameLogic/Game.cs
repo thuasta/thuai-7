@@ -25,7 +25,7 @@ public partial class Game
     /// <summary>
     /// Gets the config of the game.
     /// </summary>
-    public IConfig Config { get; }
+    public Config Config { get; }
     /// <summary>
     /// Gets the current tick of the game.
     /// </summary>
@@ -46,7 +46,7 @@ public partial class Game
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
     /// </summary>
-    public Game(IConfig config, ILogger logger)
+    public Game(Config config, ILogger logger)
     {
         _logger = logger;
         Config = config;
