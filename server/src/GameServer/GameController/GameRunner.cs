@@ -1,5 +1,4 @@
 using GameServer.GameLogic;
-using Serilog;
 
 namespace GameServer.GameController;
 
@@ -7,9 +6,9 @@ public class GameRunner : IGameRunner
 {
     public Game Game { get; }
 
-    public GameRunner(Config config, ILogger logger)
+    public GameRunner(Config config)
     {
-        Game = new Game(config, logger);
+        Game = new Game(config);
     }
     public void Start()
     {

@@ -4,7 +4,6 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
-    private readonly ILogger _logger;
     /// <summary>
     /// The default time gap between ticks.
     /// </summary>
@@ -19,7 +18,6 @@ public partial class Game
     /// The interval of TPS check in seconds.
     /// </summary>
     private const decimal TpsCheckInterval = 10.0m;
-
 
     #region Fields and properties
     /// <summary>
@@ -39,6 +37,9 @@ public partial class Game
     private DateTime _lastTpsCheckTime = DateTime.Now;
     private DateTime? _lastTickTime = null; // In microseconds.
     private readonly Task _tickTask;
+
+    private readonly ILogger _logger;
+
     #endregion
 
 
@@ -46,9 +47,9 @@ public partial class Game
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
     /// </summary>
-    public Game(Config config, ILogger logger)
+    public Game(Config config)
     {
-        _logger = logger;
+        _logger = Log.ForContext("Component", "Game");
         Config = config;
         TicksPerSecond = config.TicksPerSecond;
 

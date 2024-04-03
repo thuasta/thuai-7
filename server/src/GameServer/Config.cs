@@ -24,4 +24,7 @@ public record Config
 
     [JsonPropertyName("max_tick")]
     public int? MaxTick { get; init; } = null;
+
+    [JsonPropertyName("log_level")]
+    public string LogLevel { get; init; } = "INFORMATION";
 }
