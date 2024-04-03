@@ -64,6 +64,27 @@ public partial class Game
             {
                 throw new InvalidOperationException("Player has no bullet.");
             }
+
+            // Attack the target
+            List<Position>? bulletDirections = e.Player.PlayerWeapon.GetBulletDirections(e.Player.PlayerPosition, e.TargetPosition);
+            // Traverse all bullets
+            if (bulletDirections != null)
+            {
+                foreach (Position direction in bulletDirections)
+                {
+                    Position start = e.Player.PlayerPosition;
+                    Position end = start + direction * e.Player.PlayerWeapon.Range;
+                    // Traverse all players
+                    foreach (Player player in _allPlayers)
+                    {
+                        if (player.PlayerPosition == e.TargetPosition && player != e.Player)
+                        {
+                            player.Health -= e.Player.PlayerWeapon.Damage;
+                        }
+                    }
+                }
+            }
+
         }
 
     }
