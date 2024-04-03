@@ -27,4 +27,11 @@ public record Config
 
     [JsonPropertyName("log_level")]
     public string LogLevel { get; init; } = "INFORMATION";
+
+    [JsonPropertyName("map_width")]
+    public int MapWidth { get; init; } = 256;
+
+    [JsonPropertyName("map_height")]
+    public int MapHeight { get; init; } = 256;
+
 }
