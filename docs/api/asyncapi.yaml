@@ -98,6 +98,7 @@ components:
               - speed
               - firearm
               - position
+              - inventory
             properties:
               playerId:
                 type: integer
@@ -128,6 +129,23 @@ components:
                     type: number
               position:
                 $ref: '#/components/schemas/Position'
+              inventory:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - name
+                    - num
+                  properties:
+                    name:
+                      type: string
+                      enum:
+                        - BULLET
+                        - FIRST_AID
+                        - BANDAGE
+                        - GRENADE
+                    num:
+                      type: integer
 
     CompetitionUpdate:
       payload:
