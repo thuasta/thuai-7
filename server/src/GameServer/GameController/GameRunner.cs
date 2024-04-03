@@ -6,10 +6,9 @@ public class GameRunner : IGameRunner
 {
     public Game Game { get; }
     private readonly Task _tickTask;
-
     public GameRunner(Config config)
     {
-        Game = new Game(config, logger);
+        Game = new Game(config);
 
         _tickTask = new Task(() =>
         {
