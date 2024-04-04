@@ -172,6 +172,13 @@ public partial class AgentServer : IServer
                     ));
                     break;
 
+                case "PERFORM_STOP":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformStopMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformStopMessage")
+                    ));
+                    break;
+
                 case "PERFORM_ATTACK":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformAttackMessage>(text)
