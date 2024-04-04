@@ -15,6 +15,10 @@ public partial class Constant
     //玩家初始背包大小
     public const int PLAYER_INITIAL_BACKPACK_SIZE = 150;
 
+    public const int PLAYER_PICK_UP_DISTANCE = 1;
+
+    public const double PLAYER_SPEED_PER_TICK = 0.2;
+
     public const int BANDAGE_HEAL = 10;
 
     public const int FIRST_AID_HEAL = 75;

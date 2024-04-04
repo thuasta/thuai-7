@@ -4,12 +4,7 @@ public partial class Game
 {
     private readonly List<Grenade> _allGrenades = new();
 
-    public void AddGrenade(Grenade grenade)
-    {
-        _allGrenades.Add(grenade);
-    }
-
-    public void UpdateGrenades()
+    private void UpdateGrenades()
     {
         // Update all grenades
         foreach (Grenade grenade in _allGrenades)
