@@ -105,6 +105,8 @@ public partial class AgentServer : IServer
             try
             {
                 socket.Send(jsonString).Wait();
+
+                _logger.Debug("Published message: {MessageType}", message.MessageType);
             }
             catch (Exception ex)
             {
@@ -123,6 +125,9 @@ public partial class AgentServer : IServer
         {
             Message? message = JsonSerializer.Deserialize<Message>(text)
                                ?? throw new Exception("failed to deserialize Message");
+
+            _logger.Debug("Received message: {MessageType}", message.MessageType);
+
             switch (message.MessageType)
             {
                 case "PERFORM_ABANDON":
