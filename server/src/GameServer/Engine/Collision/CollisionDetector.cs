@@ -107,5 +107,5 @@ public class CollisionDetector
         return true;
     }
 
-    
+
 }
