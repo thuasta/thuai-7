@@ -30,6 +30,11 @@ public interface ISafeZone
     public int TicksUntilDisappear { get; }
 
     /// <summary>
+    ///  The damage per tick outside the safe zone.
+    /// </summary>
+    public int DamageOutside { get; }
+
+    /// <summary>
     /// Update the safe zone.
     /// Should be called every tick.
     /// </summary>

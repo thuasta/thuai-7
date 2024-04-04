@@ -64,7 +64,7 @@ class Program
         _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
         _logger.Information("Copyright (c) 2024 THUASTA");
 
-        GameController.IGameRunner gameRunner = new GameController.GameRunner(config);
+        GameController.IGameRunner gameRunner = new GameController.GameRunner(config, _logger);
 
         AgentServer agentServer = new()
         {
@@ -76,6 +76,9 @@ class Program
             // TODO: Activate and run game server
             agentServer.Start();
 
+            // Wait WaitingTime seconds for players to connect and start the gameRunner
+            System.Threading.Thread.Sleep((int)(config.WaitingTime * 1000));
+            gameRunner.Start();
             while (true)
             {
                 // TODO: Read commands from console

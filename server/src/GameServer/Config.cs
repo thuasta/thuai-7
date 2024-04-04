@@ -20,7 +20,7 @@ public record Config
     public bool SaveRecord { get; init; } = true;
 
     [JsonPropertyName("waiting_time")]
-    public decimal WaitingTime { get; init; } = 0;
+    public decimal WaitingTime { get; init; } = 10;
 
     [JsonPropertyName("max_tick")]
     public int? MaxTick { get; init; } = null;
@@ -33,5 +33,14 @@ public record Config
 
     [JsonPropertyName("map_height")]
     public int MapHeight { get; init; } = 256;
+
+    [JsonPropertyName("safe_zone_max_radius")]
+    public int SafeZoneMaxRadius { get; init; }
+
+    [JsonPropertyName("safe_zone_ticks_until_disappear")]
+    public int SafeZoneTicksUntilDisappear { get; init; }
+
+    [JsonPropertyName("damage_outside_safe_zone")]
+    public int DamageOutsideSafeZone { get; init; }
 
 }

@@ -19,13 +19,18 @@ public class GameRunner : IGameRunner
 
     private readonly ILogger _logger = Log.ForContext("Component", "GameRunner");
 
-    public GameRunner(Config config)
+    public GameRunner(Config config, ILogger logger)
     {
         Game = new Game(config);
+        _logger = logger;
     }
 
     public void Start()
     {
+        _logger.Information("Starting game server...");
+
+        Game.Initialize();
+
         _tickTask = new Task(() =>
         {
             DateTime lastTickTime = DateTime.Now;
@@ -59,7 +64,6 @@ public class GameRunner : IGameRunner
 
         _tickTask.Start();
 
-        Game.SubscribePlayerEvents();
     }
 
     public void Stop()

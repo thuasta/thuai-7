@@ -31,9 +31,8 @@ public partial class Game
         _logger = Log.ForContext("Component", "Game");
         Config = config;
 
-        _map = new Map(config.MapWidth, config.MapHeight);
+        _map = new Map(config.MapWidth, config.MapHeight, config.SafeZoneMaxRadius, config.SafeZoneTicksUntilDisappear, config.DamageOutsideSafeZone);
         _allPlayers = new List<Player>();
-
 
     }
 
@@ -41,7 +40,11 @@ public partial class Game
 
 
     #region Methods
-
+    public void Initialize()
+    {
+        SubscribePlayerEvents();
+        _map.GenerateMap();
+    }
     /// <summary>
     /// Ticks the game. This method is called every tick to update the game.
     /// </summary>
@@ -51,11 +54,9 @@ public partial class Game
         {
             lock (this)
             {
-                // UpdateCircle();
+                UpdateMap();
                 UpdatePlayers();
-                // UpdateBullets();
                 UpdateGrenades();
-
                 // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
 
                 // Accumulate the current tick at the end of the tick.
@@ -67,9 +68,6 @@ public partial class Game
         {
             _logger.Error($"An exception occurred while ticking the game: {e}");
         }
-
     }
-
-
     # endregion
 }
