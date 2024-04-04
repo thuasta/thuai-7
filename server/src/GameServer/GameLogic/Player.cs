@@ -71,7 +71,7 @@ public partial class Player : IPlayer
     public void PlayerUseGrenade(Position targetPosition)
     {
         PlayerUseGrenadeEvent?.Invoke(this, new PlayerUseGrenadeEventArgs(this, targetPosition));
-        
+
     }
 
     public bool PlayerUseMedicine(string medicineName)
