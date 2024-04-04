@@ -30,6 +30,8 @@ public class WatchDog
             return;
         }
 
+        _lastFeedTime = DateTime.Now;
+
         _taskForWatching = Task.Run(() =>
         {
             while (task.Status == TaskStatus.Running)
