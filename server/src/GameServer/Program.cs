@@ -37,8 +37,12 @@ class Program
 
         try
         {
-            // TODO: Activate and run game server
             agentServer.Start();
+
+            // Wait for players to connect
+            Task.Delay((int)(config.WaitingTime * 1000)).Wait();
+
+            gameRunner.Start();
 
             while (true)
             {
@@ -47,7 +51,7 @@ class Program
         }
         catch (Exception ex)
         {
-            _logger.Fatal($"GameServer crashed with exception: {ex.Message}");
+            _logger.Fatal($"GameServer crashed with exception: {ex}");
         }
     }
 

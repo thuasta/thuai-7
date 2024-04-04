@@ -19,10 +19,9 @@ public class GameRunner : IGameRunner
 
     private readonly ILogger _logger = Log.ForContext("Component", "GameRunner");
 
-    public GameRunner(Config config, ILogger logger)
+    public GameRunner(Config config)
     {
         Game = new Game(config);
-        _logger = logger;
     }
 
     public void Start()
