@@ -3,9 +3,9 @@ namespace GameServer.Connection;
 public interface IServer
 {
     /// <summary>
-    /// The number of messages published per second
+    /// Interval between two message publishings. In milliseconds.
     /// </summary>
-    public const float MessagesPublishedPerSecond = 20;
+    public const int MessagePublishIntervalMilliseconds = 10;
 
     /// <summary>
     /// Event raised after a message is received
