@@ -58,6 +58,8 @@ public class GameRunner : IGameRunner
         _isRunning = true;
 
         _tickTask.Start();
+
+        Game.SubscribePlayerEvents();
     }
 
     public void Stop()

@@ -7,8 +7,10 @@ public partial class Player : IPlayer
     // TODO: Implement
     public int Health { get; set; }
     public double Speed { get; set; }
+    public double PlayerRadius { get; set; }
     public Armor? PlayerArmor { get; set; }
     public Position PlayerPosition { get; set; }
+    public Position? PlayerTargetPosition { get; set; }
     public IWeapon PlayerWeapon { get; set; }
     public IBackPack PlayerBackPack { get; set; }
 
@@ -17,6 +19,7 @@ public partial class Player : IPlayer
     {
         Health = health;
         Speed = speed;
+        PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
         PlayerArmor = null;
         PlayerWeapon = new Fist();
@@ -95,17 +98,6 @@ public partial class Player : IPlayer
     public void PlayerSwitchArm(string weaponItemId)
     {
         PlayerSwitchArmEvent?.Invoke(this, new PlayerSwitchArmEventArgs(this, weaponItemId));
-        //iterate player's backpack to find the weapon with weaponItemId
-        //if found, set PlayerWeapon to the weapon
-        //if not found, throw new ArgumentException("Weapon not found in backpack.");
-        // foreach (IItem item in PlayerBackPack.Items)
-        // {
-        //     if (item.ItemSpecificName == weaponItemId)
-        //     {
-        //         PlayerWeapon = WeaponFactory.CreateFromItem(item);
-        //         return;
-        //     }
-        // }
     }
 
     public void PlayerPickUp(string targetSupply, Position targetPosition)

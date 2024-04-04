@@ -37,5 +37,21 @@
             double length = Math.Sqrt(x * x + y * y);
             return new Position(x / length, y / length);
         }
+        public double Length()
+        {
+            return Math.Sqrt(LengthSquared());
+        }
+        public override string ToString()
+        {
+            return $"({x}, {y})";
+        }
+        public double LengthSquared()
+        {
+            return x * x + y * y;
+        }
+        public static double Dot(Position a, Position b)
+        {
+            return a.x * b.x + a.y * b.y;
+        }
     }
 }
