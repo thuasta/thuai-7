@@ -90,6 +90,5 @@ class Program
                 .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
                 .CreateLogger()
         };
-
     }
 }

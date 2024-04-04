@@ -204,7 +204,6 @@ public partial class Game
                             break;
                         }
                     }
-
                     // If isHittingWall is false and cooldown of the weapon is done, the player is hit and health is deducted
                     if (!isHittingWall && e.Player.PlayerWeapon.IsAvailable)
                     {
