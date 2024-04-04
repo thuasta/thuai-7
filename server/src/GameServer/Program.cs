@@ -51,7 +51,7 @@ class Program
         }
         catch (Exception ex)
         {
-            _logger.Fatal($"GameServer crashed with exception: {ex.Message}");
+            _logger.Fatal($"GameServer crashed with exception: {ex}");
         }
     }
 
