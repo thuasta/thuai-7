@@ -132,6 +132,7 @@ public partial class AgentServer : IServer
                                ?? throw new Exception("failed to deserialize Message");
 
             _logger.Debug("Received message: {MessageType}", message.MessageType);
+            _logger.Verbose(text);
 
             switch (message.MessageType)
             {
