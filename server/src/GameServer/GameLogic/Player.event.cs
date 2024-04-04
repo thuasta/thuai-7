@@ -83,6 +83,7 @@ public partial class Player : IPlayer
         }
     }
 
+
     public event EventHandler<PlayerAbandonEventArgs>? PlayerAbandonEvent;
     public event EventHandler<PlayerAttackEventArgs>? PlayerAttackEvent;
     public event EventHandler<PlayerPickUpEventArgs>? PlayerPickUpEvent;

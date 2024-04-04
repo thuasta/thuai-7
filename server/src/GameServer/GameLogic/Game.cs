@@ -51,7 +51,6 @@ public partial class Game
         {
             lock (this)
             {
-                UpdateObjects();
                 // UpdateCircle();
                 UpdatePlayers();
                 // UpdateBullets();
@@ -71,11 +70,6 @@ public partial class Game
 
     }
 
-    private void UpdateObjects()
-    {
-        // The object will be deleted if it is picked up by the player.
-        throw new NotImplementedException();
-    }
 
     # endregion
 }

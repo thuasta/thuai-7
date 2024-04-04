@@ -5,9 +5,13 @@ namespace GameServer.GameLogic;
 public class Map : IMap
 {
     private readonly IBlock[,] _mapChunk;
+    private readonly int _width;
+    private readonly int _height;
     public ISafeZone SafeZone => throw new NotImplementedException();
     public Map(int width, int height)
     {
+        _width = width;
+        _height = height;
         _mapChunk = new IBlock[width, height];
     }
 
