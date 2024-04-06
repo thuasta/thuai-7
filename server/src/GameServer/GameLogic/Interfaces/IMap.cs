@@ -3,9 +3,14 @@ namespace GameServer.GameLogic;
 public interface IMap
 {
     /// <summary>
-    /// Chunks in the map
+    /// Get the block by the position
     /// </summary>
-    public List<List<IBlock>> MapChunk { get; }
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public IBlock? GetBlock(int x, int y);
+    public IBlock? GetBlock(float x, float y);
+    public IBlock? GetBlock(Position position);
 
     /// <summary>
     /// Generate the barrier and supplies
@@ -23,8 +28,12 @@ public interface IMap
     public void GenerateWalls();
 
     /// <summary>
-    /// Update the supplies in map
+    /// Add the supplies in map
     /// </summary>
-    public void UpdateSupplies();
+    public void AddSupplies(int x, int y, IItem item);
 
+    /// <summary>
+    /// Remove the supplies in map
+    /// </summary>
+    public void RemoveSupplies(int x, int y, IItem item);
 }

@@ -107,6 +107,16 @@ public record PerformMoveMessage : Message
     }
 }
 
+public record PerformStopMessage : Message
+{
+    [JsonPropertyName("messageType")]
+    public override string MessageType { get; init; } = "PERFORM_STOP";
+
+    [JsonPropertyName("token")]
+    public string Token { get; init; } = "";
+
+}
+
 public record PerformAttackMessage : Message
 {
     [JsonPropertyName("messageType")]

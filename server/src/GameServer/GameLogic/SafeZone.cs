@@ -5,6 +5,7 @@ namespace GameServer.GameLogic;
 public class SafeZone : ISafeZone
 {
     public Position Center { get; private set; }
+    public int DamageOutside { get; }
     public float MaxRadius { get; }
     public float Radius { get; private set; }
     public float RadiusChangedPerTick
@@ -21,12 +22,13 @@ public class SafeZone : ISafeZone
     /// <param name="center"></param>
     /// <param name="maxRadius"></param>
     /// <param name="ticksUntilDisappear"></param>
-    public SafeZone(Position center, float maxRadius, int ticksUntilDisappear)
+    public SafeZone(Position center, float maxRadius, int ticksUntilDisappear, int damageOutside)
     {
         Center = center;
         MaxRadius = maxRadius;
         Radius = MaxRadius;
         TicksUntilDisappear = ticksUntilDisappear;
+        DamageOutside = damageOutside;
     }
 
     public void Update()

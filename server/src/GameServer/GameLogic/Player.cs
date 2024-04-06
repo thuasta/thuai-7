@@ -2,13 +2,15 @@ using static GameServer.GameLogic.IItem;
 
 namespace GameServer.GameLogic;
 
-public class Player : IPlayer
+public partial class Player : IPlayer
 {
     // TODO: Implement
     public int Health { get; set; }
     public double Speed { get; set; }
+    public double PlayerRadius { get; set; }
     public Armor? PlayerArmor { get; set; }
     public Position PlayerPosition { get; set; }
+    public Position? PlayerTargetPosition { get; set; }
     public IWeapon PlayerWeapon { get; set; }
     public IBackPack PlayerBackPack { get; set; }
 
@@ -17,6 +19,7 @@ public class Player : IPlayer
     {
         Health = health;
         Speed = speed;
+        PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
         PlayerArmor = null;
         PlayerWeapon = new Fist();
@@ -35,41 +38,46 @@ public class Player : IPlayer
             Health -= damage;
         }
     }
-
-    public void playerMove(Position position)
+    public void TakeHeal(int heal)
+    {
+        Health += heal;
+    }
+    public void Move(Position position)
     {
         PlayerPosition = position;
     }
 
-    public bool playerAttack()
+    public bool TryPickUpItem(Item item)
     {
-        IItem? item = PlayerBackPack.FindItems(ItemKind.Bullet, "BULLET");
-        if (item != null && item.Count > 0)
+        try
         {
-            PlayerBackPack.RemoveItems(ItemKind.Bullet, "BULLET", 1);
-            return true;
+            PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
         }
-        else
+        catch (InvalidOperationException)
         {
             return false;
         }
+
+        return true;
     }
 
-    public bool playerUseGrenade()
+    public void PlayerAbandon(int number, List<(ItemKind itemKind, string itemSpecificName)> abandonedSupplies)
     {
-        IItem? item = PlayerBackPack.FindItems(ItemKind.Grenade, "GRENADE");
-        if (item != null && item.Count > 0)
-        {
-            PlayerBackPack.RemoveItems(ItemKind.Grenade, "GRENADE", 1);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        PlayerAbandonEvent?.Invoke(this, new PlayerAbandonEventArgs(this, number, abandonedSupplies));
     }
 
-    public bool playerUseMedicine(string medicineName)
+    public void PlayerAttack(Position targetPosition)
+    {
+        PlayerAttackEvent?.Invoke(this, new PlayerAttackEventArgs(this, targetPosition));
+    }
+
+    public void PlayerUseGrenade(Position targetPosition)
+    {
+        PlayerUseGrenadeEvent?.Invoke(this, new PlayerUseGrenadeEventArgs(this, targetPosition));
+
+    }
+
+    public bool PlayerUseMedicine(string medicineName)
     {
         IItem? item = PlayerBackPack.FindItems(ItemKind.Medicine, medicineName);
         if (item != null && item.Count > 0)
@@ -85,28 +93,15 @@ public class Player : IPlayer
             return false;
         }
     }
-    public void TakeHeal(int heal)
+
+
+    public void PlayerSwitchArm(string weaponItemId)
     {
-        throw new NotImplementedException();
+        PlayerSwitchArmEvent?.Invoke(this, new PlayerSwitchArmEventArgs(this, weaponItemId));
     }
 
-    public bool playerChangeWeapon()
+    public void PlayerPickUp(string targetSupply, Position targetPosition)
     {
-        // TODO:Implement
-        throw new NotImplementedException();
-    }
-    public void SwitchWeapon(string weaponItemId)
-    {
-        //iterate player's backpack to find the weapon with weaponItemId
-        //if found, set PlayerWeapon to the weapon
-        //if not found, throw new ArgumentException("Weapon not found in backpack.");
-        foreach (IItem item in PlayerBackPack.Items)
-        {
-            if (item.ItemSpecificName == weaponItemId)
-            {
-                PlayerWeapon = WeaponFactory.CreateFromItem(item);
-                return;
-            }
-        }
+        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition));
     }
 }

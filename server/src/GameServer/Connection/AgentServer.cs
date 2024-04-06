@@ -19,7 +19,7 @@ public partial class AgentServer : IServer
     /// <summary>
     /// Message to publish to clients
     /// </summary>
-    private Message? _messageToPublish = null;
+    private readonly ConcurrentQueue<Message> _messageToPublish = new();
     private bool _isRunning = false;
     private IWebSocketServer? _wsServer = null;
     private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _sockets = new();
@@ -41,18 +41,23 @@ public partial class AgentServer : IServer
 
             _isRunning = true;
 
-            void actionForPublishingMessage()
+            Action actionForPublishingMessage = new(() =>
             {
                 while (_isRunning)
                 {
-                    Task.Delay((int)(1000 / IServer.MessagesPublishedPerSecond)).Wait();
+                    Task.Delay(IServer.MessagePublishIntervalMilliseconds).Wait();
 
-                    if (_messageToPublish is not null)
+                    if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
                     {
-                        Publish(_messageToPublish);
+                        if (message is null)
+                        {
+                            _logger.Warning("A null message is dequeued. This message will be ignored.");
+                            continue;
+                        }
+                        Publish(message);
                     }
                 }
-            }
+            });
 
             TaskForPublishingMessage = Task.Run(actionForPublishingMessage);
 
@@ -86,7 +91,7 @@ public partial class AgentServer : IServer
 
             _sockets.Clear();
 
-            _messageToPublish = null;
+            _messageToPublish.Clear();
 
             _logger.Information("Stopped.");
         }
@@ -105,6 +110,8 @@ public partial class AgentServer : IServer
             try
             {
                 socket.Send(jsonString).Wait();
+
+                _logger.Debug("Published message: {MessageType}", message.MessageType);
             }
             catch (Exception ex)
             {
@@ -123,6 +130,10 @@ public partial class AgentServer : IServer
         {
             Message? message = JsonSerializer.Deserialize<Message>(text)
                                ?? throw new Exception("failed to deserialize Message");
+
+            _logger.Debug("Received message: {MessageType}", message.MessageType);
+            _logger.Verbose(text);
+
             switch (message.MessageType)
             {
                 case "PERFORM_ABANDON":
@@ -164,6 +175,13 @@ public partial class AgentServer : IServer
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformMoveMessage>(text)
                         ?? throw new Exception("failed to deserialize PerformMoveMessage")
+                    ));
+                    break;
+
+                case "PERFORM_STOP":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformStopMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformStopMessage")
                     ));
                     break;
 

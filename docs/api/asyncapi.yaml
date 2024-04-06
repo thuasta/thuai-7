@@ -11,8 +11,8 @@ servers:
       - $ref: "#/components/securitySchemes/user-password"
 
 channels:
-  /competition/recorder:
-    address: /competition/recorder
+  /competition/control:
+    address: /competition/control
     messages:
       Error:
         $ref: '#/components/messages/Error'
@@ -22,6 +22,8 @@ channels:
         $ref: '#/components/messages/Map'
       Supplies:
         $ref: '#/components/messages/Supplies'
+      SafeZone:
+        $ref: '#/components/messages/SafeZone'
   
   /competition/player:
     address: /competition/player
@@ -36,24 +38,27 @@ channels:
         $ref: '#/components/messages/Map'
       Supplies:
         $ref: '#/components/messages/Supplies'
+      SafeZone:
+        $ref: '#/components/messages/SafeZone'
 
 operations:
-  /competition/recorder.publish:
+  /competition/control.publish:
     action: receive
     channel:
-      $ref: '#/channels/~1competition~1recorder'
+      $ref: '#/channels/~1competition~1control'
     messages:
-      - $ref: '#/channels/~1competition~1recorder/messages/Error'
+      - $ref: '#/channels/~1competition~1control/messages/Error'
 
-  /competition/recorder.subscribe:
+  /competition/control.subscribe:
     action: send
     channel:
-      $ref: '#/channels/~1competition~1recorder'
+      $ref: '#/channels/~1competition~1control'
     messages:
-      - $ref: '#/channels/~1competition~1recorder/messages/Error'
-      - $ref: '#/channels/~1competition~1recorder/messages/CompetitionUpdate'
-      - $ref: '#/channels/~1competition~1recorder/messages/Map'
-      - $ref: '#/channels/~1competition~1recorder/messages/Supplies'
+      - $ref: '#/channels/~1competition~1control/messages/Error'
+      - $ref: '#/channels/~1competition~1control/messages/CompetitionUpdate'
+      - $ref: '#/channels/~1competition~1control/messages/Map'
+      - $ref: '#/channels/~1competition~1control/messages/Supplies'
+      - $ref: '#/channels/~1competition~1control/messages/SafeZone'
   
   /competition/player.publish:
     action: receive
@@ -71,6 +76,8 @@ operations:
       - $ref: '#/channels/~1competition~1player/messages/PlayersInfo'
       - $ref: '#/channels/~1competition~1player/messages/Map'
       - $ref: '#/channels/~1competition~1player/messages/Supplies'
+      - $ref: '#/channels/~1competition~1player/messages/SafeZone'
+
 components:
 
   securitySchemes:
@@ -78,6 +85,7 @@ components:
       type: userPassword
 
   messages:
+          
     PlayersInfo:
       payload:
         type: object
@@ -98,6 +106,7 @@ components:
               - speed
               - firearm
               - position
+              - inventory
             properties:
               playerId:
                 type: integer
@@ -128,6 +137,23 @@ components:
                     type: number
               position:
                 $ref: '#/components/schemas/Position'
+              inventory:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - name
+                    - num
+                  properties:
+                    name:
+                      type: string
+                      enum:
+                        - BULLET
+                        - FIRST_AID
+                        - BANDAGE
+                        - GRENADE
+                    num:
+                      type: integer
 
     CompetitionUpdate:
       payload:
@@ -684,7 +710,6 @@ components:
                 - BULLET
                 - FIRST_AID
                 - BANDAGE
-                 
                 - GRENADE
                 - PRIMARY_ARMOR
                 - PREMIUM_ARMOR
@@ -714,4 +739,3 @@ components:
           type: integer
         'y':
           type: integer
-
