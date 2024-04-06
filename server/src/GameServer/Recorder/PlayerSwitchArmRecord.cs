@@ -18,7 +18,7 @@ public record PlayerSwitchArmRecord : IRecord
     public record DataType
     {
         [JsonPropertyName("playerId")]
-        public int? AttackerUniqueId { get; init; }
+        public int? playerId { get; init; }
 
         [JsonPropertyName("turgetFirearm")]
         public string? turgetFirearm { get; init; }

@@ -13,6 +13,7 @@ public partial class Player : IPlayer
     public Position? PlayerTargetPosition { get; set; }
     public IWeapon PlayerWeapon { get; set; }
     public IBackPack PlayerBackPack { get; set; }
+    public int PlayerId { get; set; }
 
     //生成构造函数
     public Player(int health, double speed, Position position)
@@ -100,8 +101,8 @@ public partial class Player : IPlayer
         PlayerSwitchArmEvent?.Invoke(this, new PlayerSwitchArmEventArgs(this, weaponItemId));
     }
 
-    public void PlayerPickUp(string targetSupply, Position targetPosition)
+    public void PlayerPickUp(string targetSupply, Position targetPosition, int numb)
     {
-        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition));
+        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition,numb));
     }
 }

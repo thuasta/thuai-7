@@ -3,6 +3,7 @@ namespace GameServer.GameLogic;
 public partial class Game
 {
     private readonly List<Player> _allPlayers = new();
+    private readonly GameServer.Recorder.Recorder? _recorder;
 
     public void AddPlayer(Player player)
     {
@@ -47,8 +48,21 @@ public partial class Game
                 int playerIntY = (int)playerPosition.y;
                 _map.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
             }
+            Recorder.PlayerAbandonRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    numb = e.Number,
+                    abandonedSupplies = itemSpecificName
+                }
+            };
+
+            _recorder?.Record(record);
         }
     }
+
+
     /// <summary>
     /// Calculate the closest point on the line to the player's position, given that the collision box of the player is a circle.
     /// </summary>
@@ -97,6 +111,20 @@ public partial class Game
             if (bullet != null && bullet.Count > 0)
             {
                 e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, "BULLET", 1);
+                Recorder.PlayerAttackRecord record = new()
+                {
+                    Data = new()
+                    {
+                        playerId = e.Player.PlayerId,
+                        turgetPosition = new()
+                        {
+                            x = e.TargetPosition.x,
+                            y = e.TargetPosition.y
+                        }
+                    }
+                };
+
+                _recorder?.Record(record);
             }
             else
             {
@@ -222,13 +250,30 @@ public partial class Game
         }
 
         // Check if the supply exists
-        IItem? item = (_map.GetBlock((int)e.TargetPosition.x, (int)e.TargetPosition.y)?.Items.Find(i => i.ItemSpecificName == e.TargetSupply)) ?? throw new InvalidOperationException("Supply does not exist.");
+        IItem? item = (_map.GetBlock((int)e.TargetPosition.x, (int)e.TargetPosition.y)?.Items.Find(i => i.ItemSpecificName == e.TargetSupply && e.Numb < 0 && i.Count <= e.Numb)) ?? throw new InvalidOperationException("Supply does not exist or the numb is invalid.");
 
         // Add the supply to the player's backpack
         e.Player.PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
 
         // Remove the supply from the ground
         _map.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, item);
+
+        Recorder.PlayerPickUpRecord record = new()
+        {
+            Data = new()
+            {
+                playerId = e.Player.PlayerId,
+                targetPosition = new()
+                {
+                    x = e.TargetPosition.x,
+                    y = e.TargetPosition.y
+                },
+                targetSupply = item.ItemSpecificName,
+                numb = e.Numb
+            }
+        };
+
+        _recorder?.Record(record);
     }
     private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
     {
@@ -240,6 +285,16 @@ public partial class Game
         if (item != null)
         {
             e.Player.PlayerWeapon = WeaponFactory.CreateFromItem(item);
+            Recorder.PlayerSwitchArmRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    turgetFirearm = e.TargetFirearm
+                }
+            };
+
+            _recorder?.Record(record);
         }
         else
         {
@@ -253,6 +308,20 @@ public partial class Game
         if (item != null && item.Count > 0)
         {
             e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Grenade, "GRENADE", 1);
+            Recorder.PlayerUseGrenadeRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    turgetPosition = new()
+                    {
+                        x = e.TargetPosition.x,
+                        y = e.TargetPosition.y
+                    }
+                }
+            };
+
+            _recorder?.Record(record);
         }
         else
         {
@@ -261,6 +330,33 @@ public partial class Game
 
         // Generate the grenade
         _allGrenades.Add(new Grenade(e.Player.PlayerPosition, CurrentTick));
+    }
+    private void OnPlayerUseMedicine(object? sender, Player.PlayerUseMedicineEventArgs e)
+    {
+        // Check if the player has medicine
+        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Medicine, e.TargetMedicine.ItemSpecificName);
+        if (item != null && item.Count > 0)
+        {
+            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Medicine, e.TargetMedicine.ItemSpecificName, 1);
+            e.Player.Health += e.TargetMedicine.Heal;
+
+            Recorder.PlayerUseMedicineRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    targetMedicine = e.TargetMedicine.ItemSpecificName
+                }
+            };
+
+            _recorder?.Record(record);
+        }
+        else
+        {
+            throw new InvalidOperationException("Player has no medicine.");
+        }
+
+
     }
     private void UpdatePlayers()
     {

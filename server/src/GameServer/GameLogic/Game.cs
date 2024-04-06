@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
+using GameServer.Recorder;
 using Serilog;
 
 namespace GameServer.GameLogic;
@@ -44,7 +47,65 @@ public partial class Game
     {
         SubscribePlayerEvents();
         _map.GenerateMap();
+
+        List<Position> _walls = new();
+        List<Recorder.Supplies.suppliesType> _supplies = new();
+        for (int i = 0; i < _map._width; i++)
+        {
+            for (int j = 0; j < _map._height; j++)
+            {
+                //add wall block into _walls
+                if (_map._mapChunk[i, j].IsWall)
+                {
+                    _walls.Add(new Position(i, j));
+                }
+
+                //add supplies into _supplies
+                if (_map._mapChunk[i, j].Items.Count > 0)
+                {
+                    for (int k = 0; k < _map._mapChunk[i, j].Items.Count; k++)
+                    {
+                        _supplies.Add(new Recorder.Supplies.suppliesType()
+                        {
+                            name = _map._mapChunk[i, j].Items[k].ItemSpecificName,
+                            numb = _map._mapChunk[i, j].Items[k].Count,
+                            position = new()
+                            {
+                                x = i,
+                                y = j
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        Recorder.Map mapRecord = new()
+        {
+            Data = new()
+            {
+                width = _map._width,
+                height = _map._height,
+                walls = (from wall in _walls
+                         select new Recorder.Map.wallsPositionType
+                         {
+                             x = wall.x,
+                             y = wall.y
+                         }).ToList()
+            }
+        };
+
+        _recorder?.Record(mapRecord);
+
+        Recorder.Supplies suppliesRecord = new()
+        {
+            Data = new()
+            {
+                supplies = _supplies
+            }
+        };
     }
+
     /// <summary>
     /// Ticks the game. This method is called every tick to update the game.
     /// </summary>
