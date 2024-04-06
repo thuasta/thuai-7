@@ -26,7 +26,7 @@ public class GameRunner : IGameRunner
 
     public void Start()
     {
-        _logger.Information("Starting game server...");
+        _logger.Information("Starting game...");
 
         Game.Initialize();
 
@@ -69,6 +69,8 @@ public class GameRunner : IGameRunner
         _isRunning = true;
 
         _tickTask.Start();
+
+        _logger.Information("Game started.");
 
     }
 
