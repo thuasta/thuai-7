@@ -34,6 +34,11 @@
         // Normalize the vector
         public Position Normalize()
         {
+            if (x == 0 && y == 0)
+            {
+                return this;
+            }
+
             double length = Math.Sqrt(x * x + y * y);
             return new Position(x / length, y / length);
         }
