@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using GameServer.Recorder;
 using Serilog;
 
@@ -7,6 +8,8 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
+    private readonly GameServer.Recorder.Recorder? _recorder = new(Path.Combine("worlds", "records"));
+
     #region Fields and properties
     /// <summary>
     /// Gets the config of the game.

@@ -29,6 +29,7 @@ public partial class Game
             player.PlayerPickUpEvent += OnPlayerPickUp;
             player.PlayerSwitchArmEvent += OnPlayerSwitchArm;
             player.PlayerUseGrenadeEvent += OnPlayerUseGrenade;
+            player.PlayerUseMedicineEvent += OnPlayerUseMedicine;
         }
     }
     private void OnPlayerAbandon(object? sender, Player.PlayerAbandonEventArgs e)
