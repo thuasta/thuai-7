@@ -38,7 +38,7 @@ public class WeaponFactory
 
 public class Fist : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "FIST";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
@@ -74,6 +74,7 @@ public class Fist : IWeapon
 
 public class ShotGun : IWeapon
 {
+    public string Name { get; } = "S686";
     private int BulletNum { get; }
     private int DeltaDegree { get; }
     public float Range { get; }
@@ -125,7 +126,7 @@ public class ShotGun : IWeapon
 
 public class SubMachineGun : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "VECTOR";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
@@ -159,7 +160,7 @@ public class SubMachineGun : IWeapon
 
 public class SniperRifle : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "AWM";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
@@ -193,7 +194,7 @@ public class SniperRifle : IWeapon
 
 public class AssaultRifle : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "M16";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }

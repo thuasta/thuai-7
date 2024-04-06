@@ -2,19 +2,19 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
-    private readonly Map _map;
+    public Map GameMap;
 
     private void UpdateMap()
     {
         // Update Safezone
-        _map.SafeZone.Update();
+        GameMap.SafeZone.Update();
 
         // Check if players are in safezone
-        foreach (Player player in _allPlayers)
+        foreach (Player player in AllPlayers)
         {
-            if (!_map.SafeZone.IsInSafeZone(player.PlayerPosition))
+            if (!GameMap.SafeZone.IsInSafeZone(player.PlayerPosition))
             {
-                player.Health -= _map.SafeZone.DamageOutside;
+                player.Health -= GameMap.SafeZone.DamageOutside;
             }
         }
     }

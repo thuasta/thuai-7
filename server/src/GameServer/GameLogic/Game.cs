@@ -4,6 +4,8 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
+    public event EventHandler<AfterGameTickEventArgs>? AfterGameTickEvent = delegate { };
+
     #region Fields and properties
     /// <summary>
     /// Gets the config of the game.
@@ -19,8 +21,9 @@ public partial class Game
 
     private readonly ILogger _logger;
 
-    #endregion
+    private readonly object _lock = new();
 
+    #endregion
 
     #region Constructors and finalizers
     /// <summary>
@@ -31,8 +34,8 @@ public partial class Game
         _logger = Log.ForContext("Component", "Game");
         Config = config;
 
-        _map = new Map(config.MapWidth, config.MapHeight, config.SafeZoneMaxRadius, config.SafeZoneTicksUntilDisappear, config.DamageOutsideSafeZone);
-        _allPlayers = new List<Player>();
+        GameMap = new Map(config.MapWidth, config.MapHeight, config.SafeZoneMaxRadius, config.SafeZoneTicksUntilDisappear, config.DamageOutsideSafeZone);
+        AllPlayers = new List<Player>();
 
     }
 
@@ -40,11 +43,15 @@ public partial class Game
 
 
     #region Methods
+    /// <summary>
+    /// Initializes the game.
+    /// </summary>
     public void Initialize()
     {
         SubscribePlayerEvents();
-        _map.GenerateMap();
+        GameMap.GenerateMap();
     }
+
     /// <summary>
     /// Ticks the game. This method is called every tick to update the game.
     /// </summary>
@@ -52,15 +59,15 @@ public partial class Game
     {
         try
         {
-            lock (this)
+            lock (_lock)
             {
+                CurrentTick++;
+
                 UpdateMap();
                 UpdatePlayers();
                 UpdateGrenades();
-                // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
 
-                // Accumulate the current tick at the end of the tick.
-                CurrentTick++;
+                AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
             }
 
         }

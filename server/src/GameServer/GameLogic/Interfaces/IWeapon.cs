@@ -1,5 +1,3 @@
-using GameServer.Engine.Shapes;
-
 namespace GameServer.GameLogic;
 
 /// <summary>
@@ -7,6 +5,11 @@ namespace GameServer.GameLogic;
 /// </summary>
 public interface IWeapon
 {
+    /// <summary>
+    /// The name of the weapon.
+    /// </summary>
+    public string Name { get; }
+
     /// <summary>
     /// The range of the weapon.
     /// </summary>

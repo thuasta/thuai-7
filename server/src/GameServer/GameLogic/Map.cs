@@ -4,10 +4,10 @@ namespace GameServer.GameLogic;
 
 public class Map : IMap
 {
-    private readonly IBlock[,] _mapChunk;
-    private readonly int _width;
-    private readonly int _height;
-    public ISafeZone SafeZone;
+    public IBlock[,] MapChunk { get; private set; }
+    public int Width { get; }
+    public int Height { get; }
+    public ISafeZone SafeZone { get; private set; }
     private readonly Random _random = new();
     private readonly List<ObstacleShape> _obstacleShapes;
 
@@ -18,9 +18,9 @@ public class Map : IMap
 
     public Map(int width, int height, float safeZoneMaxRadius, int safeZoneTicksUntilDisappear, int damageOutsideSafeZone)
     {
-        _width = width;
-        _height = height;
-        _mapChunk = new IBlock[width, height];
+        Width = width;
+        Height = height;
+        MapChunk = new IBlock[width, height];
 
         // Randomly generate the center of the safe zone
         int centerX = (int)_random.NextInt64(0, width);
@@ -45,12 +45,12 @@ public class Map : IMap
     public IBlock? GetBlock(int x, int y)
     {
         // Judge if the block is out of the map
-        if (x < 0 || x >= _mapChunk.GetLength(0) || y < 0 || y >= _mapChunk.GetLength(1))
+        if (x < 0 || x >= MapChunk.GetLength(0) || y < 0 || y >= MapChunk.GetLength(1))
         {
             return null;
         }
 
-        return _mapChunk[x, y];
+        return MapChunk[x, y];
     }
     public IBlock? GetBlock(float x, float y)
     {
@@ -58,12 +58,12 @@ public class Map : IMap
         int xInt = (int)x;
         int yInt = (int)y;
         // Judge if the block is out of the map
-        if (xInt < 0 || xInt >= _mapChunk.GetLength(0) || yInt < 0 || yInt >= _mapChunk.GetLength(1))
+        if (xInt < 0 || xInt >= MapChunk.GetLength(0) || yInt < 0 || yInt >= MapChunk.GetLength(1))
         {
             return null;
         }
 
-        return _mapChunk[xInt, yInt];
+        return MapChunk[xInt, yInt];
     }
 
     public IBlock? GetBlock(Position position)
@@ -72,11 +72,11 @@ public class Map : IMap
         int xInt = (int)position.x;
         int yInt = (int)position.y;
         // Judge if the block is out of the map
-        if (xInt < 0 || xInt >= _mapChunk.GetLength(0) || yInt < 0 || yInt >= _mapChunk.GetLength(1))
+        if (xInt < 0 || xInt >= MapChunk.GetLength(0) || yInt < 0 || yInt >= MapChunk.GetLength(1))
         {
             return null;
         }
-        return _mapChunk[xInt, yInt];
+        return MapChunk[xInt, yInt];
 
     }
     public void GenerateMap()
@@ -91,8 +91,8 @@ public class Map : IMap
         for (int i = 0; i < _numSupplyPoints; i++)
         {
             // Randomly select position for the supply point
-            int x = _random.Next(0, _width);
-            int y = _random.Next(0, _height);
+            int x = _random.Next(0, Width);
+            int y = _random.Next(0, Height);
 
             // Check if the selected position is valid (not on an obstacle)
             if (GetBlock(x, y) == null)
@@ -147,8 +147,8 @@ public class Map : IMap
     private bool PlaceObstacleShape(ObstacleShape shape)
     {
         // Randomly select position for the obstacle shape
-        int startX = _random.Next(0, _width - shape.MaxWidth);
-        int startY = _random.Next(0, _height - shape.MaxHeight);
+        int startX = _random.Next(0, Width - shape.MaxWidth);
+        int startY = _random.Next(0, Height - shape.MaxHeight);
 
         // Check if the selected position is valid
         if (IsPositionValid(startX, startY, shape))
@@ -160,7 +160,7 @@ public class Map : IMap
                 {
                     if (shape.IsSolid(x, y))
                     {
-                        _mapChunk[startX + x, startY + y] = shape.GetBlock(x, y);
+                        MapChunk[startX + x, startY + y] = shape.GetBlock(x, y);
                     }
                 }
             }
@@ -174,7 +174,7 @@ public class Map : IMap
     private bool IsPositionValid(int startX, int startY, ObstacleShape shape)
     {
         // Check if the position is within the map boundaries
-        if (startX < 0 || startY < 0 || startX + shape.MaxWidth >= _width || startY + shape.MaxHeight >= _height)
+        if (startX < 0 || startY < 0 || startX + shape.MaxWidth >= Width || startY + shape.MaxHeight >= Height)
         {
             return false;
         }
@@ -184,7 +184,7 @@ public class Map : IMap
         {
             for (int y = 0; y < shape.MaxHeight; y++)
             {
-                if (shape.IsSolid(x, y) && _mapChunk[startX + x, startY + y] != null)
+                if (shape.IsSolid(x, y) && MapChunk[startX + x, startY + y] != null)
                 {
                     return false;
                 }
@@ -201,11 +201,11 @@ public class Map : IMap
     public void Clear()
     {
         // Clear the map
-        for (int x = 0; x < _width; x++)
+        for (int x = 0; x < Width; x++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int y = 0; y < Height; y++)
             {
-                _mapChunk[x, y] = new Block(false);
+                MapChunk[x, y] = new Block(false);
             }
         }
     }
@@ -231,7 +231,7 @@ public class Map : IMap
         {
             for (int j = sty; j <= edy; j++)
             {
-                if (_mapChunk[i, j].IsWall == true
+                if (MapChunk[i, j].IsWall == true
                 && CollisionDetector.checkCross(a, b, i, j))
                 {
                     return false;
