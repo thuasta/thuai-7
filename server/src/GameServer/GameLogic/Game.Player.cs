@@ -334,18 +334,18 @@ public partial class Game
     private void OnPlayerUseMedicine(object? sender, Player.PlayerUseMedicineEventArgs e)
     {
         // Check if the player has medicine
-        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Medicine, e.TargetMedicine.ItemSpecificName);
+        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Medicine, e.MedicineName);
         if (item != null && item.Count > 0)
         {
-            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Medicine, e.TargetMedicine.ItemSpecificName, 1);
-            e.Player.Health += e.TargetMedicine.Heal;
+            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Medicine, e.MedicineName, 1);
+            e.Player.Health += MedicineFactory.CreateFromItem(item).Heal;
 
             Recorder.PlayerUseMedicineRecord record = new()
             {
                 Data = new()
                 {
                     playerId = e.Player.PlayerId,
-                    targetMedicine = e.TargetMedicine.ItemSpecificName
+                    targetMedicine = e.MedicineName
                 }
             };
 
@@ -355,8 +355,6 @@ public partial class Game
         {
             throw new InvalidOperationException("Player has no medicine.");
         }
-
-
     }
     private void UpdatePlayers()
     {

@@ -90,12 +90,12 @@ public partial class Player : IPlayer
     {
         public const PlayerEventType EventName = PlayerEventType.PlayerUseMedicine;
         public Player Player { get; }
-        public Medicine TargetMedicine { get; }
+        public string MedicineName { get; }
 
-        public PlayerUseMedicineEventArgs(Player player, Medicine targetMedicine)
+        public PlayerUseMedicineEventArgs(Player player, string medicineName)
         {
             Player = player;
-            TargetMedicine = targetMedicine;
+            MedicineName = medicineName;
         }
     }
 

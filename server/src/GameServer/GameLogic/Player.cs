@@ -78,21 +78,9 @@ public partial class Player : IPlayer
 
     }
 
-    public bool PlayerUseMedicine(string medicineName)
+    public void PlayerUseMedicine(string medicineName)
     {
-        IItem? item = PlayerBackPack.FindItems(ItemKind.Medicine, medicineName);
-        if (item != null && item.Count > 0)
-        {
-            PlayerBackPack.RemoveItems(ItemKind.Medicine, medicineName, 1);
-
-            Health += MedicineFactory.CreateFromItem(item).Heal;
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        PlayerUseMedicineEvent?.Invoke(this, new PlayerUseMedicineEventArgs(this, medicineName));
     }
 
 
@@ -103,6 +91,6 @@ public partial class Player : IPlayer
 
     public void PlayerPickUp(string targetSupply, Position targetPosition, int numb)
     {
-        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition,numb));
+        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition, numb));
     }
 }
