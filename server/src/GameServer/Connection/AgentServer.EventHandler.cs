@@ -91,26 +91,26 @@ public partial class AgentServer : IServer
         }
 
         // Append map message, supplies message, players info message, and safe zone message to _messageToPublish
-        _messageToPublish.Append(
+        _messageToPublish.Enqueue(
             new MapMessage
             {
                 Length = walls.Count,
                 Walls = walls
             }
         );
-        _messageToPublish.Append(
+        _messageToPublish.Enqueue(
             new SuppliesMessage
             {
                 Supplies = new(supplies)
             }
         );
-        _messageToPublish.Append(
+        _messageToPublish.Enqueue(
             new PlayersInfoMessage
             {
                 Players = new(players)
             }
         );
-        _messageToPublish.Append(
+        _messageToPublish.Enqueue(
             new SafeZoneMessage
             {
                 CenterOfCircle = new SafeZoneMessage.Center
