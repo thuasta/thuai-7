@@ -27,7 +27,7 @@ public record Message
             }
             catch (Exception ex)
             {
-                Log.ForContext("Component", MessageType).Error($"Failed to serialize message: {ex}");
+                Log.ForContext("Component", MessageType).Error($"Failed to serialize message: {ex.Message}");
                 return "";
             }
         }

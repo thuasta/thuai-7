@@ -17,7 +17,7 @@ class Program
         // Load config
         // Read the config file and deserialize it into a Config object.
         // string configJsonStr = File.ReadAllText("config.json");
-        string configJsonStr = "{\"log_level\": \"VERBOSE\"}";
+        string configJsonStr = "{\"log_level\": \"INFORMATION\"}";
 
         Config config = JsonSerializer.Deserialize<Config>(configJsonStr) ?? new();
 
