@@ -3,7 +3,6 @@ namespace GameServer.GameLogic;
 public partial class Game
 {
     private readonly List<Player> _allPlayers = new();
-    private readonly GameServer.Recorder.Recorder? _recorder;
 
     public void AddPlayer(Player player)
     {
