@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Serilog;
+
 namespace GameServer.Connection;
 
 public record Message
@@ -15,5 +17,19 @@ public record Message
     /// Serialize the message to JSON
     /// </summary>
     [JsonIgnore]
-    public string Json => JsonSerializer.Serialize((object)this);
+    public string Json
+    {
+        get
+        {
+            try
+            {
+                return JsonSerializer.Serialize((object)this);
+            }
+            catch (Exception ex)
+            {
+                Log.ForContext("Component", MessageType).Error($"Failed to serialize message: {ex}");
+                return "";
+            }
+        }
+    }
 }
