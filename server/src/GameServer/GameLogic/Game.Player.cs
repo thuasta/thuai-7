@@ -4,6 +4,8 @@ public partial class Game
 {
     private readonly List<Player> _allPlayers = new();
 
+    public List<Recorder.IRecord> _events = new();
+
     public void AddPlayer(Player player)
     {
         _allPlayers.Add(player);
@@ -58,7 +60,7 @@ public partial class Game
                 }
             };
 
-            _recorder?.Record(record);
+            _events.Add(record);
         }
     }
 
@@ -124,7 +126,7 @@ public partial class Game
                     }
                 };
 
-                _recorder?.Record(record);
+                _events.Add(record);
             }
             else
             {
@@ -273,7 +275,7 @@ public partial class Game
             }
         };
 
-        _recorder?.Record(record);
+        _events.Add(record);
     }
     private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
     {
@@ -294,7 +296,7 @@ public partial class Game
                 }
             };
 
-            _recorder?.Record(record);
+            _events.Add(record);
         }
         else
         {
@@ -321,7 +323,7 @@ public partial class Game
                 }
             };
 
-            _recorder?.Record(record);
+            _events.Add(record);
         }
         else
         {
@@ -349,7 +351,7 @@ public partial class Game
                 }
             };
 
-            _recorder?.Record(record);
+            _events.Add(record);
         }
         else
         {

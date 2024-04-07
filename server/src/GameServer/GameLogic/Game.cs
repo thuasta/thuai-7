@@ -121,6 +121,43 @@ public partial class Game
                 UpdateMap();
                 UpdatePlayers();
                 UpdateGrenades();
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                Recorder.CompetitionUpdate competitionUpdateRecord = new()
+                {
+                    currentTicks = CurrentTick,
+                    Data = new()
+                    {
+                        players = (from player in _allPlayers
+                                   select new Recorder.CompetitionUpdate.playersType
+                                   {
+                                       playerId = player.PlayerId,
+                                       armor = player.PlayerArmor.ItemSpecificName,
+                                       position = new()
+                                       {
+                                           x = player.PlayerPosition.x,
+                                           y = player.PlayerPosition.y
+                                       },
+                                       health = player.Health,
+                                       speed = player.Speed,
+                                       firearm = new()
+                                       {
+                                           name = player.PlayerWeapon.ItemSpecificName,
+                                           distance = player.PlayerWeapon.Range
+                                       },
+                                       inventory = (from supplies in player.PlayerBackPack.Items
+                                                    select new Recorder.CompetitionUpdate.inventoryType
+                                                    {
+                                                        name = supplies.ItemSpecificName,
+                                                        numb = supplies.Count
+                                                    }).ToList()
+                                   }).ToList(),
+                        events = _events
+                    }
+                };
+
+                _recorder.Record(competitionUpdateRecord);
+                // Dereference of a possibly null reference.
                 // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
 
                 // Accumulate the current tick at the end of the tick.

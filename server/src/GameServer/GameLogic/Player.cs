@@ -22,7 +22,7 @@ public partial class Player : IPlayer
         Speed = speed;
         PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
-        PlayerArmor = null;
+        PlayerArmor = new Armor("NO_ARMOR", 0);
         PlayerWeapon = new Fist();
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
     }

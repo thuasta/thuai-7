@@ -20,6 +20,7 @@ public class ArmorFactory
 
         int maxHealth = item.ItemSpecificName switch
         {
+            "NO_ARMOR" => Constant.NO_ARMOR_DEFENSE,
             "PRIMARY_ARMOR" => Constant.PRIMARY_ARMOR_DEFENSE,
             "PREMIUM_ARMOR" => Constant.PREMIUM_ARMOR_DEFENSE,
             _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for armor.")

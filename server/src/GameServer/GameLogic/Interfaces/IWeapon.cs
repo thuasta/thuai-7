@@ -44,4 +44,6 @@ public interface IWeapon
     /// Should be called every tick.
     /// </summary>
     public void UpdateCoolDown();
+
+    public string ItemSpecificName { get; }
 }

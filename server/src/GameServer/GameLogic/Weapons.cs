@@ -42,6 +42,7 @@ public class Fist : IWeapon
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
+    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
@@ -69,6 +70,7 @@ public class Fist : IWeapon
         Damage = Constant.FIST_DAMAGE;
         CoolDownTicks = Constant.FIST_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
+        ItemSpecificName = Constant.FIST;
     }
 }
 
@@ -79,6 +81,7 @@ public class ShotGun : IWeapon
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
+    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
@@ -120,6 +123,7 @@ public class ShotGun : IWeapon
         Damage = Constant.S686_SINGLE_BULLET_DAMAGE;
         CoolDownTicks = Constant.S686_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
+        ItemSpecificName = Constant.S686;
     }
 }
 
@@ -129,6 +133,7 @@ public class SubMachineGun : IWeapon
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
+    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
@@ -154,6 +159,7 @@ public class SubMachineGun : IWeapon
         Damage = Constant.VECTOR_DAMAGE;
         CoolDownTicks = Constant.VECTOR_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
+        ItemSpecificName = Constant.VECTOR;
     }
 }
 
@@ -163,6 +169,7 @@ public class SniperRifle : IWeapon
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
+    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
@@ -188,6 +195,7 @@ public class SniperRifle : IWeapon
         Damage = Constant.AWM_DAMAGE;
         CoolDownTicks = Constant.AWM_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
+        ItemSpecificName = Constant.M16;
     }
 }
 
@@ -197,6 +205,7 @@ public class AssaultRifle : IWeapon
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
+    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
@@ -222,5 +231,6 @@ public class AssaultRifle : IWeapon
         Damage = Constant.M16_DAMAGE;
         CoolDownTicks = Constant.M16_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
+        ItemSpecificName = Constant.AWM;
     }
 }
