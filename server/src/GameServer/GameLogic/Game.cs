@@ -8,7 +8,7 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
-    private readonly GameServer.Recorder.Recorder? _recorder = new(Path.Combine("worlds", "records"));
+    private readonly GameServer.Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
 
     #region Fields and properties
     /// <summary>
@@ -157,6 +157,8 @@ public partial class Game
                 };
 
                 _recorder.Record(competitionUpdateRecord);
+
+                _events.Clear();
                 // Dereference of a possibly null reference.
                 // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
 
