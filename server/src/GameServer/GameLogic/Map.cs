@@ -95,7 +95,7 @@ public class Map : IMap
             int y = _random.Next(0, Height);
 
             // Check if the selected position is valid (not on an obstacle)
-            if (GetBlock(x, y) == null)
+            if (GetBlock(x, y)?.IsWall == false)
             {
                 // Randomly determine the number of items for this supply point
                 int numItems = _random.Next(_minItemsPerSupply, _maxItemsPerSupply + 1);
@@ -114,7 +114,6 @@ public class Map : IMap
 
                     // Add the generated item to the supply point
                     AddSupplies(x, y, new Item(itemType, itemSpecificName, itemCount));
-
                 }
             }
         }
