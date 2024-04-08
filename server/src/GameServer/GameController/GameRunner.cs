@@ -77,10 +77,17 @@ public class GameRunner : IGameRunner
     public void Stop()
     {
         _isRunning = false;
+        _logger.Information("Server stop requested.");
 
+        // Stop the game.
+        _logger.Information("Stopping server...");
         _tickTask?.Wait();
         _tickTask?.Dispose();
         _tickTask = null;
+
+        // Save records.
+        _logger.Information("Saving records...");
+        Game.SaveRecord();
     }
 
     public void Reset()

@@ -65,7 +65,7 @@ public partial class AgentServer : IServer
 
             TaskForPublishingMessage = Task.Run(actionForPublishingMessage);
 
-            _logger.Information("AgentServer started.");
+            _logger.Information("AgentServer started. Waiting for connections...");
         }
         catch (Exception ex)
         {
