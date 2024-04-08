@@ -25,6 +25,9 @@ public record PerformPickUpMessage : Message
     [JsonPropertyName("token")]
     public string Token { get; init; } = "";
 
+    [JsonPropertyName("num")]
+    public int Num { get; init; }
+
     [JsonPropertyName("targetSupply")]
     public string TargetSupply { get; init; } = "";
 
@@ -94,10 +97,10 @@ public record PerformMoveMessage : Message
     [JsonPropertyName("token")]
     public string Token { get; init; } = "";
 
-    [JsonPropertyName("direction")]
-    public DirectionInfo Direction { get; init; } = new();
+    [JsonPropertyName("destination")]
+    public DestinationInfo Destination { get; init; } = new();
 
-    public record DirectionInfo
+    public record DestinationInfo
     {
         [JsonPropertyName("x")]
         public int X { get; init; }

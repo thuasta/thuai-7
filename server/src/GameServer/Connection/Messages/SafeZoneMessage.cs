@@ -16,9 +16,9 @@ public record SafeZoneMessage : Message
     public record Center
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }

@@ -35,10 +35,10 @@ public record Config
     public int MapHeight { get; init; } = 256;
 
     [JsonPropertyName("safe_zone_max_radius")]
-    public int SafeZoneMaxRadius { get; init; }
+    public int SafeZoneMaxRadius { get; init; } = 256;
 
     [JsonPropertyName("safe_zone_ticks_until_disappear")]
-    public int SafeZoneTicksUntilDisappear { get; init; }
+    public int SafeZoneTicksUntilDisappear { get; init; } = 6000;
 
     [JsonPropertyName("damage_outside_safe_zone")]
     public int DamageOutsideSafeZone { get; init; }

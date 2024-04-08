@@ -1,9 +1,10 @@
+using System.Collections.Concurrent;
 using GameServer.GameLogic;
 using Serilog;
 
 namespace GameServer.GameController;
 
-public class GameRunner : IGameRunner
+public partial class GameRunner : IGameRunner
 {
     public Game Game { get; }
     public int ExpectedTicksPerSecond => Constant.TICKS_PER_SECOND;
@@ -11,6 +12,9 @@ public class GameRunner : IGameRunner
     public double RealTicksPerSecond { get; private set; }
     public double TpsLowerBound => 0.9 * ExpectedTicksPerSecond;
     public double TpsUpperBound => 1.1 * ExpectedTicksPerSecond;
+
+    private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
+    private int _nextPlayerId = 0;
 
     private DateTime _lastTpsCheckTime = DateTime.Now;
 
@@ -26,7 +30,7 @@ public class GameRunner : IGameRunner
 
     public void Start()
     {
-        _logger.Information("Starting game server...");
+        _logger.Information("Starting game...");
 
         Game.Initialize();
 
@@ -37,7 +41,11 @@ public class GameRunner : IGameRunner
             while (_isRunning)
             {
                 Game.Tick();
-                Task.Delay(1000 / ExpectedTicksPerSecond).Wait();
+
+                while (DateTime.Now - lastTickTime < TimeSpan.FromMilliseconds(1000 / ExpectedTicksPerSecond))
+                {
+                    // Wait for the next tick
+                }
 
                 DateTime currentTime = DateTime.Now;
                 RealTicksPerSecond = 1.0D / (double)(currentTime - lastTickTime).TotalSeconds;
@@ -47,6 +55,9 @@ public class GameRunner : IGameRunner
                 if (DateTime.Now - _lastTpsCheckTime > TpsCheckInterval)
                 {
                     _lastTpsCheckTime = DateTime.Now;
+
+                    _logger.Debug($"Current TPS: {RealTicksPerSecond:0.00} tps");
+
                     if (RealTicksPerSecond < TpsLowerBound)
                     {
                         _logger.Warning($"Insufficient simulation rate: {RealTicksPerSecond:0.00} tps < {TpsLowerBound} tps");
@@ -63,15 +74,24 @@ public class GameRunner : IGameRunner
 
         _tickTask.Start();
 
+        _logger.Information("Game started.");
+
     }
 
     public void Stop()
     {
         _isRunning = false;
+        _logger.Information("Server stop requested.");
 
+        // Stop the game.
+        _logger.Information("Stopping server...");
         _tickTask?.Wait();
         _tickTask?.Dispose();
         _tickTask = null;
+
+        // Save records.
+        _logger.Information("Saving records...");
+        Game.SaveRecord();
     }
 
     public void Reset()
@@ -79,4 +99,5 @@ public class GameRunner : IGameRunner
         // TODO: Implement
         throw new NotImplementedException();
     }
+
 }
