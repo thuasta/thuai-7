@@ -24,7 +24,7 @@ public partial class Game
 
     private readonly object _lock = new();
 
-    private readonly GameServer.Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
+    private readonly Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
 
     #endregion
 
@@ -130,7 +130,6 @@ public partial class Game
                 UpdatePlayers();
                 UpdateGrenades();
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 Recorder.CompetitionUpdate competitionUpdateRecord = new()
                 {
                     currentTicks = CurrentTick,
@@ -164,7 +163,7 @@ public partial class Game
                     }
                 };
 
-                _recorder.Record(competitionUpdateRecord);
+                _recorder?.Record(competitionUpdateRecord);
 
                 _events.Clear();
                 // Dereference of a possibly null reference.

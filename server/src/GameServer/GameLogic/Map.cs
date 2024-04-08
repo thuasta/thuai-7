@@ -77,7 +77,6 @@ public class Map : IMap
             return null;
         }
         return MapChunk[xInt, yInt];
-
     }
     public void GenerateMap()
     {

@@ -8,7 +8,7 @@ public partial class Player : IPlayer
     public int Health { get; set; }
     public double Speed { get; set; }
     public double PlayerRadius { get; set; }
-    public Armor? PlayerArmor { get; set; }
+    public Armor PlayerArmor { get; set; }
     public Position PlayerPosition { get; set; }
     public Position? PlayerTargetPosition { get; set; }
     public IWeapon PlayerWeapon { get; set; }
