@@ -2,17 +2,14 @@ namespace GameServer.GameLogic;
 
 public partial class Game : IGame
 {
-    public void SubscribePlayerEvents()
+    public void SubscribePlayerEvents(Player player)
     {
-        foreach (Player player in AllPlayers)
-        {
-            player.PlayerAbandonEvent += OnPlayerAbandon;
-            player.PlayerAttackEvent += OnPlayerAttack;
-            player.PlayerPickUpEvent += OnPlayerPickUp;
-            player.PlayerSwitchArmEvent += OnPlayerSwitchArm;
-            player.PlayerUseGrenadeEvent += OnPlayerUseGrenade;
-            player.PlayerUseMedicineEvent += OnPlayerUseMedicine;
-        }
+        player.PlayerAbandonEvent += OnPlayerAbandon;
+        player.PlayerAttackEvent += OnPlayerAttack;
+        player.PlayerPickUpEvent += OnPlayerPickUp;
+        player.PlayerSwitchArmEvent += OnPlayerSwitchArm;
+        player.PlayerUseGrenadeEvent += OnPlayerUseGrenade;
+        player.PlayerUseMedicineEvent += OnPlayerUseMedicine;
     }
 
     private void OnPlayerAbandon(object? sender, Player.PlayerAbandonEventArgs e)

@@ -54,7 +54,10 @@ public partial class Game
     /// </summary>
     public void Initialize()
     {
-        SubscribePlayerEvents();
+        foreach (Player player in AllPlayers)
+        {
+            SubscribePlayerEvents(player);
+        }
         GameMap.GenerateMap();
 
         List<Position> walls = new();

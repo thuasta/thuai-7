@@ -118,8 +118,6 @@ public class Map : IMap
         }
     }
 
-
-
     public void GenerateWalls()
     {
         // Clear the map
