@@ -54,6 +54,10 @@ public partial class AgentServer : IServer
                             _logger.Warning("A null message is dequeued. This message will be ignored.");
                             continue;
                         }
+
+                        _logger.Debug($"Dequeued message \"{message.MessageType}\".");
+                        _logger.Verbose(message.Json);
+
                         Publish(message);
                     }
                 }
@@ -111,11 +115,15 @@ public partial class AgentServer : IServer
             {
                 socket.Send(jsonString).Wait();
 
-                _logger.Debug("Published message: {MessageType}", message.MessageType);
+                _logger.Debug(
+                    $"Published message to {socket.ConnectionInfo.ClientIpAddress}: {message.MessageType}"
+                );
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}");
+                _logger.Error(
+                    $"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}"
+                );
             }
         }
     }

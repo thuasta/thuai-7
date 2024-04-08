@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using GameServer.Connection;
+using GameServer.GameController;
 using Serilog;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
@@ -16,7 +17,7 @@ class Program
         // Load config
         // Read the config file and deserialize it into a Config object.
         // string configJsonStr = File.ReadAllText("config.json");
-        string configJsonStr = "{\"log_level\": \"VERBOSE\"}";
+        string configJsonStr = "{\"log_level\": \"INFORMATION\"}";
 
         Config config = JsonSerializer.Deserialize<Config>(configJsonStr) ?? new();
 
@@ -28,12 +29,14 @@ class Program
         _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
         _logger.Information("Copyright (c) 2024 THUASTA");
 
-        GameController.IGameRunner gameRunner = new GameController.GameRunner(config);
+        IGameRunner gameRunner = new GameRunner(config);
 
         AgentServer agentServer = new()
         {
             Port = config.ServerPort
         };
+
+        SubscribeEvents();
 
         try
         {
@@ -52,6 +55,11 @@ class Program
         catch (Exception ex)
         {
             _logger.Fatal($"GameServer crashed with exception: {ex}");
+        }
+
+        void SubscribeEvents()
+        {
+            gameRunner.Game.AfterGameTickEvent += agentServer.HandleAfterGameTickEvent;
         }
     }
 

@@ -4,7 +4,7 @@ namespace GameServer.GameLogic;
 
 public partial class Player : IPlayer
 {
-    // TODO: Implement
+    public int Id { get; set; }
     public int Health { get; set; }
     public double Speed { get; set; }
     public double PlayerRadius { get; set; }
@@ -16,8 +16,9 @@ public partial class Player : IPlayer
     public int PlayerId { get; set; }
 
     //生成构造函数
-    public Player(int health, double speed, Position position)
+    public Player(int id, int health, double speed, Position position)
     {
+        Id = id;
         Health = health;
         Speed = speed;
         PlayerRadius = Constant.PLAYER_COLLISION_BOX;

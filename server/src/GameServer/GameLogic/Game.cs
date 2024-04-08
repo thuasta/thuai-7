@@ -8,7 +8,8 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
-    private readonly GameServer.Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
+    public event EventHandler<AfterGameTickEventArgs>? AfterGameTickEvent = delegate { };
+
 
     #region Fields and properties
     /// <summary>
@@ -25,8 +26,11 @@ public partial class Game
 
     private readonly ILogger _logger;
 
-    #endregion
+    private readonly object _lock = new();
 
+    private readonly GameServer.Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
+
+    #endregion
 
     #region Constructors and finalizers
     /// <summary>
@@ -37,8 +41,8 @@ public partial class Game
         _logger = Log.ForContext("Component", "Game");
         Config = config;
 
-        _map = new Map(config.MapWidth, config.MapHeight, config.SafeZoneMaxRadius, config.SafeZoneTicksUntilDisappear, config.DamageOutsideSafeZone);
-        _allPlayers = new List<Player>();
+        GameMap = new Map(config.MapWidth, config.MapHeight, config.SafeZoneMaxRadius, config.SafeZoneTicksUntilDisappear, config.DamageOutsideSafeZone);
+        AllPlayers = new List<Player>();
 
     }
 
@@ -46,32 +50,35 @@ public partial class Game
 
 
     #region Methods
+    /// <summary>
+    /// Initializes the game.
+    /// </summary>
     public void Initialize()
     {
         SubscribePlayerEvents();
-        _map.GenerateMap();
+        GameMap.GenerateMap();
 
-        List<Position> _walls = new();
-        List<Recorder.Supplies.suppliesType> _supplies = new();
-        for (int i = 0; i < _map._width; i++)
+        List<Position> walls = new();
+        List<Recorder.Supplies.suppliesType> supplies = new();
+        for (int i = 0; i < GameMap.Width; i++)
         {
-            for (int j = 0; j < _map._height; j++)
+            for (int j = 0; j < GameMap.Height; j++)
             {
-                //add wall block into _walls
-                if (_map._mapChunk[i, j].IsWall)
+                //add wall block into walls
+                if (GameMap.MapChunk[i, j].IsWall)
                 {
-                    _walls.Add(new Position(i, j));
+                    walls.Add(new Position(i, j));
                 }
 
-                //add supplies into _supplies
-                if (_map._mapChunk[i, j].Items.Count > 0)
+                //add supplies into supplies
+                if (GameMap.MapChunk[i, j].Items.Count > 0)
                 {
-                    for (int k = 0; k < _map._mapChunk[i, j].Items.Count; k++)
+                    for (int k = 0; k < GameMap.MapChunk[i, j].Items.Count; k++)
                     {
-                        _supplies.Add(new Recorder.Supplies.suppliesType()
+                        supplies.Add(new Recorder.Supplies.suppliesType()
                         {
-                            name = _map._mapChunk[i, j].Items[k].ItemSpecificName,
-                            numb = _map._mapChunk[i, j].Items[k].Count,
+                            name = GameMap.MapChunk[i, j].Items[k].ItemSpecificName,
+                            numb = GameMap.MapChunk[i, j].Items[k].Count,
                             position = new()
                             {
                                 x = i,
@@ -87,9 +94,9 @@ public partial class Game
         {
             Data = new()
             {
-                width = _map._width,
-                height = _map._height,
-                walls = (from wall in _walls
+                width = GameMap.Width,
+                height = GameMap.Height,
+                walls = (from wall in walls
                          select new Recorder.Map.wallsPositionType
                          {
                              x = wall.x,
@@ -104,7 +111,7 @@ public partial class Game
         {
             Data = new()
             {
-                supplies = _supplies
+                supplies = supplies
             }
         };
     }
@@ -116,8 +123,10 @@ public partial class Game
     {
         try
         {
-            lock (this)
+            lock (_lock)
             {
+                CurrentTick++;
+
                 UpdateMap();
                 UpdatePlayers();
                 UpdateGrenades();
@@ -162,8 +171,7 @@ public partial class Game
                 // Dereference of a possibly null reference.
                 // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
 
-                // Accumulate the current tick at the end of the tick.
-                CurrentTick++;
+                AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
             }
 
         }

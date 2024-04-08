@@ -2,28 +2,28 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
-    private readonly List<Player> _allPlayers = new();
+    public List<Player> AllPlayers { get; private set; } = new();
 
     public List<Recorder.IRecord> _events = new();
 
     public void AddPlayer(Player player)
     {
-        _allPlayers.Add(player);
+        AllPlayers.Add(player);
     }
 
     public void RemovePlayer(Player player)
     {
-        _allPlayers.Remove(player);
+        AllPlayers.Remove(player);
     }
 
     public List<Player> GetPlayers()
     {
-        return _allPlayers;
+        return AllPlayers;
     }
 
     public void SubscribePlayerEvents()
     {
-        foreach (Player player in _allPlayers)
+        foreach (Player player in AllPlayers)
         {
             player.PlayerAbandonEvent += OnPlayerAbandon;
             player.PlayerAttackEvent += OnPlayerAttack;
@@ -48,8 +48,10 @@ public partial class Game
                 Position playerPosition = e.Player.PlayerPosition;
                 int playerIntX = (int)playerPosition.x;
                 int playerIntY = (int)playerPosition.y;
-                _map.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
+                GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
             }
+        }
+
             Recorder.PlayerAbandonRecord record = new()
             {
                 Data = new()
@@ -61,7 +63,6 @@ public partial class Game
             };
 
             _events.Add(record);
-        }
     }
 
 
@@ -141,7 +142,7 @@ public partial class Game
         {
             foreach (Position normalizedDirection in bulletDirections)
             {
-                foreach (Player targetPlayer in _allPlayers)
+                foreach (Player targetPlayer in AllPlayers)
                 {
                     // Skip the player itself
                     if (targetPlayer == e.Player)
@@ -199,7 +200,7 @@ public partial class Game
                         Position intersection = getLinearPosition((float)((xGrid - start.x) / normalizedDirection.x));
                         int intersectionIntX = xGrid;
                         int intersectionIntY = (int)intersection.y;
-                        if (_map.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
+                        if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
                         {
                             isHittingWall = true;
                             break;
@@ -228,7 +229,7 @@ public partial class Game
                         Position intersection = getLinearPosition((float)((yGrid - start.y) / normalizedDirection.y));
                         int intersectionIntX = (int)intersection.x;
                         int intersectionIntY = yGrid;
-                        if (_map.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
+                        if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
                         {
                             isHittingWall = true;
                             break;
@@ -252,13 +253,17 @@ public partial class Game
         }
 
         // Check if the supply exists
-        IItem? item = (_map.GetBlock((int)e.TargetPosition.x, (int)e.TargetPosition.y)?.Items.Find(i => i.ItemSpecificName == e.TargetSupply && e.Numb < 0 && i.Count <= e.Numb)) ?? throw new InvalidOperationException("Supply does not exist or the numb is invalid.");
+        IItem? item = (
+            GameMap.GetBlock((int)e.TargetPosition.x, (int)e.TargetPosition.y)?
+            .Items.Find(i => i.ItemSpecificName == e.TargetSupply && e.Numb < 0 && i.Count <= e.Numb))
+            ?? throw new InvalidOperationException("Supply does not exist or the numb is invalid."
+        );
 
         // Add the supply to the player's backpack
         e.Player.PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
 
         // Remove the supply from the ground
-        _map.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, item);
+        GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, item);
 
         Recorder.PlayerPickUpRecord record = new()
         {
@@ -360,7 +365,7 @@ public partial class Game
     }
     private void UpdatePlayers()
     {
-        foreach (Player player in _allPlayers)
+        foreach (Player player in AllPlayers)
         {
             // Update cooldown of weapons
             player.PlayerWeapon.UpdateCoolDown();
@@ -391,14 +396,14 @@ public partial class Game
                 // Iterate through all potential collision positions and calculate distances from walls
                 for (int i = (int)(1 + player.Speed); i >= 1; i--)
                 {
-                    if (normalizedDirection.x != 0 && _map.GetBlock(xGrid + Math.Sign(normalizedDirection.x) * i, yGrid)?.IsWall == true)
+                    if (normalizedDirection.x != 0 && GameMap.GetBlock(xGrid + Math.Sign(normalizedDirection.x) * i, yGrid)?.IsWall == true)
                     {
                         xDistanceFromWall = normalizedDirection.x > 0 ? Math.Ceiling(normalizedDirection.x) - normalizedDirection.x : normalizedDirection.x - Math.Floor(normalizedDirection.x);
                     }
                 }
                 for (int i = (int)(1 + player.Speed); i >= 1; i--)
                 {
-                    if (normalizedDirection.y != 0 && _map.GetBlock(xGrid, yGrid + Math.Sign(normalizedDirection.y) * i)?.IsWall == true)
+                    if (normalizedDirection.y != 0 && GameMap.GetBlock(xGrid, yGrid + Math.Sign(normalizedDirection.y) * i)?.IsWall == true)
                     {
                         yDistanceFromWall = normalizedDirection.y > 0 ? Math.Ceiling(normalizedDirection.y) - normalizedDirection.y : normalizedDirection.y - Math.Floor(normalizedDirection.y);
                     }

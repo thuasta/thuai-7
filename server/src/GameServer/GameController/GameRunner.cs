@@ -26,7 +26,7 @@ public class GameRunner : IGameRunner
 
     public void Start()
     {
-        _logger.Information("Starting game server...");
+        _logger.Information("Starting game...");
 
         Game.Initialize();
 
@@ -37,7 +37,11 @@ public class GameRunner : IGameRunner
             while (_isRunning)
             {
                 Game.Tick();
-                Task.Delay(1000 / ExpectedTicksPerSecond).Wait();
+
+                while (DateTime.Now - lastTickTime < TimeSpan.FromMilliseconds(1000 / ExpectedTicksPerSecond))
+                {
+                    // Wait for the next tick
+                }
 
                 DateTime currentTime = DateTime.Now;
                 RealTicksPerSecond = 1.0D / (double)(currentTime - lastTickTime).TotalSeconds;
@@ -47,6 +51,9 @@ public class GameRunner : IGameRunner
                 if (DateTime.Now - _lastTpsCheckTime > TpsCheckInterval)
                 {
                     _lastTpsCheckTime = DateTime.Now;
+
+                    _logger.Debug($"Current TPS: {RealTicksPerSecond:0.00} tps");
+
                     if (RealTicksPerSecond < TpsLowerBound)
                     {
                         _logger.Warning($"Insufficient simulation rate: {RealTicksPerSecond:0.00} tps < {TpsLowerBound} tps");
@@ -62,6 +69,8 @@ public class GameRunner : IGameRunner
         _isRunning = true;
 
         _tickTask.Start();
+
+        _logger.Information("Game started.");
 
     }
 
