@@ -182,7 +182,7 @@ public class Map : IMap
         {
             for (int y = 0; y < shape.MaxHeight; y++)
             {
-                if (shape.IsSolid(x, y) && MapChunk[startX + x, startY + y] != null)
+                if (MapChunk[startX + x, startY + y] != null && MapChunk[startX + x, startY + y].IsWall)
                 {
                     return false;
                 }
@@ -300,8 +300,8 @@ public class Map : IMap
 
     public class TubeShape : ObstacleShape
     {
-        public override int MaxWidth => 6;
-        public override int MaxHeight => 3;
+        public override int MaxWidth => 3;
+        public override int MaxHeight => 6;
 
         private readonly char[,] _shape = {
             { '#', '#', '#', '#','#', '#' },
