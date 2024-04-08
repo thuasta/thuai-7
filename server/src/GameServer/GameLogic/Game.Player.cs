@@ -33,6 +33,7 @@ public partial class Game
             player.PlayerUseMedicineEvent += OnPlayerUseMedicine;
         }
     }
+
     private void OnPlayerAbandon(object? sender, Player.PlayerAbandonEventArgs e)
     {
         foreach ((IItem.ItemKind itemKind, string itemSpecificName) in e.AbandonedSupplies)
@@ -50,7 +51,6 @@ public partial class Game
                 int playerIntY = (int)playerPosition.y;
                 GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
             }
-        }
 
             Recorder.PlayerAbandonRecord record = new()
             {
@@ -63,8 +63,8 @@ public partial class Game
             };
 
             _events.Add(record);
+        }
     }
-
 
     /// <summary>
     /// Calculate the closest point on the line to the player's position, given that the collision box of the player is a circle.

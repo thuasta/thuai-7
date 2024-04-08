@@ -11,10 +11,10 @@ public partial class Game
         Recorder.SafeZone record = new() {
             Data = new() {
                 center = new() {
-                    x = _map.SafeZone.Center.x,
-                    y = _map.SafeZone.Center.y
+                    x = GameMap.SafeZone.Center.x,
+                    y = GameMap.SafeZone.Center.y
                 },
-            radius = _map.SafeZone.Radius
+            radius = GameMap.SafeZone.Radius
             }
         };
 

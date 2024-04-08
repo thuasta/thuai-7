@@ -1,7 +1,3 @@
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
-using GameServer.Recorder;
 using Serilog;
 
 namespace GameServer.GameLogic;
@@ -137,7 +133,7 @@ public partial class Game
                     currentTicks = CurrentTick,
                     Data = new()
                     {
-                        players = (from player in _allPlayers
+                        players = (from player in AllPlayers
                                    select new Recorder.CompetitionUpdate.playersType
                                    {
                                        playerId = player.PlayerId,
