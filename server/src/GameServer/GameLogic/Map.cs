@@ -81,8 +81,8 @@ public class Map : IMap
     }
     public void GenerateMap()
     {
-        GenerateSupplies();
         GenerateWalls();
+        GenerateSupplies();
     }
 
     public void GenerateSupplies()
