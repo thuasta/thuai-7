@@ -107,6 +107,8 @@ public partial class Game
                 supplies = _supplies
             }
         };
+
+        _recorder?.Record(suppliesRecord);
     }
 
     /// <summary>
