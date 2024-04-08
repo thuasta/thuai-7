@@ -77,12 +77,11 @@ public class Map : IMap
             return null;
         }
         return MapChunk[xInt, yInt];
-
     }
     public void GenerateMap()
     {
-        GenerateSupplies();
         GenerateWalls();
+        GenerateSupplies();
     }
 
     public void GenerateSupplies()
@@ -118,8 +117,6 @@ public class Map : IMap
             }
         }
     }
-
-
 
     public void GenerateWalls()
     {

@@ -9,6 +9,7 @@ public partial class Game
     public void AddPlayer(Player player)
     {
         AllPlayers.Add(player);
+        SubscribePlayerEvents(player);
     }
 
     public void RemovePlayer(Player player)

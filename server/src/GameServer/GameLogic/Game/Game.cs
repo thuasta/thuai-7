@@ -24,7 +24,7 @@ public partial class Game
 
     private readonly object _lock = new();
 
-    private readonly GameServer.Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
+    private readonly Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
 
     #endregion
 
@@ -54,7 +54,10 @@ public partial class Game
     /// </summary>
     public void Initialize()
     {
-        SubscribePlayerEvents();
+        foreach (Player player in AllPlayers)
+        {
+            SubscribePlayerEvents(player);
+        }
         GameMap.GenerateMap();
 
         List<Position> walls = new();
@@ -130,41 +133,42 @@ public partial class Game
                 UpdatePlayers();
                 UpdateGrenades();
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 Recorder.CompetitionUpdate competitionUpdateRecord = new()
                 {
                     currentTicks = CurrentTick,
                     Data = new()
                     {
-                        players = (from player in AllPlayers
-                                   select new Recorder.CompetitionUpdate.playersType
-                                   {
-                                       playerId = player.PlayerId,
-                                       armor = player.PlayerArmor.ItemSpecificName,
-                                       position = new()
-                                       {
-                                           x = player.PlayerPosition.x,
-                                           y = player.PlayerPosition.y
-                                       },
-                                       health = player.Health,
-                                       speed = player.Speed,
-                                       firearm = new()
-                                       {
-                                           name = player.PlayerWeapon.ItemSpecificName,
-                                           distance = player.PlayerWeapon.Range
-                                       },
-                                       inventory = (from supplies in player.PlayerBackPack.Items
-                                                    select new Recorder.CompetitionUpdate.inventoryType
-                                                    {
-                                                        name = supplies.ItemSpecificName,
-                                                        numb = supplies.Count
-                                                    }).ToList()
-                                   }).ToList(),
-                        events = _events
+                        players = (
+                            from player in AllPlayers
+                            select new Recorder.CompetitionUpdate.playersType
+                            {
+                                playerId = player.PlayerId,
+                                armor = player.PlayerArmor.ItemSpecificName,
+                                position = new()
+                                {
+                                    x = player.PlayerPosition.x,
+                                    y = player.PlayerPosition.y
+                                },
+                                health = player.Health,
+                                speed = player.Speed,
+                                firearm = new()
+                                {
+                                    name = player.PlayerWeapon.ItemSpecificName,
+                                    distance = player.PlayerWeapon.Range
+                                },
+                                inventory = (from supplies in player.PlayerBackPack.Items
+                                             select new Recorder.CompetitionUpdate.inventoryType
+                                             {
+                                                 name = supplies.ItemSpecificName,
+                                                 numb = supplies.Count
+                                             }).ToList()
+                            }
+                        ).ToList(),
+                        events = new(_events)
                     }
                 };
 
-                _recorder.Record(competitionUpdateRecord);
+                _recorder?.Record(competitionUpdateRecord);
 
                 _events.Clear();
                 // Dereference of a possibly null reference.
