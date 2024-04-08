@@ -50,6 +50,16 @@ class Program
             while (true)
             {
                 // TODO: Read commands from console
+                string? input = Console.ReadLine();
+                if (input == "stop")
+                {
+                    gameRunner.Stop();
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    _logger.Error($"Unknown command: {input}. Please check that the command exists and that you have permission to use it.");
+                }
             }
         }
         catch (Exception ex)

@@ -107,13 +107,13 @@ public class Map : IMap
                     IItem.ItemKind itemType = (IItem.ItemKind)_random.Next(0, Enum.GetValues(typeof(IItem.ItemKind)).Length);
 
                     // TODO: According to the item type, randomly sample a specific name for the item
-                    // string itemSpecificName = "";
+                    string itemSpecificName = WeaponFactory.WeaponNames.ElementAt(_random.Next(0, WeaponFactory.WeaponNames.Length));
 
-                    // // Generate a random count for the item (you may customize this part)
-                    // int itemCount = _random.Next(1, 6); // Random count between 1 and 5
+                    // Generate a random count for the item (you may customize this part)
+                    int itemCount = _random.Next(1, 6); // Random count between 1 and 5
 
-                    // // Add the generated item to the supply point
-                    // AddSupplies(x, y, new Item(itemType, itemSpecificName, itemCount));
+                    // Add the generated item to the supply point
+                    AddSupplies(x, y, new Item(itemType, itemSpecificName, itemCount));
                 }
             }
         }

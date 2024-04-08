@@ -46,6 +46,10 @@ public partial class Game
 
 
     #region Methods
+    public void SaveRecord()
+    {
+        _recorder?.Save();
+    }
     /// <summary>
     /// Initializes the game.
     /// </summary>

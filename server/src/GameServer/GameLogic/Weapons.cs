@@ -4,6 +4,7 @@ namespace GameServer.GameLogic;
 
 public class WeaponFactory
 {
+    public static readonly string[] WeaponNames = { Constant.FIST, Constant.S686, Constant.M16, Constant.VECTOR, Constant.AWM };
     public static IWeapon CreateFromItem(IItem item)
     {
         if (item.Kind != IItem.ItemKind.Weapon)
@@ -13,11 +14,11 @@ public class WeaponFactory
 
         return item.ItemSpecificName switch
         {
-            "FIST" => new Fist(),
-            "S686" => new ShotGun(),
-            "M16" => new AssaultRifle(),
-            "VECTOR" => new SubMachineGun(),
-            "AWM" => new SniperRifle(),
+            Constant.FIST => new Fist(),
+            Constant.S686 => new ShotGun(),
+            Constant.M16 => new AssaultRifle(),
+            Constant.VECTOR => new SubMachineGun(),
+            Constant.AWM => new SniperRifle(),
             _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for weapon.")
         };
     }
@@ -26,11 +27,11 @@ public class WeaponFactory
     {
         return weapon switch
         {
-            Fist _ => new Item(IItem.ItemKind.Weapon, "FIST", 1),
-            ShotGun _ => new Item(IItem.ItemKind.Weapon, "S686", 1),
-            AssaultRifle _ => new Item(IItem.ItemKind.Weapon, "M16", 1),
-            SubMachineGun _ => new Item(IItem.ItemKind.Weapon, "VECTOR", 1),
-            SniperRifle _ => new Item(IItem.ItemKind.Weapon, "AWM", 1),
+            Fist _ => new Item(IItem.ItemKind.Weapon, Constant.FIST, 1),
+            ShotGun _ => new Item(IItem.ItemKind.Weapon, Constant.S686, 1),
+            AssaultRifle _ => new Item(IItem.ItemKind.Weapon, Constant.M16, 1),
+            SubMachineGun _ => new Item(IItem.ItemKind.Weapon, Constant.VECTOR, 1),
+            SniperRifle _ => new Item(IItem.ItemKind.Weapon, Constant.AWM, 1),
             _ => throw new ArgumentException($"Weapon is not of valid weapon-class.")
         };
     }
