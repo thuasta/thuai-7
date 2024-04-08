@@ -70,6 +70,7 @@ class Program
         void SubscribeEvents()
         {
             gameRunner.Game.AfterGameTickEvent += agentServer.HandleAfterGameTickEvent;
+            agentServer.AfterMessageReceiveEvent += gameRunner.HandleAfterMessageReceiveEvent;
         }
     }
 
