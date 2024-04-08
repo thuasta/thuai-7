@@ -82,6 +82,7 @@ public partial class Game : IGame
 
         return (closestPoint, isSameDirection);
     }
+
     private void OnPlayerAttack(object? sender, Player.PlayerAttackEventArgs e)
     {
         // Check if the type weapon is not "Fist"
@@ -92,20 +93,6 @@ public partial class Game : IGame
             if (bullet != null && bullet.Count > 0)
             {
                 e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, "BULLET", 1);
-                Recorder.PlayerAttackRecord record = new()
-                {
-                    Data = new()
-                    {
-                        playerId = e.Player.PlayerId,
-                        turgetPosition = new()
-                        {
-                            x = e.TargetPosition.x,
-                            y = e.TargetPosition.y
-                        }
-                    }
-                };
-
-                _events.Add(record);
             }
             else
             {
@@ -221,7 +208,23 @@ public partial class Game : IGame
                 }
             }
         }
+
+        Recorder.PlayerAttackRecord record = new()
+        {
+            Data = new()
+            {
+                playerId = e.Player.PlayerId,
+                turgetPosition = new()
+                {
+                    x = e.TargetPosition.x,
+                    y = e.TargetPosition.y
+                }
+            }
+        };
+
+        _events.Add(record);
     }
+
     private void OnPlayerPickUp(object? sender, Player.PlayerPickUpEventArgs e)
     {
         // Check if the player is close enough to the supply
@@ -260,6 +263,7 @@ public partial class Game : IGame
 
         _events.Add(record);
     }
+
     private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
     {
         //iterate player's backpack to find the weapon with weaponItemId
@@ -281,11 +285,13 @@ public partial class Game : IGame
 
             _events.Add(record);
         }
+
         else
         {
             throw new ArgumentException("Weapon not found in backpack.");
         }
     }
+
     private void OnPlayerUseGrenade(object? sender, Player.PlayerUseGrenadeEventArgs e)
     {
         // Check if the player has grenade
@@ -308,6 +314,7 @@ public partial class Game : IGame
 
             _events.Add(record);
         }
+
         else
         {
             throw new InvalidOperationException("Player has no grenade.");
@@ -316,6 +323,7 @@ public partial class Game : IGame
         // Generate the grenade
         _allGrenades.Add(new Grenade(e.Player.PlayerPosition, CurrentTick));
     }
+
     private void OnPlayerUseMedicine(object? sender, Player.PlayerUseMedicineEventArgs e)
     {
         // Check if the player has medicine
@@ -336,6 +344,7 @@ public partial class Game : IGame
 
             _events.Add(record);
         }
+
         else
         {
             throw new InvalidOperationException("Player has no medicine.");
