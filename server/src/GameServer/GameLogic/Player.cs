@@ -94,7 +94,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to pick up item {item.ItemSpecificName}: Player {Id} is already dead.");
+            _logger.Error($"Failed to try to pick up item {item.ItemSpecificName}: Player {Id} is already dead.");
             return false;
         }
 
@@ -125,7 +125,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to abandon items: Player {Id} is already dead.");
+            _logger.Error($"Failed to attack: Player {Id} is already dead.");
             return;
         }
 
@@ -136,7 +136,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to abandon items: Player {Id} is already dead.");
+            _logger.Error($"Failed to use grenade: Player {Id} is already dead.");
             return;
         }
 
@@ -148,7 +148,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to abandon items: Player {Id} is already dead.");
+            _logger.Error($"Failed to use medicine: Player {Id} is already dead.");
             return;
         }
 
@@ -160,7 +160,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to abandon items: Player {Id} is already dead.");
+            _logger.Error($"Failed to switch arm: Player {Id} is already dead.");
             return;
         }
 
@@ -171,7 +171,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to abandon items: Player {Id} is already dead.");
+            _logger.Error($"Failed to pick up: Player {Id} is already dead.");
             return;
         }
 
