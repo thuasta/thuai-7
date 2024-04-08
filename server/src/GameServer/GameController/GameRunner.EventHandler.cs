@@ -20,7 +20,7 @@ public partial class GameRunner : IGameRunner
             case PerformAbandonMessage performAbandonMessage:
                 if (!_tokenToPlayerId.ContainsKey(performAbandonMessage.Token))
                 {
-                    _logger.Error($"Player with token {performAbandonMessage.Token} does not exist.");
+                    _logger.Error($"Player with token \"{performAbandonMessage.Token}\" does not exist.");
                 }
                 else
                 {
@@ -46,7 +46,7 @@ public partial class GameRunner : IGameRunner
             case PerformPickUpMessage performPickUpMessage:
                 if (!_tokenToPlayerId.ContainsKey(performPickUpMessage.Token))
                 {
-                    _logger.Error($"Player with token {performPickUpMessage.Token} does not exist.");
+                    _logger.Error($"Player with token \"{performPickUpMessage.Token}\" does not exist.");
                 }
                 else
                 {
@@ -92,7 +92,7 @@ public partial class GameRunner : IGameRunner
             case PerformUseMedicineMessage performUseMedicineMessage:
                 if (!_tokenToPlayerId.ContainsKey(performUseMedicineMessage.Token))
                 {
-                    _logger.Error($"Player with token {performUseMedicineMessage.Token} does not exist.");
+                    _logger.Error($"Player with token \"{performUseMedicineMessage.Token}\" does not exist.");
                 }
                 else
                 {
@@ -113,7 +113,7 @@ public partial class GameRunner : IGameRunner
             case PerformUseGrenadeMessage performUseGrenadeMessage:
                 if (!_tokenToPlayerId.ContainsKey(performUseGrenadeMessage.Token))
                 {
-                    _logger.Error($"Player with token {performUseGrenadeMessage.Token} does not exist.");
+                    _logger.Error($"Player with token \"{performUseGrenadeMessage.Token}\" does not exist.");
                 }
                 else
                 {
@@ -136,7 +136,7 @@ public partial class GameRunner : IGameRunner
             case PerformMoveMessage performMoveMessage:
                 if (!_tokenToPlayerId.ContainsKey(performMoveMessage.Token))
                 {
-                    _logger.Error($"Player with token {performMoveMessage.Token} does not exist.");
+                    _logger.Error($"Player with token \"{performMoveMessage.Token}\" does not exist.");
                 }
                 else
                 {
@@ -159,7 +159,7 @@ public partial class GameRunner : IGameRunner
             case PerformStopMessage performStopMessage:
                 if (!_tokenToPlayerId.ContainsKey(performStopMessage.Token))
                 {
-                    _logger.Error($"Player with token {performStopMessage.Token} does not exist.");
+                    _logger.Error($"Player with token \"{performStopMessage.Token}\" does not exist.");
                 }
                 else
                 {
@@ -180,7 +180,7 @@ public partial class GameRunner : IGameRunner
             case PerformAttackMessage performAttackMessage:
                 if (!_tokenToPlayerId.ContainsKey(performAttackMessage.Token))
                 {
-                    _logger.Error($"Player with token {performAttackMessage.Token} does not exist.");
+                    _logger.Error($"Player with token \"{performAttackMessage.Token}\" does not exist.");
                 }
                 else
                 {
@@ -209,7 +209,7 @@ public partial class GameRunner : IGameRunner
             case ChooseOriginMessage chooseOriginMessage:
                 if (!_tokenToPlayerId.ContainsKey(chooseOriginMessage.Token))
                 {
-                    _logger.Information($"Adding player with token {chooseOriginMessage.Token} to the game.");
+                    _logger.Information($"Adding player with token \"{chooseOriginMessage.Token}\" to the game.");
                     try
                     {
                         Game.AddPlayer(
@@ -223,18 +223,18 @@ public partial class GameRunner : IGameRunner
                         _tokenToPlayerId[chooseOriginMessage.Token] = _nextPlayerId;
                         _nextPlayerId++;
 
-                        _logger.Information($"Player with token {chooseOriginMessage.Token} joined the game.");
+                        _logger.Information($"Player with token \"{chooseOriginMessage.Token}\" joined the game.");
                     }
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to add player with token {chooseOriginMessage.Token} to the game: {ex.Message}"
+                            $"Failed to add player with token \"{chooseOriginMessage.Token}\" to the game: {ex.Message}"
                         );
                     }
                 }
                 else
                 {
-                    _logger.Error($"Player with token {chooseOriginMessage.Token} already exists.");
+                    _logger.Error($"Player with token \"{chooseOriginMessage.Token}\" already exists.");
                 }
                 break;
 
