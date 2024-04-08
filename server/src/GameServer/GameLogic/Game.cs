@@ -44,7 +44,6 @@ public partial class Game
 
     #endregion
 
-
     #region Methods
     public void SaveRecord()
     {
