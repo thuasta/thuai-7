@@ -40,4 +40,11 @@ public interface IGameRunner
     public void Stop();
     // Reset the game.
     public void Reset();
+
+    /// <summary>
+    /// Handle AfterMessageReceiveEvent of AgentServer.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    public void HandleAfterMessageReceiveEvent(object? sender, Connection.AfterMessageReceiveEventArgs e);
 }

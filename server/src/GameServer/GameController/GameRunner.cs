@@ -1,9 +1,10 @@
+using System.Collections.Concurrent;
 using GameServer.GameLogic;
 using Serilog;
 
 namespace GameServer.GameController;
 
-public class GameRunner : IGameRunner
+public partial class GameRunner : IGameRunner
 {
     public Game Game { get; }
     public int ExpectedTicksPerSecond => Constant.TICKS_PER_SECOND;
@@ -11,6 +12,9 @@ public class GameRunner : IGameRunner
     public double RealTicksPerSecond { get; private set; }
     public double TpsLowerBound => 0.9 * ExpectedTicksPerSecond;
     public double TpsUpperBound => 1.1 * ExpectedTicksPerSecond;
+
+    private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
+    private int _nextPlayerId = 0;
 
     private DateTime _lastTpsCheckTime = DateTime.Now;
 
@@ -95,4 +99,5 @@ public class GameRunner : IGameRunner
         // TODO: Implement
         throw new NotImplementedException();
     }
+
 }

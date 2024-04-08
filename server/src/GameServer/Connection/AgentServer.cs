@@ -246,7 +246,9 @@ public partial class AgentServer : IServer
         {
             socket.OnOpen = () =>
             {
-                _logger.Debug("Connection from {ClientIpAddress} opened.", socket.ConnectionInfo.ClientIpAddress);
+                _logger.Information(
+                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened."
+                );
 
                 // Remove the socket if it already exists.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
@@ -257,7 +259,9 @@ public partial class AgentServer : IServer
 
             socket.OnClose = () =>
             {
-                _logger.Debug("Connection from {ClientIpAddress} closed.", socket.ConnectionInfo.ClientIpAddress);
+                _logger.Information(
+                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} closed."
+                );
 
                 // Remove the socket.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);

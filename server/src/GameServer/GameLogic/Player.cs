@@ -44,9 +44,14 @@ public partial class Player : IPlayer
     {
         Health += heal;
     }
-    public void Move(Position position)
+    public void MoveTo(Position destination)
     {
-        PlayerPosition = position;
+        PlayerTargetPosition = destination;
+    }
+
+    public void Stop()
+    {
+        PlayerTargetPosition = null;
     }
 
     public bool TryPickUpItem(Item item)
