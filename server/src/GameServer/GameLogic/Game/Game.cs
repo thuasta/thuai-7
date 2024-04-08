@@ -138,31 +138,33 @@ public partial class Game
                     currentTicks = CurrentTick,
                     Data = new()
                     {
-                        players = (from player in AllPlayers
-                                   select new Recorder.CompetitionUpdate.playersType
-                                   {
-                                       playerId = player.PlayerId,
-                                       armor = player.PlayerArmor.ItemSpecificName,
-                                       position = new()
-                                       {
-                                           x = player.PlayerPosition.x,
-                                           y = player.PlayerPosition.y
-                                       },
-                                       health = player.Health,
-                                       speed = player.Speed,
-                                       firearm = new()
-                                       {
-                                           name = player.PlayerWeapon.ItemSpecificName,
-                                           distance = player.PlayerWeapon.Range
-                                       },
-                                       inventory = (from supplies in player.PlayerBackPack.Items
-                                                    select new Recorder.CompetitionUpdate.inventoryType
-                                                    {
-                                                        name = supplies.ItemSpecificName,
-                                                        numb = supplies.Count
-                                                    }).ToList()
-                                   }).ToList(),
-                        events = _events
+                        players = (
+                            from player in AllPlayers
+                            select new Recorder.CompetitionUpdate.playersType
+                            {
+                                playerId = player.PlayerId,
+                                armor = player.PlayerArmor.ItemSpecificName,
+                                position = new()
+                                {
+                                    x = player.PlayerPosition.x,
+                                    y = player.PlayerPosition.y
+                                },
+                                health = player.Health,
+                                speed = player.Speed,
+                                firearm = new()
+                                {
+                                    name = player.PlayerWeapon.ItemSpecificName,
+                                    distance = player.PlayerWeapon.Range
+                                },
+                                inventory = (from supplies in player.PlayerBackPack.Items
+                                             select new Recorder.CompetitionUpdate.inventoryType
+                                             {
+                                                 name = supplies.ItemSpecificName,
+                                                 numb = supplies.Count
+                                             }).ToList()
+                            }
+                        ).ToList(),
+                        events = new(_events)
                     }
                 };
 
