@@ -1,9 +1,15 @@
-using GameServer.Engine.Shapes;
-
 namespace GameServer.GameLogic;
 
 public class WeaponFactory
 {
+    public static readonly string[] WeaponNames = {
+        Constant.Names.FIST,
+        Constant.Names.S686,
+        Constant.Names.M16,
+        Constant.Names.VECTOR,
+        Constant.Names.AWM
+    };
+
     public static IWeapon CreateFromItem(IItem item)
     {
         if (item.Kind != IItem.ItemKind.Weapon)
@@ -13,11 +19,11 @@ public class WeaponFactory
 
         return item.ItemSpecificName switch
         {
-            "FIST" => new Fist(),
-            "S686" => new ShotGun(),
-            "M16" => new AssaultRifle(),
-            "VECTOR" => new SubMachineGun(),
-            "AWM" => new SniperRifle(),
+            Constant.Names.FIST => new Fist(),
+            Constant.Names.S686 => new ShotGun(),
+            Constant.Names.M16 => new AssaultRifle(),
+            Constant.Names.VECTOR => new SubMachineGun(),
+            Constant.Names.AWM => new SniperRifle(),
             _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for weapon.")
         };
     }
@@ -26,11 +32,11 @@ public class WeaponFactory
     {
         return weapon switch
         {
-            Fist _ => new Item(IItem.ItemKind.Weapon, "FIST", 1),
-            ShotGun _ => new Item(IItem.ItemKind.Weapon, "S686", 1),
-            AssaultRifle _ => new Item(IItem.ItemKind.Weapon, "M16", 1),
-            SubMachineGun _ => new Item(IItem.ItemKind.Weapon, "VECTOR", 1),
-            SniperRifle _ => new Item(IItem.ItemKind.Weapon, "AWM", 1),
+            Fist _ => new Item(IItem.ItemKind.Weapon, Constant.Names.FIST, 1),
+            ShotGun _ => new Item(IItem.ItemKind.Weapon, Constant.Names.S686, 1),
+            AssaultRifle _ => new Item(IItem.ItemKind.Weapon, Constant.Names.M16, 1),
+            SubMachineGun _ => new Item(IItem.ItemKind.Weapon, Constant.Names.VECTOR, 1),
+            SniperRifle _ => new Item(IItem.ItemKind.Weapon, Constant.Names.AWM, 1),
             _ => throw new ArgumentException($"Weapon is not of valid weapon-class.")
         };
     }
@@ -38,7 +44,7 @@ public class WeaponFactory
 
 public class Fist : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "FIST";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
@@ -70,12 +76,13 @@ public class Fist : IWeapon
         Damage = Constant.FIST_DAMAGE;
         CoolDownTicks = Constant.FIST_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.FIST;
+        ItemSpecificName = Constant.Names.FIST;
     }
 }
 
 public class ShotGun : IWeapon
 {
+    public string Name { get; } = "S686";
     private int BulletNum { get; }
     private int DeltaDegree { get; }
     public float Range { get; }
@@ -123,13 +130,13 @@ public class ShotGun : IWeapon
         Damage = Constant.S686_SINGLE_BULLET_DAMAGE;
         CoolDownTicks = Constant.S686_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.S686;
+        ItemSpecificName = Constant.Names.S686;
     }
 }
 
 public class SubMachineGun : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "VECTOR";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
@@ -159,13 +166,13 @@ public class SubMachineGun : IWeapon
         Damage = Constant.VECTOR_DAMAGE;
         CoolDownTicks = Constant.VECTOR_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.VECTOR;
+        ItemSpecificName = Constant.Names.VECTOR;
     }
 }
 
 public class SniperRifle : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "AWM";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
@@ -195,13 +202,13 @@ public class SniperRifle : IWeapon
         Damage = Constant.AWM_DAMAGE;
         CoolDownTicks = Constant.AWM_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.M16;
+        ItemSpecificName = Constant.Names.M16;
     }
 }
 
 public class AssaultRifle : IWeapon
 {
-    // TODO: Implement
+    public string Name { get; } = "M16";
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
@@ -231,6 +238,6 @@ public class AssaultRifle : IWeapon
         Damage = Constant.M16_DAMAGE;
         CoolDownTicks = Constant.M16_COOLDOWNTICKS;
         TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.AWM;
+        ItemSpecificName = Constant.Names.AWM;
     }
 }

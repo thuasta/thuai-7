@@ -72,6 +72,12 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
+      - run: dotnet format --verify-no-changes src/GameServer
+        working-directory: server
+
+      - run: dotnet format --verify-no-changes src/GameServer.Tests
+        working-directory: server
+
       - run: |
           dotnet publish src/GameServer -c Release -o bin \
           --sc false -r ${{ matrix.runtime }} -p:DebugType=none \

@@ -185,5 +185,5 @@ public partial class Game
             _logger.Error($"An exception occurred while ticking the game: {e}");
         }
     }
-    # endregion
+    #endregion
 }

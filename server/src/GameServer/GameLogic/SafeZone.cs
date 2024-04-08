@@ -16,6 +16,8 @@ public class SafeZone : ISafeZone
 
     private readonly Random _random = new();
 
+    private readonly Position _direction;
+
     /// <summary>
     /// Constructor of the safe zone.
     /// </summary>
@@ -29,13 +31,15 @@ public class SafeZone : ISafeZone
         Radius = MaxRadius;
         TicksUntilDisappear = ticksUntilDisappear;
         DamageOutside = damageOutside;
+
+        _direction = new Position(_random.NextDouble() - 0.5, _random.NextDouble() - 0.5).Normalize();
     }
 
     public void Update()
     {
-        // Update center. Randomly move the cehnter of the safe zone.
-        double newX = (float)(_random.NextDouble() - 0.5) * RadiusChangedPerTick + Center.x;
-        double newY = (float)(_random.NextDouble() - 0.5) * RadiusChangedPerTick + Center.y;
+        // Update center. Randomly move the center of the safe zone.
+        double newX = (float)(_direction.x * _random.NextDouble()) * RadiusChangedPerTick + Center.x;
+        double newY = (float)(_direction.y * _random.NextDouble()) * RadiusChangedPerTick + Center.y;
         Center = new(newX, newY);
 
         // Update radius

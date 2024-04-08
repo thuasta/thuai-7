@@ -54,6 +54,10 @@ public partial class AgentServer : IServer
                             _logger.Warning("A null message is dequeued. This message will be ignored.");
                             continue;
                         }
+
+                        _logger.Debug($"Dequeued message \"{message.MessageType}\".");
+                        _logger.Verbose(message.Json);
+
                         Publish(message);
                     }
                 }
@@ -61,7 +65,7 @@ public partial class AgentServer : IServer
 
             TaskForPublishingMessage = Task.Run(actionForPublishingMessage);
 
-            _logger.Information("AgentServer started.");
+            _logger.Information("AgentServer started. Waiting for connections...");
         }
         catch (Exception ex)
         {
@@ -111,11 +115,15 @@ public partial class AgentServer : IServer
             {
                 socket.Send(jsonString).Wait();
 
-                _logger.Debug("Published message: {MessageType}", message.MessageType);
+                _logger.Debug(
+                    $"Published message to {socket.ConnectionInfo.ClientIpAddress}: {message.MessageType}"
+                );
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}");
+                _logger.Error(
+                    $"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}"
+                );
             }
         }
     }
@@ -238,7 +246,9 @@ public partial class AgentServer : IServer
         {
             socket.OnOpen = () =>
             {
-                _logger.Debug("Connection from {ClientIpAddress} opened.", socket.ConnectionInfo.ClientIpAddress);
+                _logger.Information(
+                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened."
+                );
 
                 // Remove the socket if it already exists.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
@@ -249,7 +259,9 @@ public partial class AgentServer : IServer
 
             socket.OnClose = () =>
             {
-                _logger.Debug("Connection from {ClientIpAddress} closed.", socket.ConnectionInfo.ClientIpAddress);
+                _logger.Information(
+                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} closed."
+                );
 
                 // Remove the socket.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);

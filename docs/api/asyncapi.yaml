@@ -159,19 +159,23 @@ components:
       payload:
         type: object
         additionalProperties: false
+        required:
+          - messageType
+          - currentTicks
+          - players
+          - events
         properties:
           messageType:
             type: string
             const: COMPETITION_UPDATE
+          currentTicks:
+            type: integer
           info:
-            type: object
+            type: string
             additionalProperties: false
             required:
-              - elapsedTicks
               - stage
             properties:
-              elapsedTicks:
-                type: integer
               stage:
                 type: string
                 enum:
@@ -224,7 +228,7 @@ components:
                   type: object
                   required:
                     - name
-                    - num
+                    - numb
                   properties:
                     name:
                       type: string
@@ -324,9 +328,10 @@ components:
               required:
                 - name
                 - position
+                - numb
               properties:
                 name:
-                  type: string
+                  type: integer
                   enum:
                     - BULLET
                     - FIRST_AID
@@ -341,6 +346,8 @@ components:
                     - AWM
                 position:
                   $ref: '#/components/schemas/Position'
+                numb:
+                  type: integer
           
     Error:
       payload:
@@ -624,7 +631,7 @@ components:
         - playerId
         - targetSupply
         - targetPosition
-        - num
+        - numb
       properties:
         eventType:
           type: string
@@ -647,7 +654,7 @@ components:
             - AWM
         targetPosition:
           $ref: '#/components/schemas/Position'
-        num:
+        numb:
           type: integer
     PlayerUseMedicineEvent:
       type: object
@@ -655,14 +662,14 @@ components:
       required:
         - eventType
         - playerId
-        - medicine
+        - targetMedicine
       properties:
         eventType:
           type: string
           const: PLAYER_USE_MEDICINE
         playerId:
           type: integer
-        medicine:
+        targetMedicine:
           type: string
           enum:
             - FIRST_AID

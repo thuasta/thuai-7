@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Connection;
 
-public record PLayersInfoMessage : Message
+public record PlayersInfoMessage : Message
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PLAYERS_INFO";

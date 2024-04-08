@@ -68,6 +68,9 @@ public class Recorder : IRecorder, IDisposable
             return;
         }
 
+        _logger.Debug($"Adding record {record.GetType().Name} to the queue.");
+        _logger.Verbose($"Record: {record.Json}");
+
         _recordQueue.Enqueue(record);
 
         if (_recordQueue.Count >= MaxRecordsBeforeSave)
@@ -93,9 +96,12 @@ public class Recorder : IRecorder, IDisposable
 
                     _recordQueue.Clear();
 
+
                     // Use timestamp as file name.
                     long timestamp = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds * 1000;
                     string recordFilePath = Path.Combine(_recordsDir, $"{timestamp}.dat");
+
+                    _logger.Debug($"Saving records to {timestamp}.dat.");
 
                     // Create directory if it doesn't exist.
                     if (!Directory.Exists(_recordsDir))

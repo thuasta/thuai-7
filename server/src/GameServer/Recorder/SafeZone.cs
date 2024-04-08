@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record SafeZone: IRecord
+public record SafeZone : IRecord
 {
     [JsonPropertyName("messageType")]
     public string messageType => "SAFE_ZONE";
@@ -17,11 +17,11 @@ public record SafeZone: IRecord
 
     public record DataType
     {
-    [JsonPropertyName("center")]
-    public positionType? center { get; init; }
+        [JsonPropertyName("center")]
+        public positionType? center { get; init; }
 
-    [JsonPropertyName("radius")]
-    public double? radius { get; init; }
+        [JsonPropertyName("radius")]
+        public double? radius { get; init; }
     }
 
     public record positionType

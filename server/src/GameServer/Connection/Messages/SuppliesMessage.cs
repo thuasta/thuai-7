@@ -18,6 +18,9 @@ public record SuppliesMessage : Message
         [JsonPropertyName("position")]
         public Position PositionOfSupply { get; init; } = new();
 
+        [JsonPropertyName("numb")]
+        public int Numb { get; init; }
+
         public record Position
         {
             [JsonPropertyName("x")]
