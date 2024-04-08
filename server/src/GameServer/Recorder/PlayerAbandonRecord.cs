@@ -18,7 +18,7 @@ public record PlayerAbandonRecord : IRecord
     public record DataType
     {
         [JsonPropertyName("playerId")]
-        public int? PlayerId { get; init; }
+        public int? playerId { get; init; }
 
         [JsonPropertyName("numb")]
         public int? numb { get; init; }

@@ -18,9 +18,9 @@ public record PlayerUseMedicineRecord : IRecord
     public record DataType
     {
         [JsonPropertyName("playerId")]
-        public int? PlayerId { get; init; }
+        public int? playerId { get; init; }
 
-        [JsonPropertyName("medicine")]
-        public string? medicine { get; init; }
+        [JsonPropertyName("targetMedicine")]
+        public string? targetMedicine { get; init; }
     }
 }

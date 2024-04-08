@@ -18,7 +18,7 @@ public record PlayerPickUpRecord : IRecord
     public record DataType
     {
         [JsonPropertyName("playerId")]
-        public int? PlayerId { get; init; }
+        public int? playerId { get; init; }
 
         [JsonPropertyName("turgetSupply")]
         public string? targetSupply { get; init; }
@@ -26,8 +26,8 @@ public record PlayerPickUpRecord : IRecord
         [JsonPropertyName("turgetPosition")]
         public positionType? targetPosition { get; init; }
 
-        [JsonPropertyName("num")]
-        public int? num { get; init; }
+        [JsonPropertyName("numb")]
+        public int? numb { get; init; }
     }
 
     public record positionType

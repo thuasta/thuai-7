@@ -18,7 +18,7 @@ public record PlayerUseGrenadeRecord : IRecord
     public record DataType
     {
         [JsonPropertyName("playerId")]
-        public int? PlayerId { get; init; }
+        public int? playerId { get; init; }
 
         [JsonPropertyName("turgetPosition")]
         public positionType? turgetPosition { get; init; }

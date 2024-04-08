@@ -4,31 +4,34 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Recorder;
 
-public record CompetitionUpdate
+public record CompetitionUpdate : IRecord
 {
     [JsonPropertyName("messageType")]
     public string messageType => "COMPETITION_UPDATE";
 
-    [JsonPropertyName("tick")]
-    public int Tick { get; init; }
+    [JsonPropertyName("currentTicks")]
+    public int currentTicks { get; init; }
 
     [JsonIgnore]
     public JsonNode Json => JsonNode.Parse(JsonSerializer.Serialize(this))!;
 
-    [JsonPropertyName("info")]
-    public infoType? info { get; init; }
+    [JsonPropertyName("data")]
+    public DataType? Data { get; init; }
 
-    [JsonPropertyName("players")]
-    public List<playersType>? players { get; init; }
+    public record DataType
+    {
+        [JsonPropertyName("info")]
+        public infoType? info { get; init; }
 
-    [JsonPropertyName("events")]
-    public List<IRecord>? events { get; init; }
+        [JsonPropertyName("players")]
+        public List<playersType>? players { get; init; }
+
+        [JsonPropertyName("events")]
+        public List<IRecord>? events { get; init; }
+    }
 
     public record infoType
     {
-        [JsonPropertyName("elapsedTicks")]
-        public int? elapsedTicks { get; init; }
-
         [JsonPropertyName("stage")]
         public string? stage { get; init; }
     }
@@ -60,10 +63,7 @@ public record CompetitionUpdate
     public record firearmType
     {
         [JsonPropertyName("name")]
-        public string? speed { get; init; }
-
-        [JsonPropertyName("windup")]
-        public double? windup { get; init; }
+        public string? name { get; init; }
 
         [JsonPropertyName("distance")]
         public double? distance { get; init; }
@@ -83,7 +83,7 @@ public record CompetitionUpdate
         [JsonPropertyName("name")]
         public string? name { get; init; }
 
-        [JsonPropertyName("num")]
-        public int? num { get; init; }
+        [JsonPropertyName("numb")]
+        public int? numb { get; init; }
     }
 }

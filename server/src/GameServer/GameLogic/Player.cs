@@ -13,6 +13,7 @@ public partial class Player : IPlayer
     public Position? PlayerTargetPosition { get; set; }
     public IWeapon PlayerWeapon { get; set; }
     public IBackPack PlayerBackPack { get; set; }
+    public int PlayerId { get; set; }
 
     //生成构造函数
     public Player(int id, int health, double speed, Position position)
@@ -22,7 +23,7 @@ public partial class Player : IPlayer
         Speed = speed;
         PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
-        PlayerArmor = null;
+        PlayerArmor = new Armor("NO_ARMOR", 0);
         PlayerWeapon = new Fist();
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
     }
@@ -78,21 +79,9 @@ public partial class Player : IPlayer
 
     }
 
-    public bool PlayerUseMedicine(string medicineName)
+    public void PlayerUseMedicine(string medicineName)
     {
-        IItem? item = PlayerBackPack.FindItems(ItemKind.Medicine, medicineName);
-        if (item != null && item.Count > 0)
-        {
-            PlayerBackPack.RemoveItems(ItemKind.Medicine, medicineName, 1);
-
-            Health += MedicineFactory.CreateFromItem(item).Heal;
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        PlayerUseMedicineEvent?.Invoke(this, new PlayerUseMedicineEventArgs(this, medicineName));
     }
 
 
@@ -101,8 +90,8 @@ public partial class Player : IPlayer
         PlayerSwitchArmEvent?.Invoke(this, new PlayerSwitchArmEventArgs(this, weaponItemId));
     }
 
-    public void PlayerPickUp(string targetSupply, Position targetPosition)
+    public void PlayerPickUp(string targetSupply, Position targetPosition, int numb)
     {
-        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition));
+        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition, numb));
     }
 }
