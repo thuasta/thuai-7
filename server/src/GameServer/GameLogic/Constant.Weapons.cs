@@ -1,6 +1,12 @@
 namespace GameServer.GameLogic;
 public partial class Constant
 {
+    public const string FIST = "FIST";
+    public const string S686 = "S686";
+    public const string VECTOR = "VECTOR";
+    public const string M16 = "M16";
+    public const string AWM = "AWM";
+
     public const float FIST_RANGE = 1;
     public const int FIST_DAMAGE = 20;
     public const int FIST_COOLDOWNTICKS = (int)(TICKS_PER_SECOND * 0.5);

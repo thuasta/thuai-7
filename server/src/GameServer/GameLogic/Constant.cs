@@ -27,6 +27,8 @@ public partial class Constant
     public const int PLAYER_PICK_UP_DISTANCE = 1;
 
     public const double PLAYER_SPEED_PER_TICK = 0.2;
+
+    public const int NO_ARMOR_DEFENSE = 0;
     public const int PRIMARY_ARMOR_DEFENSE = 50;
 
     public const int PREMIUM_ARMOR_DEFENSE = 100;

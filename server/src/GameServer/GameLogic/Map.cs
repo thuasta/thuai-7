@@ -4,9 +4,9 @@ namespace GameServer.GameLogic;
 
 public class Map : IMap
 {
-    private readonly IBlock[,] _mapChunk;
-    private readonly int _width;
-    private readonly int _height;
+    public readonly IBlock[,] _mapChunk;
+    public readonly int _width;
+    public readonly int _height;
     public ISafeZone SafeZone;
     private readonly Random _random = new();
     private readonly List<ObstacleShape> _obstacleShapes;
