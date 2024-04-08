@@ -2,6 +2,7 @@ namespace GameServer.GameLogic;
 
 public interface IPlayer
 {
+    public int MaxHealth { get; }
     int Health { get; set; }
 
     /// <summary>
