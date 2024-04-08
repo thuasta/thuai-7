@@ -106,6 +106,29 @@ public class GameRunner : IGameRunner
         switch (e.Message)
         {
             case PerformAbandonMessage performAbandonMessage:
+                if (!_tokenToPlayerId.ContainsKey(performAbandonMessage.Token))
+                {
+                    _logger.Error($"Player with token {performAbandonMessage.Token} does not exist.");
+                }
+                else
+                {
+                    try
+                    {
+                        List<(IItem.ItemKind, string)> abandonedSupplies = new()
+                        {
+                            (IItem.GetItemKind(performAbandonMessage.TargetSupply), performAbandonMessage.TargetSupply)
+                        };
+
+                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performAbandonMessage.Token])?
+                        .PlayerAbandon(performAbandonMessage.Numb, abandonedSupplies);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(
+                            $"Failed to perform action \"Abandon\" for player with token {performAbandonMessage.Token}: {ex.Message}"
+                        );
+                    }
+                }
                 break;
             case PerformPickUpMessage performPickUpMessage:
                 break;
