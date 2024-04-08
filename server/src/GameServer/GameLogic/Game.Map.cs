@@ -8,13 +8,16 @@ public partial class Game
     {
         // Update Safezone
         GameMap.SafeZone.Update();
-        Recorder.SafeZone record = new() {
-            Data = new() {
-                center = new() {
+        Recorder.SafeZone record = new()
+        {
+            Data = new()
+            {
+                center = new()
+                {
                     x = GameMap.SafeZone.Center.x,
                     y = GameMap.SafeZone.Center.y
                 },
-            radius = GameMap.SafeZone.Radius
+                radius = GameMap.SafeZone.Radius
             }
         };
 
