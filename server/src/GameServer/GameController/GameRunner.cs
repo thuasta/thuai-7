@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using GameServer.Connection;
 using GameServer.GameLogic;
 using Serilog;
 
@@ -11,6 +13,9 @@ public class GameRunner : IGameRunner
     public double RealTicksPerSecond { get; private set; }
     public double TpsLowerBound => 0.9 * ExpectedTicksPerSecond;
     public double TpsUpperBound => 1.1 * ExpectedTicksPerSecond;
+
+    private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
+    private int _nextPlayerId = 0;
 
     private DateTime _lastTpsCheckTime = DateTime.Now;
 
@@ -94,5 +99,67 @@ public class GameRunner : IGameRunner
     {
         // TODO: Implement
         throw new NotImplementedException();
+    }
+
+    public void HandleAfterMessageReceiveEvent(object? sender, AfterMessageReceiveEventArgs e)
+    {
+        switch (e.Message)
+        {
+            case PerformAbandonMessage performAbandonMessage:
+                break;
+            case PerformPickUpMessage performPickUpMessage:
+                break;
+            case PerformSwitchArmMessage performSwitchArmMessage:
+                break;
+            case PerformUseMedicineMessage performUseMedicineMessage:
+                break;
+            case PerformUseGrenadeMessage performUseGrenadeMessage:
+                break;
+            case PerformMoveMessage performMoveMessage:
+                break;
+            case PerformStopMessage performStopMessage:
+                break;
+            case PerformAttackMessage performAttackMessage:
+                break;
+            case GetPlayerInfoMessage getPlayerInfoMessage:
+                break;
+            case GetMapMessage getMapMessage:
+                break;
+            case ChooseOriginMessage chooseOriginMessage:
+                if (!_tokenToPlayerId.ContainsKey(chooseOriginMessage.Token))
+                {
+                    _logger.Information($"Adding player with token {chooseOriginMessage.Token} to the game.");
+                    try
+                    {
+                        Game.AddPlayer(
+                            new Player(
+                                _nextPlayerId,
+                                Constant.PLAYER_MAXIMUM_HEALTH,
+                                Constant.PLAYER_SPEED_PER_TICK,
+                                new Position(chooseOriginMessage.OriginPos.X, chooseOriginMessage.OriginPos.Y)
+                            )
+                        );
+                        _tokenToPlayerId[chooseOriginMessage.Token] = _nextPlayerId;
+                        _nextPlayerId++;
+
+                        _logger.Information($"Player with token {chooseOriginMessage.Token} added to the game.");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(
+                            $"Failed to add player with token {chooseOriginMessage.Token} to the game: {ex.Message}"
+                        );
+                    }
+                }
+                else
+                {
+                    _logger.Error($"Player with token {chooseOriginMessage.Token} already exists.");
+                }
+                break;
+
+            default:
+                _logger.Error($"Unknown message type: {e.Message.MessageType}");
+                break;
+        }
     }
 }
