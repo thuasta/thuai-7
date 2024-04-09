@@ -230,7 +230,7 @@ public partial class Game : IGame
         // Check if the player is close enough to the supply
         if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
         {
-            throw new InvalidOperationException("Player is not close enough to the supply.");
+            _logger.Error($"Player {e.Player.PlayerId} is not close enough to the supply.");
         }
 
         // Check if the supply exists

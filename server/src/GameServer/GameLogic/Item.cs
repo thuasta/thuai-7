@@ -16,6 +16,7 @@ public class Item : IItem
     {
         get => Count * WeightOfSingleItem;
     }
+    public object? AdditionalProperties { get; init; } = null;
 
     /// <summary>
     /// Constructor for an item.

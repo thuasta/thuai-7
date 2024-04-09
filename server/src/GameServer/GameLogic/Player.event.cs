@@ -72,7 +72,6 @@ public partial class Player : IPlayer
         }
     }
 
-
     public class PlayerUseGrenadeEventArgs : EventArgs
     {
         public const PlayerEventType EventName = PlayerEventType.PlayerUseGrenade;
@@ -98,7 +97,6 @@ public partial class Player : IPlayer
             MedicineName = medicineName;
         }
     }
-
 
     public event EventHandler<PlayerAbandonEventArgs>? PlayerAbandonEvent;
     public event EventHandler<PlayerAttackEventArgs>? PlayerAttackEvent;
