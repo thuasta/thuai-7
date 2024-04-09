@@ -53,4 +53,9 @@ public interface IItem
     /// Weight of the item in total.
     /// </summary>
     public int Weight { get; }
+
+    /// <summary>
+    /// Additional properties of the item.
+    /// </summary>
+    public object? AdditionalProperties { get; init; }
 }
