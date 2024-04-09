@@ -116,6 +116,8 @@ public partial class Game
                 supplies = supplies
             }
         };
+
+        _recorder?.Record(suppliesRecord);
     }
 
     /// <summary>
@@ -183,5 +185,5 @@ public partial class Game
             _logger.Error($"An exception occurred while ticking the game: {e}");
         }
     }
-    # endregion
+    #endregion
 }
