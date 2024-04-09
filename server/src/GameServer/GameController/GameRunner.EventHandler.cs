@@ -31,7 +31,7 @@ public partial class GameRunner : IGameRunner
                             (IItem.GetItemKind(performAbandonMessage.TargetSupply), performAbandonMessage.TargetSupply)
                         };
 
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performAbandonMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performAbandonMessage.Token])?
                         .PlayerAbandon(performAbandonMessage.Numb, abandonedSupplies);
                     }
                     catch (Exception ex)
@@ -52,7 +52,7 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performPickUpMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performPickUpMessage.Token])?
                         .PlayerPickUp(
                             performPickUpMessage.TargetSupply,
                             new Position(performPickUpMessage.TargetPos.X, performPickUpMessage.TargetPos.Y),
@@ -77,7 +77,7 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performSwitchArmMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performSwitchArmMessage.Token])?
                         .PlayerSwitchArm(performSwitchArmMessage.TargetFirearm);
                     }
                     catch (Exception ex)
@@ -98,7 +98,7 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performUseMedicineMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performUseMedicineMessage.Token])?
                         .PlayerUseMedicine(performUseMedicineMessage.MedicineName);
                     }
                     catch (Exception ex)
@@ -119,7 +119,7 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performUseGrenadeMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performUseGrenadeMessage.Token])?
                         .PlayerUseGrenade(
                             new Position(performUseGrenadeMessage.TargetPos.X, performUseGrenadeMessage.TargetPos.Y)
                         );
@@ -142,7 +142,7 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performMoveMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performMoveMessage.Token])?
                         .MoveTo(
                             new Position(performMoveMessage.Destination.X, performMoveMessage.Destination.Y)
                         );
@@ -165,7 +165,7 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performStopMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performStopMessage.Token])?
                         .Stop();
                     }
                     catch (Exception ex)
@@ -186,7 +186,7 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        Game.AllPlayers.Find(p => p.Id == _tokenToPlayerId[performAttackMessage.Token])?
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performAttackMessage.Token])?
                         .PlayerAttack(
                             new Position(performAttackMessage.TargetPos.X, performAttackMessage.TargetPos.Y)
                         );

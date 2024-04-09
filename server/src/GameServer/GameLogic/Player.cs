@@ -5,7 +5,7 @@ namespace GameServer.GameLogic;
 
 public partial class Player : IPlayer
 {
-    public int Id { get; set; }
+    public int PlayerId { get; set; }
     public int MaxHealth { get; }
     public int Health { get; set; }
     public double Speed { get; set; }
@@ -15,15 +15,14 @@ public partial class Player : IPlayer
     public Position? PlayerTargetPosition { get; set; }
     public IWeapon PlayerWeapon { get; set; }
     public IBackPack PlayerBackPack { get; set; }
-    public int PlayerId { get; set; }
     public bool IsAlive => Health > 0;
 
     private readonly ILogger _logger;
 
     //生成构造函数
-    public Player(int id, int maxHealth, double speed, Position position)
+    public Player(int playerId, int maxHealth, double speed, Position position)
     {
-        Id = id;
+        PlayerId = playerId;
         Health = maxHealth;
         MaxHealth = maxHealth;
         Speed = speed;
@@ -33,14 +32,14 @@ public partial class Player : IPlayer
         PlayerWeapon = new Fist();
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
 
-        _logger = Log.ForContext("Component", $"Player {id}");
+        _logger = Log.ForContext("Component", $"Player {playerId}");
     }
 
     public void TakeDamage(int damage)
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to take damage: Player {Id} is already dead.");
+            _logger.Error($"Failed to take damage: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -62,7 +61,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to take heal: Player {Id} is already dead.");
+            _logger.Error($"Failed to take heal: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -94,7 +93,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to try to pick up item {item.ItemSpecificName}: Player {Id} is already dead.");
+            _logger.Error($"Failed to try to pick up item {item.ItemSpecificName}: Player {PlayerId} is already dead.");
             return false;
         }
 
@@ -114,7 +113,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to abandon items: Player {Id} is already dead.");
+            _logger.Error($"Failed to abandon items: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -125,7 +124,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to attack: Player {Id} is already dead.");
+            _logger.Error($"Failed to attack: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -136,7 +135,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to use grenade: Player {Id} is already dead.");
+            _logger.Error($"Failed to use grenade: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -148,7 +147,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to use medicine: Player {Id} is already dead.");
+            _logger.Error($"Failed to use medicine: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -160,7 +159,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to switch arm: Player {Id} is already dead.");
+            _logger.Error($"Failed to switch arm: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -171,7 +170,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to pick up: Player {Id} is already dead.");
+            _logger.Error($"Failed to pick up: Player {PlayerId} is already dead.");
             return;
         }
 
