@@ -49,6 +49,7 @@ public partial class Game
     {
         _recorder?.Save();
     }
+
     /// <summary>
     /// Initializes the game.
     /// </summary>
@@ -113,7 +114,7 @@ public partial class Game
         {
             Data = new()
             {
-                supplies = supplies
+                supplies = new(supplies)
             }
         };
 
