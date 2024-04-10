@@ -161,7 +161,7 @@ public class MenuController : MonoBehaviour
         void ListAllLevels(bool startServer = false, bool isRecord = true)
         {
             // Prior: find folders
-            List<string> LevelFolders = Directory.GetDirectories($"{_projectPath}/worlds").ToList();
+            List<string> LevelFolders = Directory.GetDirectories($"{_projectPath}/records").ToList();
             // Next: find files
             string[] allLevels = Directory.GetFiles($"{_projectPath}/worlds", "*.nclevel", SearchOption.AllDirectories);
             // Compare them

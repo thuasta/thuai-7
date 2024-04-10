@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CameraTest : MonoBehaviour
+public class Observe : MonoBehaviour
 {
     public float RotateSpeed;
     public float MoveSpeed;
