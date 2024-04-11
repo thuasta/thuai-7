@@ -35,6 +35,11 @@ public partial class Player : IPlayer
         _logger = Log.ForContext("Component", $"Player {playerId}");
     }
 
+    public void Teleport(Position position)
+    {
+        PlayerTeleportEvent?.Invoke(this, new PlayerTeleportEventArgs(this, position));
+    }
+
     public void TakeDamage(int damage)
     {
         if (IsAlive == false)

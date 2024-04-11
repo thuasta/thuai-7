@@ -4,8 +4,17 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
+    public event EventHandler<AfterGameInitializationEventArgs>? AfterGameInitializationEvent = delegate { };
     public event EventHandler<AfterGameTickEventArgs>? AfterGameTickEvent = delegate { };
+    public event EventHandler<AfterGameFinishEventArgs>? AfterGameFinishEvent = delegate { };
 
+    public enum GameStage
+    {
+        Waiting,
+        Preparing,
+        Fighting,
+        Finished
+    }
 
     #region Fields and properties
     /// <summary>
@@ -19,6 +28,8 @@ public partial class Game
     /// The first tick is 0.
     /// </remarks>
     public int CurrentTick { get; private set; } = 0;
+
+    public GameStage Stage { get; private set; } = GameStage.Waiting;
 
     private readonly ILogger _logger;
 
@@ -55,70 +66,88 @@ public partial class Game
     /// </summary>
     public void Initialize()
     {
-        foreach (Player player in AllPlayers)
+        try
         {
-            SubscribePlayerEvents(player);
-        }
-        GameMap.GenerateMap();
-
-        List<Position> walls = new();
-        List<Recorder.Supplies.suppliesType> supplies = new();
-        for (int i = 0; i < GameMap.Width; i++)
-        {
-            for (int j = 0; j < GameMap.Height; j++)
+            lock (_lock)
             {
-                //add wall block into walls
-                if (GameMap.MapChunk[i, j].IsWall)
+                GameMap.GenerateMap();
+
+                Stage = GameStage.Preparing;
+
+                // Randomly choose the position of each player
+                foreach (Player player in AllPlayers)
                 {
-                    walls.Add(new Position(i, j));
+                    player.PlayerPosition = GameMap.GenerateValidPosition();
                 }
 
-                //add supplies into supplies
-                if (GameMap.MapChunk[i, j].Items.Count > 0)
+                List<Position> walls = new();
+                List<Recorder.Supplies.suppliesType> supplies = new();
+                for (int i = 0; i < GameMap.Width; i++)
                 {
-                    for (int k = 0; k < GameMap.MapChunk[i, j].Items.Count; k++)
+                    for (int j = 0; j < GameMap.Height; j++)
                     {
-                        supplies.Add(new Recorder.Supplies.suppliesType()
+                        //add wall block into walls
+                        if (GameMap.MapChunk[i, j].IsWall)
                         {
-                            name = GameMap.MapChunk[i, j].Items[k].ItemSpecificName,
-                            numb = GameMap.MapChunk[i, j].Items[k].Count,
-                            position = new()
+                            walls.Add(new Position(i, j));
+                        }
+
+                        //add supplies into supplies
+                        if (GameMap.MapChunk[i, j].Items.Count > 0)
+                        {
+                            for (int k = 0; k < GameMap.MapChunk[i, j].Items.Count; k++)
                             {
-                                x = i,
-                                y = j
+                                supplies.Add(new Recorder.Supplies.suppliesType()
+                                {
+                                    name = GameMap.MapChunk[i, j].Items[k].ItemSpecificName,
+                                    numb = GameMap.MapChunk[i, j].Items[k].Count,
+                                    position = new()
+                                    {
+                                        x = i,
+                                        y = j
+                                    }
+                                });
                             }
-                        });
+                        }
                     }
                 }
+
+                Recorder.Map mapRecord = new()
+                {
+                    Data = new()
+                    {
+                        width = GameMap.Width,
+                        height = GameMap.Height,
+                        walls = (
+                            from wall in walls
+                            select new Recorder.Map.wallsPositionType
+                            {
+                                x = wall.x,
+                                y = wall.y
+                            }
+                        ).ToList()
+                    }
+                };
+
+                _recorder?.Record(mapRecord);
+
+                Recorder.Supplies suppliesRecord = new()
+                {
+                    Data = new()
+                    {
+                        supplies = new(supplies)
+                    }
+                };
+
+                _recorder?.Record(suppliesRecord);
+
+                AfterGameInitializationEvent?.Invoke(this, new AfterGameInitializationEventArgs(this));
             }
         }
-
-        Recorder.Map mapRecord = new()
+        catch (Exception e)
         {
-            Data = new()
-            {
-                width = GameMap.Width,
-                height = GameMap.Height,
-                walls = (from wall in walls
-                         select new Recorder.Map.wallsPositionType
-                         {
-                             x = wall.x,
-                             y = wall.y
-                         }).ToList()
-            }
-        };
-
-        _recorder?.Record(mapRecord);
-
-        Recorder.Supplies suppliesRecord = new()
-        {
-            Data = new()
-            {
-                supplies = new(supplies)
-            }
-        };
-
-        _recorder?.Record(suppliesRecord);
+            _logger.Error($"Failed to initialize the game: {e}");
+        }
     }
 
     /// <summary>
@@ -130,11 +159,44 @@ public partial class Game
         {
             lock (_lock)
             {
-                CurrentTick++;
+                if (Stage == GameStage.Waiting)
+                {
+                    _logger.Error("The game should be initialized before ticking.");
+                    return;
+                }
+                if (Stage == GameStage.Finished)
+                {
+                    _logger.Warning("The game has already finished. No more ticks will be processed.");
+                    return;
+                }
 
-                UpdateMap();
-                UpdatePlayers();
-                UpdateGrenades();
+                CurrentTick++;
+                if (CurrentTick > Constant.PREPERATION_TICKS)
+                {
+                    Stage = GameStage.Fighting;
+                }
+
+                int alivePlayers = 0;
+                foreach (Player player in AllPlayers)
+                {
+                    if (player.IsAlive == true)
+                    {
+                        alivePlayers++;
+                    }
+                }
+                if (alivePlayers == 0)
+                {
+                    Stage = GameStage.Finished;
+                    AfterGameFinishEvent?.Invoke(this, new AfterGameFinishEventArgs());
+                    return;
+                }
+
+                if (Stage == GameStage.Fighting)
+                {
+                    UpdateMap();
+                    UpdatePlayers();
+                    UpdateGrenades();
+                }
 
                 Recorder.CompetitionUpdate competitionUpdateRecord = new()
                 {
@@ -179,7 +241,6 @@ public partial class Game
 
                 AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
             }
-
         }
         catch (Exception e)
         {

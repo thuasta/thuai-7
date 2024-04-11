@@ -3,11 +3,18 @@ namespace GameServer.GameLogic;
 public partial class Game
 {
     public List<Player> AllPlayers { get; private set; } = new();
+    public int PlayerCount => AllPlayers.Count;
 
     public List<Recorder.IRecord> _events = new();
 
     public void AddPlayer(Player player)
     {
+        if (Stage != GameStage.Waiting)
+        {
+            _logger.Error("Cannot add player: The game is already started.");
+            return;
+        }
+
         AllPlayers.Add(player);
         SubscribePlayerEvents(player);
     }

@@ -65,6 +65,19 @@ public class Map : IMap
 
         return MapChunk[xInt, yInt];
     }
+    public IBlock? GetBlock(double x, double y)
+    {
+        // Convert float to int
+        int xInt = (int)x;
+        int yInt = (int)y;
+        // Judge if the block is out of the map
+        if (xInt < 0 || xInt >= MapChunk.GetLength(0) || yInt < 0 || yInt >= MapChunk.GetLength(1))
+        {
+            return null;
+        }
+
+        return MapChunk[xInt, yInt];
+    }
 
     public IBlock? GetBlock(Position position)
     {
@@ -78,6 +91,23 @@ public class Map : IMap
         }
         return MapChunk[xInt, yInt];
     }
+
+    public Position GenerateValidPosition()
+    {
+        // Randomly generate a position
+        int x = _random.Next(0, Width);
+        int y = _random.Next(0, Height);
+
+        // Check if the position is valid
+        while (GetBlock(x, y) is null || GetBlock(x, y)?.IsWall == true)
+        {
+            x = _random.Next(0, Width);
+            y = _random.Next(0, Height);
+        }
+
+        return new Position(x, y);
+    }
+
     public void GenerateMap()
     {
         GenerateWalls();
