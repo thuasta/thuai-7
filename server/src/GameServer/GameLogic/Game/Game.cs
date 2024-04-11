@@ -64,68 +64,84 @@ public partial class Game
     /// </summary>
     public void Initialize()
     {
-        GameMap.GenerateMap();
-
-        Stage = GameStage.Preparing;
-
-        List<Position> walls = new();
-        List<Recorder.Supplies.suppliesType> supplies = new();
-        for (int i = 0; i < GameMap.Width; i++)
+        try
         {
-            for (int j = 0; j < GameMap.Height; j++)
+            lock (_lock)
             {
-                //add wall block into walls
-                if (GameMap.MapChunk[i, j].IsWall)
+                GameMap.GenerateMap();
+
+                Stage = GameStage.Preparing;
+
+                // Randomly choose the position of each player
+                foreach (Player player in AllPlayers)
                 {
-                    walls.Add(new Position(i, j));
+                    player.PlayerPosition = GameMap.GenerateValidPosition();
                 }
 
-                //add supplies into supplies
-                if (GameMap.MapChunk[i, j].Items.Count > 0)
+                List<Position> walls = new();
+                List<Recorder.Supplies.suppliesType> supplies = new();
+                for (int i = 0; i < GameMap.Width; i++)
                 {
-                    for (int k = 0; k < GameMap.MapChunk[i, j].Items.Count; k++)
+                    for (int j = 0; j < GameMap.Height; j++)
                     {
-                        supplies.Add(new Recorder.Supplies.suppliesType()
+                        //add wall block into walls
+                        if (GameMap.MapChunk[i, j].IsWall)
                         {
-                            name = GameMap.MapChunk[i, j].Items[k].ItemSpecificName,
-                            numb = GameMap.MapChunk[i, j].Items[k].Count,
-                            position = new()
+                            walls.Add(new Position(i, j));
+                        }
+
+                        //add supplies into supplies
+                        if (GameMap.MapChunk[i, j].Items.Count > 0)
+                        {
+                            for (int k = 0; k < GameMap.MapChunk[i, j].Items.Count; k++)
                             {
-                                x = i,
-                                y = j
+                                supplies.Add(new Recorder.Supplies.suppliesType()
+                                {
+                                    name = GameMap.MapChunk[i, j].Items[k].ItemSpecificName,
+                                    numb = GameMap.MapChunk[i, j].Items[k].Count,
+                                    position = new()
+                                    {
+                                        x = i,
+                                        y = j
+                                    }
+                                });
                             }
-                        });
+                        }
                     }
                 }
+
+                Recorder.Map mapRecord = new()
+                {
+                    Data = new()
+                    {
+                        width = GameMap.Width,
+                        height = GameMap.Height,
+                        walls = (from wall in walls
+                                 select new Recorder.Map.wallsPositionType
+                                 {
+                                     x = wall.x,
+                                     y = wall.y
+                                 }).ToList()
+                    }
+                };
+
+                _recorder?.Record(mapRecord);
+
+                Recorder.Supplies suppliesRecord = new()
+                {
+                    Data = new()
+                    {
+                        supplies = new(supplies)
+                    }
+                };
+
+                _recorder?.Record(suppliesRecord);
             }
         }
-
-        Recorder.Map mapRecord = new()
+        catch (Exception e)
         {
-            Data = new()
-            {
-                width = GameMap.Width,
-                height = GameMap.Height,
-                walls = (from wall in walls
-                         select new Recorder.Map.wallsPositionType
-                         {
-                             x = wall.x,
-                             y = wall.y
-                         }).ToList()
-            }
-        };
-
-        _recorder?.Record(mapRecord);
-
-        Recorder.Supplies suppliesRecord = new()
-        {
-            Data = new()
-            {
-                supplies = new(supplies)
-            }
-        };
-
-        _recorder?.Record(suppliesRecord);
+            _logger.Error($"Failed to initialize the game: {e}");
+        }
     }
 
     /// <summary>

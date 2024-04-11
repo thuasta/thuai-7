@@ -79,7 +79,6 @@ public class Map : IMap
         return MapChunk[xInt, yInt];
     }
 
-
     public IBlock? GetBlock(Position position)
     {
         // Convert float to int
@@ -92,6 +91,23 @@ public class Map : IMap
         }
         return MapChunk[xInt, yInt];
     }
+
+    public Position GenerateValidPosition()
+    {
+        // Randomly generate a position
+        int x = _random.Next(0, Width);
+        int y = _random.Next(0, Height);
+
+        // Check if the position is valid
+        while (GetBlock(x, y) is null || GetBlock(x, y)?.IsWall == true)
+        {
+            x = _random.Next(0, Width);
+            y = _random.Next(0, Height);
+        }
+
+        return new Position(x, y);
+    }
+
     public void GenerateMap()
     {
         GenerateWalls();
