@@ -4,7 +4,9 @@ namespace GameServer.GameLogic;
 
 public partial class Game
 {
+    public event EventHandler<AfterGameInitializationEventArgs>? AfterGameInitializationEvent = delegate { };
     public event EventHandler<AfterGameTickEventArgs>? AfterGameTickEvent = delegate { };
+    public event EventHandler<AfterGameFinishEventArgs>? AfterGameFinishEvent = delegate { };
 
     public enum GameStage
     {
@@ -138,6 +140,8 @@ public partial class Game
                 };
 
                 _recorder?.Record(suppliesRecord);
+
+                AfterGameInitializationEvent?.Invoke(this, new AfterGameInitializationEventArgs(this));
             }
         }
         catch (Exception e)
@@ -183,6 +187,7 @@ public partial class Game
                 if (alivePlayers == 0)
                 {
                     Stage = GameStage.Finished;
+                    AfterGameFinishEvent?.Invoke(this, new AfterGameFinishEventArgs());
                     return;
                 }
 
@@ -236,7 +241,6 @@ public partial class Game
 
                 AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
             }
-
         }
         catch (Exception e)
         {
