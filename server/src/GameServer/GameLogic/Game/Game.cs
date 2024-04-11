@@ -116,12 +116,14 @@ public partial class Game
                     {
                         width = GameMap.Width,
                         height = GameMap.Height,
-                        walls = (from wall in walls
-                                 select new Recorder.Map.wallsPositionType
-                                 {
-                                     x = wall.x,
-                                     y = wall.y
-                                 }).ToList()
+                        walls = (
+                            from wall in walls
+                            select new Recorder.Map.wallsPositionType
+                            {
+                                x = wall.x,
+                                y = wall.y
+                            }
+                        ).ToList()
                     }
                 };
 
