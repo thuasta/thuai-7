@@ -45,6 +45,12 @@ class Program
             // Wait for players to connect
             Task.Delay((int)(config.WaitingTime * 1000)).Wait();
 
+            while (gameRunner.Game.PlayerCount < config.ExpectedPlayerNum)
+            {
+                _logger.Information($"Waiting for {config.ExpectedPlayerNum - gameRunner.Game.PlayerCount} more players to join...");
+                Task.Delay(1000).Wait();
+            }
+
             gameRunner.Start();
 
             while (true)

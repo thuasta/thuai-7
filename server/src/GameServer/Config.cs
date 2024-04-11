@@ -43,4 +43,7 @@ public record Config
     [JsonPropertyName("damage_outside_safe_zone")]
     public int DamageOutsideSafeZone { get; init; }
 
+    [JsonPropertyName("expected_player_num")]
+    public int ExpectedPlayerNum { get; init; } = 1;
+
 }

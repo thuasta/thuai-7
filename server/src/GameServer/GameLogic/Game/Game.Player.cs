@@ -3,6 +3,7 @@ namespace GameServer.GameLogic;
 public partial class Game
 {
     public List<Player> AllPlayers { get; private set; } = new();
+    public int PlayerCount => AllPlayers.Count;
 
     public List<Recorder.IRecord> _events = new();
 
