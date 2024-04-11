@@ -7,12 +7,6 @@ public partial class GameRunner : IGameRunner
 {
     public void HandleAfterMessageReceiveEvent(object? sender, AfterMessageReceiveEventArgs e)
     {
-        if (_isRunning == false)
-        {
-            _logger.Warning($"Game is not running. Ignoring message: {e.Message.MessageType}");
-            return;
-        }
-
         _logger.Debug($"Handling message: {e.Message.MessageType}");
 
         switch (e.Message)
