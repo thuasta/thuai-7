@@ -15,6 +15,12 @@ public partial class Game : IGame
 
     private void OnPlayerAbandon(object? sender, Player.PlayerAbandonEventArgs e)
     {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot abandon supplies when the game is not at stage Fighting.");
+            return;
+        }
+
         foreach ((IItem.ItemKind itemKind, string itemSpecificName) in e.AbandonedSupplies)
         {
             IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
@@ -86,6 +92,12 @@ public partial class Game : IGame
 
     private void OnPlayerAttack(object? sender, Player.PlayerAttackEventArgs e)
     {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot attack when the game is not at stage Fighting.");
+            return;
+        }
+
         // Check if the type weapon is not "Fist"
         if (e.Player.PlayerWeapon is not Fist)
         {
@@ -228,6 +240,12 @@ public partial class Game : IGame
 
     private void OnPlayerPickUp(object? sender, Player.PlayerPickUpEventArgs e)
     {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot pick up supplies when the game is not at stage Fighting.");
+            return;
+        }
+
         // Check if the player is close enough to the supply
         if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
         {
@@ -267,6 +285,12 @@ public partial class Game : IGame
 
     private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
     {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot switch arm when the game is not at stage Fighting.");
+            return;
+        }
+
         //iterate player's backpack to find the weapon with weaponItemId
         //if found, set PlayerWeapon to the weapon and keep its cooldown.
         //if not found, throw new ArgumentException("Weapon not found in backpack.");
@@ -295,6 +319,11 @@ public partial class Game : IGame
 
     private void OnPlayerUseGrenade(object? sender, Player.PlayerUseGrenadeEventArgs e)
     {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot use grenade when the game is not at stage Fighting.");
+            return;
+        }
         // Check if the player has grenade
         IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Grenade, "GRENADE");
         if (item != null && item.Count > 0)
@@ -327,6 +356,12 @@ public partial class Game : IGame
 
     private void OnPlayerUseMedicine(object? sender, Player.PlayerUseMedicineEventArgs e)
     {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot use medicine when the game is not at stage Fighting.");
+            return;
+        }
+
         // Check if the player has medicine
         IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Medicine, e.MedicineName);
         if (item != null && item.Count > 0)
@@ -354,7 +389,11 @@ public partial class Game : IGame
 
     private void OnPlayerTeleport(object? sender, Player.PlayerTeleportEventArgs e)
     {
-        // TODO: Only teleport if the game is not started
+        if (Stage != GameStage.Preparing)
+        {
+            _logger.Error("Teleportation is only allowed at stage Preparing.");
+        }
+
         if (GameMap.GetBlock(e.TargetPosition.x, e.TargetPosition.y)?.IsWall == false)
         {
             e.Player.PlayerPosition = e.TargetPosition;

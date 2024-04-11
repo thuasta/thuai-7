@@ -6,6 +6,13 @@ public partial class Game
 {
     public event EventHandler<AfterGameTickEventArgs>? AfterGameTickEvent = delegate { };
 
+    public enum GameStage
+    {
+        Waiting,
+        Preparing,
+        Fighting,
+        Finished
+    }
 
     #region Fields and properties
     /// <summary>
@@ -19,6 +26,8 @@ public partial class Game
     /// The first tick is 0.
     /// </remarks>
     public int CurrentTick { get; private set; } = 0;
+
+    public GameStage Stage { get; private set; } = GameStage.Waiting;
 
     private readonly ILogger _logger;
 
@@ -55,11 +64,9 @@ public partial class Game
     /// </summary>
     public void Initialize()
     {
-        foreach (Player player in AllPlayers)
-        {
-            SubscribePlayerEvents(player);
-        }
         GameMap.GenerateMap();
+
+        Stage = GameStage.Preparing;
 
         List<Position> walls = new();
         List<Recorder.Supplies.suppliesType> supplies = new();
@@ -130,11 +137,43 @@ public partial class Game
         {
             lock (_lock)
             {
-                CurrentTick++;
+                if (Stage == GameStage.Waiting)
+                {
+                    _logger.Error("The game should be initialized before ticking.");
+                    return;
+                }
+                if (Stage == GameStage.Finished)
+                {
+                    _logger.Warning("The game has already finished. No more ticks will be processed.");
+                    return;
+                }
 
-                UpdateMap();
-                UpdatePlayers();
-                UpdateGrenades();
+                CurrentTick++;
+                if (CurrentTick > Constant.PREPERATION_TICKS)
+                {
+                    Stage = GameStage.Fighting;
+                }
+
+                int alivePlayers = 0;
+                foreach (Player player in AllPlayers)
+                {
+                    if (player.IsAlive == true)
+                    {
+                        alivePlayers++;
+                    }
+                }
+                if (alivePlayers == 0)
+                {
+                    Stage = GameStage.Finished;
+                    return;
+                }
+
+                if (Stage == GameStage.Fighting)
+                {
+                    UpdateMap();
+                    UpdatePlayers();
+                    UpdateGrenades();
+                }
 
                 Recorder.CompetitionUpdate competitionUpdateRecord = new()
                 {

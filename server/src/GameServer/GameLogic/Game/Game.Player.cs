@@ -8,6 +8,12 @@ public partial class Game
 
     public void AddPlayer(Player player)
     {
+        if (Stage != GameStage.Waiting)
+        {
+            _logger.Error("Cannot add player: The game is already started.");
+            return;
+        }
+
         AllPlayers.Add(player);
         SubscribePlayerEvents(player);
     }
