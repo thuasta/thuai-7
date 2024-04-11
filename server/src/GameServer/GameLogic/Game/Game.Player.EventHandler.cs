@@ -17,7 +17,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot abandon supplies when the game is not at stage Fighting.");
+            _logger.Error($"Player {e.Player.PlayerId} cannot abandon supplies when the game is at stage {Stage}.");
             return;
         }
 
@@ -94,7 +94,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot attack when the game is not at stage Fighting.");
+            _logger.Error($"Player {e.Player.PlayerId} cannot attack when the game is at stage {Stage}.");
             return;
         }
 
@@ -242,7 +242,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot pick up supplies when the game is not at stage Fighting.");
+            _logger.Error($"Player {e.Player.PlayerId} cannot pick up supplies when the game is at stage {Stage}.");
             return;
         }
 
@@ -287,7 +287,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot switch arm when the game is not at stage Fighting.");
+            _logger.Error($"Player {e.Player.PlayerId} cannot switch arm when the game is at stage {Stage}.");
             return;
         }
 
@@ -321,7 +321,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot use grenade when the game is not at stage Fighting.");
+            _logger.Error($"Player {e.Player.PlayerId} cannot use grenade when the game is at stage {Stage}.");
             return;
         }
         // Check if the player has grenade
@@ -358,7 +358,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot use medicine when the game is not at stage Fighting.");
+            _logger.Error($"Player {e.Player.PlayerId} cannot use medicine when the game is at stage {Stage}.");
             return;
         }
 
@@ -391,7 +391,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Preparing)
         {
-            _logger.Error("Teleportation is only allowed at stage Preparing.");
+            _logger.Error($"Teleportation is only allowed at stage Preparing (actual stage {Stage}).");
         }
 
         if (GameMap.GetBlock(e.TargetPosition.x, e.TargetPosition.y)?.IsWall == false)
