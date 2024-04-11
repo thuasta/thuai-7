@@ -56,6 +56,8 @@ class Program
 
             HandleCommand();
 
+            Task.Delay(-1).Wait();
+
             #region Local Functions
             void SubscribeEvents()
             {
