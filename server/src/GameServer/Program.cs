@@ -47,7 +47,9 @@ class Program
 
             while (gameRunner.Game.PlayerCount < config.ExpectedPlayerNum)
             {
-                _logger.Information($"Waiting for {config.ExpectedPlayerNum - gameRunner.Game.PlayerCount} more players to join...");
+                _logger.Information(
+                    $"Waiting for {config.ExpectedPlayerNum - gameRunner.Game.PlayerCount} more players to join..."
+                );
                 Task.Delay(1000).Wait();
             }
 
