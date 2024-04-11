@@ -11,7 +11,8 @@ public partial class Player : IPlayer
         PlayerPickUp,
         PlayerSwitchArm,
         PlayerUseGrenade,
-        PlayerUseMedicine
+        PlayerUseMedicine,
+        PlayerTeleport
     };
 
     public class PlayerAbandonEventArgs : EventArgs
@@ -72,6 +73,19 @@ public partial class Player : IPlayer
         }
     }
 
+    public class PlayerTeleportEventArgs : EventArgs
+    {
+        public const PlayerEventType EventName = PlayerEventType.PlayerTeleport;
+        public Player Player { get; }
+        public Position TargetPosition { get; }
+
+        public PlayerTeleportEventArgs(Player player, Position targetPosition)
+        {
+            Player = player;
+            TargetPosition = targetPosition;
+        }
+    }
+
     public class PlayerUseGrenadeEventArgs : EventArgs
     {
         public const PlayerEventType EventName = PlayerEventType.PlayerUseGrenade;
@@ -102,6 +116,7 @@ public partial class Player : IPlayer
     public event EventHandler<PlayerAttackEventArgs>? PlayerAttackEvent;
     public event EventHandler<PlayerPickUpEventArgs>? PlayerPickUpEvent;
     public event EventHandler<PlayerSwitchArmEventArgs>? PlayerSwitchArmEvent;
+    public event EventHandler<PlayerTeleportEventArgs>? PlayerTeleportEvent;
     public event EventHandler<PlayerUseGrenadeEventArgs>? PlayerUseGrenadeEvent;
     public event EventHandler<PlayerUseMedicineEventArgs>? PlayerUseMedicineEvent;
 }

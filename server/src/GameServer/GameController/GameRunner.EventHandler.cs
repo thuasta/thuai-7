@@ -201,6 +201,35 @@ public partial class GameRunner : IGameRunner
                 break;
 
             case GetPlayerInfoMessage getPlayerInfoMessage:
+                if (!_tokenToPlayerId.ContainsKey(getPlayerInfoMessage.Token))
+                {
+                    _logger.Information($"Adding player with token \"{getPlayerInfoMessage.Token}\" to the game.");
+                    try
+                    {
+                        Game.AddPlayer(
+                            new Player(
+                                _nextPlayerId,
+                                Constant.PLAYER_MAXIMUM_HEALTH,
+                                Constant.PLAYER_SPEED_PER_TICK,
+                                new Position(0, 0)
+                            )
+                        );
+                        _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
+                        _nextPlayerId++;
+
+                        _logger.Information($"Player with token \"{getPlayerInfoMessage.Token}\" joined the game.");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(
+                            $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game: {ex.Message}"
+                        );
+                    }
+                }
+                else
+                {
+                    _logger.Error($"Player with token \"{getPlayerInfoMessage.Token}\" already exists.");
+                }
                 break;
 
             case GetMapMessage getMapMessage:
@@ -209,32 +238,24 @@ public partial class GameRunner : IGameRunner
             case ChooseOriginMessage chooseOriginMessage:
                 if (!_tokenToPlayerId.ContainsKey(chooseOriginMessage.Token))
                 {
-                    _logger.Information($"Adding player with token \"{chooseOriginMessage.Token}\" to the game.");
+                    _logger.Error($"Player with token \"{chooseOriginMessage.Token}\" does not exist.");
+                }
+                else
+                {
                     try
                     {
-                        Game.AddPlayer(
-                            new Player(
-                                _nextPlayerId,
-                                Constant.PLAYER_MAXIMUM_HEALTH,
-                                Constant.PLAYER_SPEED_PER_TICK,
-                                new Position(chooseOriginMessage.OriginPos.X, chooseOriginMessage.OriginPos.Y)
-                            )
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[chooseOriginMessage.Token])?
+                        .Teleport(
+                            new Position(chooseOriginMessage.OriginPos.X, chooseOriginMessage.OriginPos.Y)
                         );
-                        _tokenToPlayerId[chooseOriginMessage.Token] = _nextPlayerId;
-                        _nextPlayerId++;
-
-                        _logger.Information($"Player with token \"{chooseOriginMessage.Token}\" joined the game.");
                     }
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to add player with token \"{chooseOriginMessage.Token}\" to the game: {ex.Message}"
+                            $"Failed to perform action \"ChooseOrigin\" for player with token {chooseOriginMessage.Token}: {ex.Message}"
                         );
+
                     }
-                }
-                else
-                {
-                    _logger.Error($"Player with token \"{chooseOriginMessage.Token}\" already exists.");
                 }
                 break;
 

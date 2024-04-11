@@ -10,6 +10,7 @@ public partial class Game : IGame
         player.PlayerSwitchArmEvent += OnPlayerSwitchArm;
         player.PlayerUseGrenadeEvent += OnPlayerUseGrenade;
         player.PlayerUseMedicineEvent += OnPlayerUseMedicine;
+        player.PlayerTeleportEvent += OnPlayerTeleport;
     }
 
     private void OnPlayerAbandon(object? sender, Player.PlayerAbandonEventArgs e)
@@ -348,6 +349,19 @@ public partial class Game : IGame
         else
         {
             throw new InvalidOperationException("Player has no medicine.");
+        }
+    }
+
+    private void OnPlayerTeleport(object? sender, Player.PlayerTeleportEventArgs e)
+    {
+        // TODO: Only teleport if the game is not started
+        if (GameMap.GetBlock(e.TargetPosition.x, e.TargetPosition.y)?.IsWall == false)
+        {
+            e.Player.PlayerPosition = e.TargetPosition;
+        }
+        else
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot teleport to a wall or outside of the map.");
         }
     }
 }

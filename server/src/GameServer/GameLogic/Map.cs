@@ -65,6 +65,20 @@ public class Map : IMap
 
         return MapChunk[xInt, yInt];
     }
+    public IBlock? GetBlock(double x, double y)
+    {
+        // Convert float to int
+        int xInt = (int)x;
+        int yInt = (int)y;
+        // Judge if the block is out of the map
+        if (xInt < 0 || xInt >= MapChunk.GetLength(0) || yInt < 0 || yInt >= MapChunk.GetLength(1))
+        {
+            return null;
+        }
+
+        return MapChunk[xInt, yInt];
+    }
+
 
     public IBlock? GetBlock(Position position)
     {
