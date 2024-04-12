@@ -203,7 +203,8 @@ public class MenuController : MonoBehaviour
 
                 // Put the button into the content
                 newRecordButtonObject.transform.SetParent(_scrollViewContent.transform);
-                newRecordButtonObject.transform.localScale = Vector3.one;
+                newRecordButtonObject.GetComponent<RectTransform>().position=Vector3.zero;
+                //newRecordButtonObject.transform.localScale = Vector3.one;
                 _recordButtons.Add(newRecordButton);
             }
         }

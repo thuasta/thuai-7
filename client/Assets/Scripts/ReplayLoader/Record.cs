@@ -105,10 +105,10 @@ public class Record : MonoBehaviour
         //// Initialize the ItemCreator
         // _entityCreator = GameObject.Find("EntityCreator").GetComponent<EntityCreator>();
         // Get json file
-        FileLoaded fileLoaded = GameObject.Find("FileLoaded").GetComponent<FileLoaded>();
+        FileLoaded fileLoaded = GameObject.Find("RecordReader").GetComponent<FileLoaded>();
         // Check if the file is Level json
         _recordFile = fileLoaded.File;
-        _observe = GameObject.Find("Main Camera").GetComponent<Observe>();
+        _observe = GameObject.Find("Camera").GetComponent<Observe>();
 
         // Prefab
         _groundPrefab = Resources.Load<GameObject>("Prefabs/Ground_01");
