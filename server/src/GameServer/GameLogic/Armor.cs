@@ -28,9 +28,9 @@ public class ArmorFactory
 
         int maxHealth = item.ItemSpecificName switch
         {
-            "NO_ARMOR" => Constant.NO_ARMOR_DEFENSE,
             "PRIMARY_ARMOR" => Constant.PRIMARY_ARMOR_DEFENSE,
             "PREMIUM_ARMOR" => Constant.PREMIUM_ARMOR_DEFENSE,
+            "NO_ARMOR" => throw new ArgumentException("NO_ARMOR cannot be converted to armor."),
             _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for armor.")
         };
 
@@ -53,6 +53,11 @@ public class ArmorFactory
 
     public static IItem ToItem(Armor armor, int count)
     {
+        if (armor.ItemSpecificName == "NO_ARMOR")
+        {
+            throw new ArgumentException("NO_ARMOR cannot be converted to item.");
+        }
+
         return new Item(IItem.ItemKind.Armor, armor.ItemSpecificName, count)
         {
             AdditionalProperties = new ArmorProperties
