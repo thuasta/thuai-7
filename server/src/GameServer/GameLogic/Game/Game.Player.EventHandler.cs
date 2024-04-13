@@ -106,15 +106,21 @@ public partial class Game : IGame
 
                 default:
                     IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
-                    if (item != null && item.Count >= e.Number)
+                    if (item is null || item.Count < e.Number)
                     {
-                        // Remove abandon items from the backpack
-                        e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
-
-                        // Add abandon items to the ground
-                        // Get the block at the position of the player
-                        GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
+                        _logger.Error(
+                            $"[Player {e.Player.PlayerId}] Cannot abandon {e.Number} {itemSpecificName}(s)."
+                        );
+                        return;
                     }
+
+                    // Remove abandon items from the backpack
+                    e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
+
+                    // Add abandon items to the ground
+                    // Get the block at the position of the player
+                    GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
+
                     break;
             }
 
