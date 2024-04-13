@@ -80,7 +80,7 @@ public partial class Game : IGame
                         );
                         return;
                     }
-                    if (!e.Player.WeaponSlot.Any(w => w.Name == itemSpecificName))
+                    if (e.Player.WeaponSlot.Any(w => w.Name == itemSpecificName) == false)
                     {
                         _logger.Error(
                             $"[Player {e.Player.PlayerId}] Doesn't have {itemSpecificName}."
@@ -93,11 +93,11 @@ public partial class Game : IGame
                         if (e.Player.WeaponSlot[i].Name == itemSpecificName)
                         {
                             GameMap.AddSupplies(playerIntX, playerIntY, WeaponFactory.ToItem(e.Player.WeaponSlot[i]));
-                            e.Player.WeaponSlot.RemoveAt(i);
                             if (e.Player.PlayerWeapon.Name == itemSpecificName)
                             {
                                 e.Player.PlayerWeapon = IWeapon.DefaultWeapon;
                             }
+                            e.Player.WeaponSlot.RemoveAt(i);
                             break;
                         }
                     }
@@ -344,27 +344,124 @@ public partial class Game : IGame
             _logger.Error($"Player {e.Player.PlayerId} cannot pick up supplies when the game is at stage {Stage}.");
             return;
         }
+        if (e.Numb <= 0)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies with non-positive number.");
+            return;
+        }
+        if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} is not close enough to the supply.");
+            return;
+        }
+        if (GameMap.GetBlock(e.TargetPosition) is null || GameMap.GetBlock(e.TargetPosition)?.IsWall == true)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies at an invalid position.");
+            return;
+        }
+        if (e.TargetSupply == Constant.Names.FIST || e.TargetSupply == Constant.Names.NO_ARMOR)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up {e.TargetSupply}.");
+            return;
+        }
 
         try
         {
-            // Check if the player is close enough to the supply
-            if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
+            switch (IItem.GetItemKind(e.TargetSupply))
             {
-                _logger.Error($"Player {e.Player.PlayerId} is not close enough to the supply.");
+                case IItem.ItemKind.Armor:
+                    if (e.Numb > 1)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up more than one armor.");
+                        return;
+                    }
+
+                    IItem? armorItem = GameMap.GetBlock(e.TargetPosition)?.Items.Find(
+                                    i => i.ItemSpecificName == e.TargetSupply
+                                );
+
+                    if (armorItem is null || armorItem.Count < e.Numb)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Supply not found or no enough supplies.");
+                        return;
+                    }
+
+                    if (e.Player.PlayerArmor.ItemSpecificName != Constant.Names.NO_ARMOR)
+                    {
+                        // Abandon current armor to wear new armor
+                        e.Player.PlayerAbandon(
+                            1, (IItem.ItemKind.Armor, e.Player.PlayerArmor.ItemSpecificName)
+                        );
+                    }
+                    e.Player.PlayerArmor = ArmorFactory.CreateFromItem(armorItem);
+                    GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, armorItem);
+                    break;
+
+                case IItem.ItemKind.Weapon:
+                    if (e.Player.WeaponSlot.Count >= Constant.PLAYER_WEAPON_SLOT_SIZE)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Weapon slot is already full.");
+                        return;
+                    }
+                    if (e.Numb > 1)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up more than one weapon.");
+                        return;
+                    }
+
+                    IItem? weaponItem = GameMap.GetBlock(e.TargetPosition)?.Items.Find(
+                                    i => i.ItemSpecificName == e.TargetSupply
+                                );
+                    if (weaponItem is null || weaponItem.Count < e.Numb)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Supply not found or no enough supplies.");
+                        return;
+                    }
+                    if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetSupply) == true)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot own more than one {e.TargetSupply}.");
+                        return;
+                    }
+
+                    e.Player.WeaponSlot.Add(WeaponFactory.CreateFromItem(weaponItem));
+                    GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, weaponItem);
+
+                    break;
+
+                default:
+                    // Check if the supply exists
+                    IItem? generalItem = GameMap.GetBlock(e.TargetPosition)?.Items.Find(
+                                    i => i.ItemSpecificName == e.TargetSupply
+                                );
+
+                    if (generalItem is null || generalItem.Count < e.Numb)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Supply not found or no enough supplies.");
+                        return;
+                    }
+
+                    // Add the supply to the player's backpack
+                    try
+                    {
+                        e.Player.PlayerBackPack.AddItems(
+                            generalItem.Kind, generalItem.ItemSpecificName, e.Numb
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"[Player {e.Player.PlayerId}] Failed to pick up supplies: {ex.Message}");
+                        return;
+                    }
+
+                    // Remove the supply from the ground
+                    GameMap.RemoveSupplies(
+                        (int)e.TargetPosition.x,
+                        (int)e.TargetPosition.y,
+                        new Item(generalItem.Kind, generalItem.ItemSpecificName, e.Numb)
+                    );
+
+                    break;
             }
-
-            // Check if the supply exists
-            IItem? item = (
-                GameMap.GetBlock((int)e.TargetPosition.x, (int)e.TargetPosition.y)?
-                .Items.Find(i => i.ItemSpecificName == e.TargetSupply && e.Numb < 0 && i.Count <= e.Numb))
-                ?? throw new InvalidOperationException("Supply does not exist or the numb is invalid."
-            );
-
-            // Add the supply to the player's backpack
-            e.Player.PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
-
-            // Remove the supply from the ground
-            GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, item);
 
             Recorder.PlayerPickUpRecord record = new()
             {
@@ -376,7 +473,7 @@ public partial class Game : IGame
                         x = e.TargetPosition.x,
                         y = e.TargetPosition.y
                     },
-                    targetSupply = item.ItemSpecificName,
+                    targetSupply = e.TargetSupply,
                     numb = e.Numb
                 }
             };
@@ -399,30 +496,38 @@ public partial class Game : IGame
 
         try
         {
-            //iterate player's backpack to find the weapon with weaponItemId
-            //if found, set PlayerWeapon to the weapon and keep its cooldown.
-            //if not found, throw new ArgumentException("Weapon not found in backpack.");
-            // TODO: 切枪BUG: 可以来回切换两次枪，导致冷却时间不生效
-            IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Weapon, e.TargetFirearm);
-            if (item != null)
+            if (e.TargetFirearm == Constant.Names.FIST)
             {
-                e.Player.PlayerWeapon = WeaponFactory.CreateFromItem(item);
-                Recorder.PlayerSwitchArmRecord record = new()
-                {
-                    Data = new()
-                    {
-                        playerId = e.Player.PlayerId,
-                        turgetFirearm = e.TargetFirearm
-                    }
-                };
-
-                _events.Add(record);
+                e.Player.PlayerWeapon = IWeapon.DefaultWeapon;
             }
-
             else
             {
-                throw new ArgumentException("Weapon not found in backpack.");
+                if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetFirearm) == false)
+                {
+                    _logger.Error($"[Player {e.Player.PlayerId}] Doesn't have {e.TargetFirearm}.");
+                    return;
+                }
+
+                for (int i = 0; i < e.Player.WeaponSlot.Count; i++)
+                {
+                    if (e.Player.WeaponSlot[i].Name == e.TargetFirearm)
+                    {
+                        e.Player.PlayerWeapon = e.Player.WeaponSlot[i];
+                        break;
+                    }
+                }
             }
+
+            Recorder.PlayerSwitchArmRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    turgetFirearm = e.TargetFirearm
+                }
+            };
+
+            _events.Add(record);
         }
         catch (Exception ex)
         {
@@ -441,33 +546,40 @@ public partial class Game : IGame
         try
         {
             // Check if the player has grenade
-            IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Grenade, "GRENADE");
-            if (item != null && item.Count > 0)
+            IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Grenade, Constant.Names.GRENADE);
+            if (item is null || item.Count <= 0)
             {
-                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Grenade, "GRENADE", 1);
-                Recorder.PlayerUseGrenadeRecord record = new()
-                {
-                    Data = new()
-                    {
-                        playerId = e.Player.PlayerId,
-                        turgetPosition = new()
-                        {
-                            x = e.TargetPosition.x,
-                            y = e.TargetPosition.y
-                        }
-                    }
-                };
-
-                _events.Add(record);
+                _logger.Error($"[Player {e.Player.PlayerId}] Failed to use grenade: Player has no grenade.");
+            }
+            if (GameMap.GetBlock(e.TargetPosition) is null || GameMap.GetBlock(e.TargetPosition)?.IsWall == true)
+            {
+                _logger.Error($"[Player {e.Player.PlayerId}] Cannot throw grenade to a wall or outside of the map.");
+            }
+            if (Position.Distance(e.TargetPosition, e.Player.PlayerPosition) > Constant.GRENADE_THROW_RADIUS)
+            {
+                _logger.Error(
+                    $"[Player {e.Player.PlayerId}] Cannot throw grenade farther than {Constant.GRENADE_THROW_RADIUS}."
+                );
             }
 
-            else
-            {
-                throw new InvalidOperationException("Player has no grenade.");
-            }
-
+            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Grenade, Constant.Names.GRENADE, 1);
             // Generate the grenade
-            _allGrenades.Add(new Grenade(e.Player.PlayerPosition, CurrentTick));
+            _allGrenades.Add(new Grenade(e.TargetPosition, CurrentTick));
+
+            Recorder.PlayerUseGrenadeRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    turgetPosition = new()
+                    {
+                        x = e.TargetPosition.x,
+                        y = e.TargetPosition.y
+                    }
+                }
+            };
+
+            _events.Add(record);
         }
         catch (Exception ex)
         {
@@ -487,27 +599,25 @@ public partial class Game : IGame
         {
             // Check if the player has medicine
             IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Medicine, e.MedicineName);
-            if (item != null && item.Count > 0)
+            if (item == null || item.Count <= 0)
             {
-                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Medicine, e.MedicineName, 1);
-                e.Player.Health += MedicineFactory.CreateFromItem(item).Heal;
+                _logger.Error($"[Player {e.Player.PlayerId}] Failed to use medicine: Player has no medicine.");
+                return;
+            }
 
-                Recorder.PlayerUseMedicineRecord record = new()
+            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Medicine, e.MedicineName, 1);
+            e.Player.TakeHeal(MedicineFactory.CreateFromItem(item).Heal);
+
+            Recorder.PlayerUseMedicineRecord record = new()
+            {
+                Data = new()
                 {
-                    Data = new()
-                    {
-                        playerId = e.Player.PlayerId,
-                        targetMedicine = e.MedicineName
-                    }
-                };
+                    playerId = e.Player.PlayerId,
+                    targetMedicine = e.MedicineName
+                }
+            };
 
-                _events.Add(record);
-            }
-
-            else
-            {
-                throw new InvalidOperationException("Player has no medicine.");
-            }
+            _events.Add(record);
         }
         catch (Exception ex)
         {
@@ -524,7 +634,7 @@ public partial class Game : IGame
 
         try
         {
-            if (GameMap.GetBlock(e.TargetPosition.x, e.TargetPosition.y)?.IsWall == false)
+            if (GameMap.GetBlock(e.TargetPosition) is not null && GameMap.GetBlock(e.TargetPosition)?.IsWall == false)
             {
                 e.Player.PlayerPosition = e.TargetPosition;
             }
