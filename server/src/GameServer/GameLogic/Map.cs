@@ -2,7 +2,7 @@ using GameServer.Engine.Collision;
 
 namespace GameServer.GameLogic;
 
-public class Map : IMap
+public class Map
 {
     public IBlock[,] MapChunk { get; private set; }
     public int Width { get; }

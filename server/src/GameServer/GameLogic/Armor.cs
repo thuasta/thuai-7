@@ -19,7 +19,7 @@ public class ArmorFactory
     /// <param name="item"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static IArmor CreateFromItem(IItem item)
+    public static Armor CreateFromItem(IItem item)
     {
         if (item.Kind != IItem.ItemKind.Armor)
         {
@@ -51,7 +51,7 @@ public class ArmorFactory
         }
     }
 
-    public static IItem ToItem(IArmor armor, int count)
+    public static IItem ToItem(Armor armor, int count)
     {
         return new Item(IItem.ItemKind.Armor, armor.ItemSpecificName, count)
         {
@@ -67,7 +67,7 @@ public class ArmorFactory
 /// <summary>
 /// Armor can be worn by a player to protect them from damage.
 /// </summary>
-public class Armor : IArmor
+public class Armor
 {
     public string ItemSpecificName { get; }
     public int Health { get; private set; }
