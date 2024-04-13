@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+
 namespace GameServer.GameLogic;
 
 public partial class Game : IGame
@@ -192,23 +194,29 @@ public partial class Game : IGame
 
         try
         {
-            // Check if the type weapon is not "Fist"
-            if (e.Player.PlayerWeapon is not Fist)
+            if (!e.Player.PlayerWeapon.IsAvailable)
+            {
+                _logger.Error($"[Player {e.Player.PlayerId}] Weapon is not available.");
+                return;
+            }
+
+            // Check if the type weapon requires bullets
+            if (e.Player.PlayerWeapon.RequiresBullet == true)
             {
                 // Check if the player has enough bullets
-                IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, "BULLET");
-                if (bullet != null && bullet.Count > 0)
+                IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, Constant.Names.BULLET);
+                if (bullet is null || bullet.Count <= 0)
                 {
-                    e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, "BULLET", 1);
+                    _logger.Error($"[Player {e.Player.PlayerId}] No bullet.");
+                    return;
                 }
-                else
-                {
-                    throw new InvalidOperationException("Player has no bullet.");
-                }
+
+                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, Constant.Names.BULLET, 1);
             }
 
             // Attack the target
-            List<Position>? bulletDirections = e.Player.PlayerWeapon.GetBulletDirections(e.Player.PlayerPosition, e.TargetPosition);
+            List<Position>? bulletDirections
+                = e.Player.PlayerWeapon.GetBulletDirections(e.Player.PlayerPosition, e.TargetPosition);
             // Traverse all bullets
             if (bulletDirections != null)
             {
@@ -217,7 +225,7 @@ public partial class Game : IGame
                     foreach (Player targetPlayer in AllPlayers)
                     {
                         // Skip the player itself
-                        if (targetPlayer == e.Player)
+                        if (targetPlayer.PlayerId == e.Player.PlayerId)
                         {
                             continue;
                         }

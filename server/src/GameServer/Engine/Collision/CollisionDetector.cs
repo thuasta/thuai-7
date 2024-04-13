@@ -97,7 +97,7 @@ public class CollisionDetector
         return true; // All points are on the same side
     }
 
-    public static bool checkCross(Position a, Position b, int i, int j)
+    public static bool CheckCross(Position a, Position b, int i, int j)
     {
         Position[] positions = new Position[] { new Position(i, j), new Position(i, j + 1), new Position(i + 1, j), new Position(i + 1, j + 1) };
         if (!AreOnSameSide(a, b, positions))

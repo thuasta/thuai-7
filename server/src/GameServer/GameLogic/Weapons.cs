@@ -88,6 +88,7 @@ public class Fist : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => false;
 
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
@@ -126,6 +127,7 @@ public class ShotGun : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -176,6 +178,7 @@ public class SubMachineGun : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -210,6 +213,7 @@ public class SniperRifle : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -244,6 +248,7 @@ public class AssaultRifle : IWeapon
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -251,6 +256,7 @@ public class AssaultRifle : IWeapon
         TicksUntilAvailable = CoolDownTicks;
         return new List<Position> { (target - start).Normalize() };
     }
+
     public void UpdateCoolDown()
     {
         if (TicksUntilAvailable > 0)

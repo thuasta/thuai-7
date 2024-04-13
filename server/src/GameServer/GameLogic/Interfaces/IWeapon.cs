@@ -38,11 +38,16 @@ public interface IWeapon
     public int TicksUntilAvailable { get; }
 
     /// <summary>
+    /// Whether the weapon requires bullets.
+    /// </summary>
+    public bool RequiresBullet { get; }
+
+    /// <summary>
     /// Get Bullet Directions.
     /// </summary>
     /// <param name="target"></param>
     /// <returns>The normalized directions of the bullets</returns>
-    public List<Position>? GetBulletDirections(Position start, Position direction);
+    public List<Position>? GetBulletDirections(Position start, Position target);
 
     /// <summary>
     /// Update the cooldown of the weapon.
