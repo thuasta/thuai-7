@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Thubg.Sdk
+namespace Thubg.Messages
 {
     public record Map : Message
     {

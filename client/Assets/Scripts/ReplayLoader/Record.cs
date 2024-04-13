@@ -3,7 +3,7 @@ using System.IO.Compression;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Thubg.Sdk;
+using Thubg.Messages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Runtime.CompilerServices;
