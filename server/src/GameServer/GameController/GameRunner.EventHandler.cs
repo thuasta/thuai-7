@@ -209,9 +209,12 @@ public partial class GameRunner : IGameRunner
                             )
                         );
                         _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
-                        _nextPlayerId++;
 
-                        _logger.Information($"Player with token \"{getPlayerInfoMessage.Token}\" joined the game.");
+                        _logger.Information(
+                            $"Player with token \"{getPlayerInfoMessage.Token}\" joined the game (With id {_nextPlayerId})."
+                        );
+
+                        _nextPlayerId++;
                     }
                     catch (Exception ex)
                     {
