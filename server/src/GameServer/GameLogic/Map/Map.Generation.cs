@@ -1,3 +1,5 @@
+using GameServer.Geometry;
+
 namespace GameServer.GameLogic;
 
 public partial class Map
@@ -10,35 +12,37 @@ public partial class Map
 
     public void GenerateSupplies()
     {
+        string[] allAvailableSupplies = new string[]
+        {
+            // Weapons
+            Constant.Names.S686, Constant.Names.M16, Constant.Names.VECTOR, Constant.Names.AWM,
+            // Medicines
+            Constant.Names.BANDAGE, Constant.Names.FIRST_AID,
+            // Armors
+            Constant.Names.PRIMARY_ARMOR, Constant.Names.PREMIUM_ARMOR,
+            // Bullets
+            Constant.Names.BULLET,
+            // Grenades
+            Constant.Names.GRENADE
+        };
+
         // Iterate to generate the desired number of supply points
         for (int i = 0; i < _numSupplyPoints; i++)
         {
-            // Randomly select position for the supply point
-            int x = _random.Next(0, Width);
-            int y = _random.Next(0, Height);
+            Position nextPosition = GenerateValidPosition();
 
-            // Check if the selected position is valid (not on an obstacle)
-            if (GetBlock(x, y)?.IsWall == false)
-            {
-                // Randomly determine the number of items for this supply point
-                int numItems = _random.Next(_minItemsPerSupply, _maxItemsPerSupply + 1);
+            int itemCount = _random.Next(_minItemsPerSupply, _maxItemsPerSupply + 1);
+            string itemSpecificName = allAvailableSupplies[_random.Next(0, allAvailableSupplies.Length)];
+            IItem.ItemKind itemType = IItem.GetItemKind(itemSpecificName);
 
-                // Generate items and add them to the supply point
-                for (int j = 0; j < numItems; j++)
-                {
-                    // Example: Generate a random item type
-                    IItem.ItemKind itemType = (IItem.ItemKind)_random.Next(0, Enum.GetValues(typeof(IItem.ItemKind)).Length);
-
-                    // TODO: According to the item type, randomly sample a specific name for the item
-                    string itemSpecificName = WeaponFactory.WeaponNames.ElementAt(_random.Next(0, WeaponFactory.WeaponNames.Length));
-
-                    // Generate a random count for the item (you may customize this part)
-                    int itemCount = _random.Next(1, 6); // Random count between 1 and 5
-
-                    // Add the generated item to the supply point
-                    AddSupplies(x, y, new Item(itemType, itemSpecificName, itemCount));
-                }
-            }
+            // Add the generated item to the supply point
+            AddSupplies(
+                (int)nextPosition.x,
+                (int)nextPosition.y,
+                new Item(
+                    itemType, itemSpecificName, IItem.AllowPileUp(itemType) ? itemCount : 1
+                )
+            );
         }
     }
 
