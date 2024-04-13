@@ -1,3 +1,5 @@
+using GameServer.Geometry;
+
 namespace GameServer.GameLogic;
 
 public class WeaponProperties

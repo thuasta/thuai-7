@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace GameServer.GameLogic;
 
 public interface IBarrier

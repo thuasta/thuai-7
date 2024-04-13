@@ -1,3 +1,4 @@
+using GameServer.Geometry;
 using Serilog;
 
 namespace GameServer.GameLogic;

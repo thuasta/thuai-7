@@ -1,4 +1,4 @@
-﻿namespace GameServer.GameLogic
+﻿namespace GameServer.Geometry
 {
     public class Position
     {
