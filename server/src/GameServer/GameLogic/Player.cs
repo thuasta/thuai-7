@@ -24,6 +24,8 @@ public partial class Player
     public List<IWeapon> WeaponSlot { get; private set; } = new();
 
     public IBackPack PlayerBackPack { get; set; }
+    public int MaxWeaponSlotSize => 1 + Constant.PLAYER_WEAPON_SLOT_SIZE;
+    public bool IsWeaponSlotFull => WeaponSlot.Count >= MaxWeaponSlotSize;
 
     private readonly ILogger _logger;
 
@@ -37,8 +39,11 @@ public partial class Player
         PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
         PlayerArmor = new Armor("NO_ARMOR", Constant.NO_ARMOR_DEFENSE);
-        PlayerWeapon = IWeapon.DefaultWeapon;
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
+
+        IWeapon defaultWeapon = IWeapon.DefaultWeapon;
+        WeaponSlot.Add(defaultWeapon);
+        PlayerWeapon = WeaponSlot[0];
 
         _logger = Log.ForContext("Component", $"Player {playerId}");
     }

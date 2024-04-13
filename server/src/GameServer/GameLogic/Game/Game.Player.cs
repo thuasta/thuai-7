@@ -38,10 +38,6 @@ public partial class Game
             {
                 weapon.UpdateCoolDown();
             }
-            if (player.PlayerWeapon.Name == Constant.Names.FIST)
-            {
-                player.PlayerWeapon.UpdateCoolDown();
-            }
 
             // Update motion of players
             if (player.PlayerTargetPosition != null)

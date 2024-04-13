@@ -289,7 +289,7 @@ public partial class Game : IGame
                     break;
 
                 case IItem.ItemKind.Weapon:
-                    if (e.Player.WeaponSlot.Count >= Constant.PLAYER_WEAPON_SLOT_SIZE)
+                    if (e.Player.IsWeaponSlotFull == true)
                     {
                         _logger.Error($"[Player {e.Player.PlayerId}] Weapon slot is already full.");
                         return;
@@ -387,25 +387,18 @@ public partial class Game : IGame
 
         try
         {
-            if (e.TargetFirearm == Constant.Names.FIST)
+            if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetFirearm) == false)
             {
-                e.Player.PlayerWeapon = IWeapon.DefaultWeapon;
+                _logger.Error($"[Player {e.Player.PlayerId}] Doesn't have {e.TargetFirearm}.");
+                return;
             }
-            else
-            {
-                if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetFirearm) == false)
-                {
-                    _logger.Error($"[Player {e.Player.PlayerId}] Doesn't have {e.TargetFirearm}.");
-                    return;
-                }
 
-                for (int i = 0; i < e.Player.WeaponSlot.Count; i++)
+            for (int i = 0; i < e.Player.WeaponSlot.Count; i++)
+            {
+                if (e.Player.WeaponSlot[i].Name == e.TargetFirearm)
                 {
-                    if (e.Player.WeaponSlot[i].Name == e.TargetFirearm)
-                    {
-                        e.Player.PlayerWeapon = e.Player.WeaponSlot[i];
-                        break;
-                    }
+                    e.Player.PlayerWeapon = e.Player.WeaponSlot[i];
+                    break;
                 }
             }
 
