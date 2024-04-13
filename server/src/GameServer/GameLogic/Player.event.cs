@@ -2,7 +2,7 @@ using static GameServer.GameLogic.IItem;
 
 namespace GameServer.GameLogic;
 
-public partial class Player : IPlayer
+public partial class Player
 {
     public enum PlayerEventType
     {

@@ -13,6 +13,7 @@ public partial class Constant
         public const string FIRST_AID = "FIRST_AID";
         public const string BANDAGE = "BANDAGE";
         public const string GRENADE = "GRENADE";
+        public const string NO_ARMOR = "NO_ARMOR";
         public const string PRIMARY_ARMOR = "PRIMARY_ARMOR";
         public const string PREMIUM_ARMOR = "PREMIUM_ARMOR";
     }

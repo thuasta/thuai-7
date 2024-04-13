@@ -10,5 +10,5 @@ public partial class Constant
 
     public const int NUM_SUPPLY_POINTS = 1024;
     public const int MIN_ITEMS_PER_SUPPLY = 1;
-    public const int MAX_ITEMS_PER_SUPPLY = 64;
+    public const int MAX_ITEMS_PER_SUPPLY = 1;
 }

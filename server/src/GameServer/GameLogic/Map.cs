@@ -54,42 +54,30 @@ public class Map
     }
     public IBlock? GetBlock(float x, float y)
     {
-        // Convert float to int
-        int xInt = (int)x;
-        int yInt = (int)y;
-        // Judge if the block is out of the map
-        if (xInt < 0 || xInt >= MapChunk.GetLength(0) || yInt < 0 || yInt >= MapChunk.GetLength(1))
+        if (x < 0 || x >= MapChunk.GetLength(0) || y < 0 || y >= MapChunk.GetLength(1))
         {
             return null;
         }
 
+        int xInt = (int)x;
+        int yInt = (int)y;
         return MapChunk[xInt, yInt];
     }
     public IBlock? GetBlock(double x, double y)
     {
-        // Convert float to int
-        int xInt = (int)x;
-        int yInt = (int)y;
-        // Judge if the block is out of the map
-        if (xInt < 0 || xInt >= MapChunk.GetLength(0) || yInt < 0 || yInt >= MapChunk.GetLength(1))
+        if (x < 0 || x >= MapChunk.GetLength(0) || y < 0 || y >= MapChunk.GetLength(1))
         {
             return null;
         }
 
+        int xInt = (int)x;
+        int yInt = (int)y;
         return MapChunk[xInt, yInt];
     }
 
     public IBlock? GetBlock(Position position)
     {
-        // Convert float to int
-        int xInt = (int)position.x;
-        int yInt = (int)position.y;
-        // Judge if the block is out of the map
-        if (xInt < 0 || xInt >= MapChunk.GetLength(0) || yInt < 0 || yInt >= MapChunk.GetLength(1))
-        {
-            return null;
-        }
-        return MapChunk[xInt, yInt];
+        return GetBlock(position.x, position.y);
     }
 
     public Position GenerateValidPosition()
@@ -234,20 +222,21 @@ public class Map
             }
         }
     }
+
     public void AddSupplies(int x, int y, IItem item)
     {
-        // TODO: Implement
         IBlock? block = GetBlock(x, y);
 
-        block?.GenerateItems(item.Kind, item.ItemSpecificName, item.Count);
+        block?.GenerateItems(item);
     }
+
     public void RemoveSupplies(int x, int y, IItem item)
     {
-        // TODO: Implement
         IBlock? block = GetBlock(x, y);
 
-        block?.RemoveItems(item.Kind, item.ItemSpecificName, item.Count);
+        block?.RemoveItems(item);
     }
+
     //计算两个Position是否连通（无掩体阻挡）（mapChunk[a][b]为1表示(a,b)格子有掩体）
     public bool IsConnected(Position a, Position b)
     {

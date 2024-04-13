@@ -28,9 +28,9 @@ public class ArmorFactory
 
         int maxHealth = item.ItemSpecificName switch
         {
-            "PRIMARY_ARMOR" => Constant.PRIMARY_ARMOR_DEFENSE,
-            "PREMIUM_ARMOR" => Constant.PREMIUM_ARMOR_DEFENSE,
-            "NO_ARMOR" => throw new ArgumentException("NO_ARMOR cannot be converted to armor."),
+            Constant.Names.PRIMARY_ARMOR => Constant.PRIMARY_ARMOR_DEFENSE,
+            Constant.Names.PREMIUM_ARMOR => Constant.PREMIUM_ARMOR_DEFENSE,
+            Constant.Names.NO_ARMOR => throw new ArgumentException("NO_ARMOR cannot be converted to armor."),
             _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for armor.")
         };
 
@@ -53,7 +53,7 @@ public class ArmorFactory
 
     public static IItem ToItem(Armor armor, int count)
     {
-        if (armor.ItemSpecificName == "NO_ARMOR")
+        if (armor.ItemSpecificName == Constant.Names.NO_ARMOR)
         {
             throw new ArgumentException("NO_ARMOR cannot be converted to item.");
         }
@@ -74,6 +74,8 @@ public class ArmorFactory
 /// </summary>
 public class Armor
 {
+    public static Armor DefaultArmor => new(Constant.Names.NO_ARMOR, Constant.NO_ARMOR_DEFENSE);
+
     public string ItemSpecificName { get; }
     public int Health { get; private set; }
     public int MaxHealth { get; }
@@ -85,6 +87,11 @@ public class Armor
         Health = currentHealth ?? maxHealth;
     }
 
+    /// <summary>
+    /// Reduce the health of the armor by the given damage.
+    /// </summary>
+    /// <param name="Damage">Damage taken.</param>
+    /// <returns>Damage taken by player.</returns>
     public int Hurt(int Damage)
     {
         if (Health > Damage)

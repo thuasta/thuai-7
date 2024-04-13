@@ -17,7 +17,26 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot abandon supplies when the game is at stage {Stage}.");
+            _logger.Error(
+                $"[Player {e.Player.PlayerId}] Cannot abandon supplies when the game is at stage {Stage}."
+            );
+            return;
+        }
+        if (e.Number <= 0)
+        {
+            _logger.Error(
+                $"[Player {e.Player.PlayerId}] Numbers of abandoned supplies should be positive (actual {e.Number})."
+            );
+            return;
+        }
+
+        Position playerPosition = e.Player.PlayerPosition;
+        int playerIntX = (int)playerPosition.x;
+        int playerIntY = (int)playerPosition.y;
+
+        if (GameMap.GetBlock(playerPosition) is null || GameMap.GetBlock(playerPosition)?.IsWall == true)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot abandon supplies at an invalid position.");
             return;
         }
 
@@ -25,19 +44,78 @@ public partial class Game : IGame
         {
             IItem.ItemKind itemKind = e.AbandonedSupplies.ItemKind;
             string itemSpecificName = e.AbandonedSupplies.ItemSpecificName;
-
-            IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
-            if (item != null && item.Count >= e.Number)
+            if (itemSpecificName == Constant.Names.FIST || itemSpecificName == Constant.Names.NO_ARMOR)
             {
-                // Remove abandon items from the backpack
-                e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
+                _logger.Error($"[Player {e.Player.PlayerId}] Cannot abandon {itemSpecificName}.");
+                return;
+            }
 
-                // Add abandon items to the ground
-                // Get the block at the position of the player
-                Position playerPosition = e.Player.PlayerPosition;
-                int playerIntX = (int)playerPosition.x;
-                int playerIntY = (int)playerPosition.y;
-                GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
+            switch (itemKind)
+            {
+                case IItem.ItemKind.Armor:
+                    if (itemSpecificName != e.Player.PlayerArmor.ItemSpecificName)
+                    {
+                        _logger.Error(
+                            $"[Player {e.Player.PlayerId}] Cannot abandon {itemSpecificName}: Not wearing it."
+                        );
+                        return;
+                    }
+                    if (e.Number > 1)
+                    {
+                        _logger.Error(
+                            $"[Player {e.Player.PlayerId}] Cannot abandon more than one {itemSpecificName}."
+                        );
+                        return;
+                    }
+
+                    GameMap.AddSupplies(playerIntX, playerIntY, ArmorFactory.ToItem(e.Player.PlayerArmor, 1));
+                    e.Player.PlayerArmor = Armor.DefaultArmor;
+                    break;
+
+                case IItem.ItemKind.Weapon:
+                    if (e.Number > 1)
+                    {
+                        _logger.Error(
+                            $"[Player {e.Player.PlayerId}] Cannot abandon more than one {itemSpecificName}."
+                        );
+                        return;
+                    }
+                    if (!e.Player.WeaponSlot.Any(w => w.Name == itemSpecificName))
+                    {
+                        _logger.Error(
+                            $"[Player {e.Player.PlayerId}] Doesn't have {itemSpecificName}."
+                        );
+                        return;
+                    }
+
+                    for (int i = 0; i < e.Player.WeaponSlot.Count; i++)
+                    {
+                        if (e.Player.WeaponSlot[i].Name == itemSpecificName)
+                        {
+                            GameMap.AddSupplies(playerIntX, playerIntY, WeaponFactory.ToItem(e.Player.WeaponSlot[i]));
+                            e.Player.WeaponSlot.RemoveAt(i);
+                            if (e.Player.PlayerWeapon.Name == itemSpecificName)
+                            {
+                                e.Player.PlayerWeapon = IWeapon.DefaultWeapon;
+                            }
+                            break;
+                        }
+                    }
+
+                    break;
+
+                default:
+                    IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
+                    if (item != null && item.Count >= e.Number)
+                    {
+                        // Remove abandon items from the backpack
+                        e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
+
+                        // Add abandon items to the ground
+                        // Get the block at the position of the player
+                        GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
+                    }
+                    break;
             }
 
             Recorder.PlayerAbandonRecord record = new()

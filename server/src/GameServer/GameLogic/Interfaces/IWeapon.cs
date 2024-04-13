@@ -5,6 +5,8 @@ namespace GameServer.GameLogic;
 /// </summary>
 public interface IWeapon
 {
+    public static IWeapon DefaultWeapon => new Fist();
+
     /// <summary>
     /// The name of the weapon.
     /// </summary>
