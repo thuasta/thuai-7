@@ -1,3 +1,6 @@
+using GameServer.Geometry;
+using GameServer.Geometry.Shapes;
+
 namespace GameServer.GameLogic;
 
 public partial class Game : IGame
@@ -143,174 +146,62 @@ public partial class Game : IGame
         }
     }
 
-    /// <summary>
-    /// Calculate the closest point on the line to the player's position, given that the collision box of the player is a circle.
-    /// </summary>
-    /// <param name="start"></param>
-    /// <param name="end"></param>
-    /// <param name="playerPosition"></param>
-    /// <returns></returns>
-    private static (Position closestPoint, bool isSameDirection) CalculatePlayerClosestPoint(Position start, Position end, Position playerPosition)
-    {
-        // Calculate the direction vector of the line
-        Position direction = end - start;
-
-        // Calculate the vector from the start point to the player's position
-        Position playerToStart = start - playerPosition;
-
-        // Calculate the dot product of the direction vector and the playerToStart vector
-        double dotProduct = Position.Dot(direction, playerToStart);
-
-        // Calculate the closest point on the line to the player's position
-        Position closestPoint;
-        bool isSameDirection = true;
-        if (dotProduct <= 0)
-        {
-            closestPoint = start;
-            isSameDirection = false;
-        }
-        else if (dotProduct >= direction.LengthSquared())
-        {
-            closestPoint = end;
-        }
-        else
-        {
-            double t = dotProduct / direction.LengthSquared();
-            closestPoint = start + direction * t;
-        }
-
-        return (closestPoint, isSameDirection);
-    }
-
     private void OnPlayerAttack(object? sender, Player.PlayerAttackEventArgs e)
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot attack when the game is at stage {Stage}.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot attack when the game is at stage {Stage}.");
             return;
         }
 
         try
         {
-            // Check if the type weapon is not "Fist"
-            if (e.Player.PlayerWeapon is not Fist)
+            if (!e.Player.PlayerWeapon.IsAvailable)
+            {
+                _logger.Error($"[Player {e.Player.PlayerId}] Weapon is not available.");
+                return;
+            }
+
+            // Check if the type weapon requires bullets
+            if (e.Player.PlayerWeapon.RequiresBullet == true)
             {
                 // Check if the player has enough bullets
-                IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, "BULLET");
-                if (bullet != null && bullet.Count > 0)
+                IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, Constant.Names.BULLET);
+                if (bullet is null || bullet.Count <= 0)
                 {
-                    e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, "BULLET", 1);
+                    _logger.Error($"[Player {e.Player.PlayerId}] No bullet.");
+                    return;
                 }
-                else
-                {
-                    throw new InvalidOperationException("Player has no bullet.");
-                }
+
+                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, Constant.Names.BULLET, 1);
             }
 
             // Attack the target
-            List<Position>? bulletDirections = e.Player.PlayerWeapon.GetBulletDirections(e.Player.PlayerPosition, e.TargetPosition);
+            List<Position>? bulletDirections
+                = e.Player.PlayerWeapon.GetBulletDirections(e.Player.PlayerPosition, e.TargetPosition);
             // Traverse all bullets
             if (bulletDirections != null)
             {
                 foreach (Position normalizedDirection in bulletDirections)
                 {
+                    Position start = e.Player.PlayerPosition;
+                    Position end = start + normalizedDirection * e.Player.PlayerWeapon.Range;
+                    Position realEnd = GameMap.GetRealEndPositon(start, end);
+
                     foreach (Player targetPlayer in AllPlayers)
                     {
                         // Skip the player itself
-                        if (targetPlayer == e.Player)
+                        if (targetPlayer.PlayerId == e.Player.PlayerId)
                         {
                             continue;
                         }
 
-                        Position start = targetPlayer.PlayerPosition;
-                        Position end = start + normalizedDirection * targetPlayer.PlayerWeapon.Range;
-                        // Parameter equation
-                        Func<float, Position> getLinearPosition = (float t) =>
+                        if (CollisionDetector.IsCrossing(
+                            new Segment(start, realEnd)
+                            , new Circle(targetPlayer.PlayerPosition, Constant.PLAYER_COLLISION_BOX)
+                        ) == true)
                         {
-                            return start + normalizedDirection * t;
-                        };
-
-                        // The player is represented by a circular collision box, calculating the point closest to the player's collision box along the line (intersection of two lines)
-                        (Position closetPoint, bool isSameDirection) = CalculatePlayerClosestPoint(start, end, targetPlayer.PlayerPosition);
-                        // Calculate the distance between this point and the player's collision box
-                        double distance = Position.Distance(closetPoint, targetPlayer.PlayerPosition);
-                        // Not hitting the player
-                        if (distance > targetPlayer.PlayerRadius)
-                        {
-                            continue;
-                        }
-                        // Different directions
-                        if (!isSameDirection)
-                        {
-                            continue;
-                        }
-
-                        // Otherwise, we need to check if hitting obstacles
-                        Position endJudgementPoint = closetPoint;
-                        // Ray casting, check if hitting the wall, dividing the map into small grids, and calculating all grid intersection points of the ray from start to end
-                        bool isHittingWall = false;
-
-                        // If direction.x is close to 0, xGrids will be an empty list, so there's no need for separate handling
-                        List<int> xGrids = new();
-                        if (start.x < end.x)
-                        {
-                            for (int i = (int)start.x + 1; i <= (int)end.x; i++)
-                            {
-                                xGrids.Add(i);
-                            }
-                        }
-                        else
-                        {
-                            for (int i = (int)end.x - 1; i >= (int)start.x; i--)
-                            {
-                                xGrids.Add(i);
-                            }
-                        }
-                        foreach (int xGrid in xGrids)
-                        {
-                            // Calculate all grid intersection points and check if the adjacent point is an obstacle
-                            Position intersection = getLinearPosition((float)((xGrid - start.x) / normalizedDirection.x));
-                            int intersectionIntX = xGrid;
-                            int intersectionIntY = (int)intersection.y;
-                            if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
-                            {
-                                isHittingWall = true;
-                                break;
-                            }
-                        }
-
-                        // If direction.y is close to 0, yGrids will be an empty list, so there's no need for separate handling
-                        List<int> yGrids = new();
-                        if (start.y < end.y)
-                        {
-                            for (int i = (int)start.y + 1; i <= (int)end.y; i++)
-                            {
-                                yGrids.Add(i);
-                            }
-                        }
-                        else
-                        {
-                            for (int i = (int)end.y - 1; i >= (int)start.y; i--)
-                            {
-                                yGrids.Add(i);
-                            }
-                        }
-                        foreach (int yGrid in yGrids)
-                        {
-                            // Calculate all grid intersection points and check if the adjacent point is an obstacle
-                            Position intersection = getLinearPosition((float)((yGrid - start.y) / normalizedDirection.y));
-                            int intersectionIntX = (int)intersection.x;
-                            int intersectionIntY = yGrid;
-                            if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
-                            {
-                                isHittingWall = true;
-                                break;
-                            }
-                        }
-                        // If isHittingWall is false and cooldown of the weapon is done, the player is hit and health is deducted
-                        if (!isHittingWall && e.Player.PlayerWeapon.IsAvailable)
-                        {
-                            targetPlayer.Health -= e.Player.PlayerWeapon.Damage;
+                            targetPlayer.TakeDamage(e.Player.PlayerWeapon.Damage);
                         }
                     }
                 }
@@ -398,7 +289,7 @@ public partial class Game : IGame
                     break;
 
                 case IItem.ItemKind.Weapon:
-                    if (e.Player.WeaponSlot.Count >= Constant.PLAYER_WEAPON_SLOT_SIZE)
+                    if (e.Player.IsWeaponSlotFull == true)
                     {
                         _logger.Error($"[Player {e.Player.PlayerId}] Weapon slot is already full.");
                         return;
@@ -496,25 +387,18 @@ public partial class Game : IGame
 
         try
         {
-            if (e.TargetFirearm == Constant.Names.FIST)
+            if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetFirearm) == false)
             {
-                e.Player.PlayerWeapon = IWeapon.DefaultWeapon;
+                _logger.Error($"[Player {e.Player.PlayerId}] Doesn't have {e.TargetFirearm}.");
+                return;
             }
-            else
-            {
-                if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetFirearm) == false)
-                {
-                    _logger.Error($"[Player {e.Player.PlayerId}] Doesn't have {e.TargetFirearm}.");
-                    return;
-                }
 
-                for (int i = 0; i < e.Player.WeaponSlot.Count; i++)
+            for (int i = 0; i < e.Player.WeaponSlot.Count; i++)
+            {
+                if (e.Player.WeaponSlot[i].Name == e.TargetFirearm)
                 {
-                    if (e.Player.WeaponSlot[i].Name == e.TargetFirearm)
-                    {
-                        e.Player.PlayerWeapon = e.Player.WeaponSlot[i];
-                        break;
-                    }
+                    e.Player.PlayerWeapon = e.Player.WeaponSlot[i];
+                    break;
                 }
             }
 

@@ -1,5 +1,6 @@
 using GameServer.Connection;
 using GameServer.GameLogic;
+using GameServer.Geometry;
 
 namespace GameServer.GameController;
 
