@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 
-namespace Thubg.Sdk
+namespace Thubg.Messages
 {
     public record CompetitionUpdate : Message
     {

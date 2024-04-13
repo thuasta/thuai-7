@@ -1,8 +1,5 @@
-namespace Thubg.Sdk
+public record PositionInt
 {
-    public record PositionInt
-    {
-        public int x { get; }
-        public int y { get; }
-    }
+    public int x { get; }
+    public int y { get; }
 }

@@ -5,7 +5,7 @@ using System.Data;
 using Mono.Data.Sqlite;
 using Unity.VisualScripting;
 
-namespace Thubg.Sdk
+namespace Thubg.Messages
 {
 
     public class Sqlite
