@@ -1,4 +1,5 @@
-using System.Reflection.Metadata;
+using GameServer.Geometry;
+using GameServer.Geometry.Shapes;
 
 namespace GameServer.GameLogic;
 
@@ -145,50 +146,11 @@ public partial class Game : IGame
         }
     }
 
-    /// <summary>
-    /// Calculate the closest point on the line to the player's position, given that the collision box of the player is a circle.
-    /// </summary>
-    /// <param name="start"></param>
-    /// <param name="end"></param>
-    /// <param name="playerPosition"></param>
-    /// <returns></returns>
-    private static (Position closestPoint, bool isSameDirection) CalculatePlayerClosestPoint(Position start, Position end, Position playerPosition)
-    {
-        // Calculate the direction vector of the line
-        Position direction = end - start;
-
-        // Calculate the vector from the start point to the player's position
-        Position playerToStart = start - playerPosition;
-
-        // Calculate the dot product of the direction vector and the playerToStart vector
-        double dotProduct = Position.Dot(direction, playerToStart);
-
-        // Calculate the closest point on the line to the player's position
-        Position closestPoint;
-        bool isSameDirection = true;
-        if (dotProduct <= 0)
-        {
-            closestPoint = start;
-            isSameDirection = false;
-        }
-        else if (dotProduct >= direction.LengthSquared())
-        {
-            closestPoint = end;
-        }
-        else
-        {
-            double t = dotProduct / direction.LengthSquared();
-            closestPoint = start + direction * t;
-        }
-
-        return (closestPoint, isSameDirection);
-    }
-
     private void OnPlayerAttack(object? sender, Player.PlayerAttackEventArgs e)
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot attack when the game is at stage {Stage}.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot attack when the game is at stage {Stage}.");
             return;
         }
 
@@ -222,6 +184,10 @@ public partial class Game : IGame
             {
                 foreach (Position normalizedDirection in bulletDirections)
                 {
+                    Position start = e.Player.PlayerPosition;
+                    Position end = start + normalizedDirection * e.Player.PlayerWeapon.Range;
+                    Position realEnd = GameMap.GetRealEndPositon(start, end);
+
                     foreach (Player targetPlayer in AllPlayers)
                     {
                         // Skip the player itself
@@ -230,95 +196,12 @@ public partial class Game : IGame
                             continue;
                         }
 
-                        Position start = targetPlayer.PlayerPosition;
-                        Position end = start + normalizedDirection * targetPlayer.PlayerWeapon.Range;
-                        // Parameter equation
-                        Func<float, Position> getLinearPosition = (float t) =>
+                        if (CollisionDetector.IsCrossing(
+                            new Segment(start, realEnd)
+                            , new Circle(targetPlayer.PlayerPosition, Constant.PLAYER_COLLISION_BOX)
+                        ) == true)
                         {
-                            return start + normalizedDirection * t;
-                        };
-
-                        // The player is represented by a circular collision box, calculating the point closest to the player's collision box along the line (intersection of two lines)
-                        (Position closetPoint, bool isSameDirection) = CalculatePlayerClosestPoint(start, end, targetPlayer.PlayerPosition);
-                        // Calculate the distance between this point and the player's collision box
-                        double distance = Position.Distance(closetPoint, targetPlayer.PlayerPosition);
-                        // Not hitting the player
-                        if (distance > targetPlayer.PlayerRadius)
-                        {
-                            continue;
-                        }
-                        // Different directions
-                        if (!isSameDirection)
-                        {
-                            continue;
-                        }
-
-                        // Otherwise, we need to check if hitting obstacles
-                        Position endJudgementPoint = closetPoint;
-                        // Ray casting, check if hitting the wall, dividing the map into small grids, and calculating all grid intersection points of the ray from start to end
-                        bool isHittingWall = false;
-
-                        // If direction.x is close to 0, xGrids will be an empty list, so there's no need for separate handling
-                        List<int> xGrids = new();
-                        if (start.x < end.x)
-                        {
-                            for (int i = (int)start.x + 1; i <= (int)end.x; i++)
-                            {
-                                xGrids.Add(i);
-                            }
-                        }
-                        else
-                        {
-                            for (int i = (int)end.x - 1; i >= (int)start.x; i--)
-                            {
-                                xGrids.Add(i);
-                            }
-                        }
-                        foreach (int xGrid in xGrids)
-                        {
-                            // Calculate all grid intersection points and check if the adjacent point is an obstacle
-                            Position intersection = getLinearPosition((float)((xGrid - start.x) / normalizedDirection.x));
-                            int intersectionIntX = xGrid;
-                            int intersectionIntY = (int)intersection.y;
-                            if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
-                            {
-                                isHittingWall = true;
-                                break;
-                            }
-                        }
-
-                        // If direction.y is close to 0, yGrids will be an empty list, so there's no need for separate handling
-                        List<int> yGrids = new();
-                        if (start.y < end.y)
-                        {
-                            for (int i = (int)start.y + 1; i <= (int)end.y; i++)
-                            {
-                                yGrids.Add(i);
-                            }
-                        }
-                        else
-                        {
-                            for (int i = (int)end.y - 1; i >= (int)start.y; i--)
-                            {
-                                yGrids.Add(i);
-                            }
-                        }
-                        foreach (int yGrid in yGrids)
-                        {
-                            // Calculate all grid intersection points and check if the adjacent point is an obstacle
-                            Position intersection = getLinearPosition((float)((yGrid - start.y) / normalizedDirection.y));
-                            int intersectionIntX = (int)intersection.x;
-                            int intersectionIntY = yGrid;
-                            if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
-                            {
-                                isHittingWall = true;
-                                break;
-                            }
-                        }
-                        // If isHittingWall is false and cooldown of the weapon is done, the player is hit and health is deducted
-                        if (!isHittingWall && e.Player.PlayerWeapon.IsAvailable)
-                        {
-                            targetPlayer.Health -= e.Player.PlayerWeapon.Damage;
+                            targetPlayer.TakeDamage(e.Player.PlayerWeapon.Damage);
                         }
                     }
                 }
