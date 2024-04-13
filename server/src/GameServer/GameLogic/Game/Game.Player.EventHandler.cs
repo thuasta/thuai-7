@@ -21,33 +21,40 @@ public partial class Game : IGame
             return;
         }
 
-        foreach ((IItem.ItemKind itemKind, string itemSpecificName) in e.AbandonedSupplies)
+        try
         {
-            IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
-            if (item != null && item.Count >= e.Number)
+            foreach ((IItem.ItemKind itemKind, string itemSpecificName) in e.AbandonedSupplies)
             {
-                // Remove abandon items from the backpack
-                e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
-
-                // Add abandon items to the ground
-                // Get the block at the position of the player
-                Position playerPosition = e.Player.PlayerPosition;
-                int playerIntX = (int)playerPosition.x;
-                int playerIntY = (int)playerPosition.y;
-                GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
-            }
-
-            Recorder.PlayerAbandonRecord record = new()
-            {
-                Data = new()
+                IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
+                if (item != null && item.Count >= e.Number)
                 {
-                    playerId = e.Player.PlayerId,
-                    numb = e.Number,
-                    abandonedSupplies = itemSpecificName
-                }
-            };
+                    // Remove abandon items from the backpack
+                    e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
 
-            _events.Add(record);
+                    // Add abandon items to the ground
+                    // Get the block at the position of the player
+                    Position playerPosition = e.Player.PlayerPosition;
+                    int playerIntX = (int)playerPosition.x;
+                    int playerIntY = (int)playerPosition.y;
+                    GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
+                }
+
+                Recorder.PlayerAbandonRecord record = new()
+                {
+                    Data = new()
+                    {
+                        playerId = e.Player.PlayerId,
+                        numb = e.Number,
+                        abandonedSupplies = itemSpecificName
+                    }
+                };
+
+                _events.Add(record);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Failed to abandon supplies: {ex.Message}");
         }
     }
 
@@ -98,238 +105,133 @@ public partial class Game : IGame
             return;
         }
 
-        // Check if the type weapon is not "Fist"
-        if (e.Player.PlayerWeapon is not Fist)
+        try
         {
-            // Check if the player has enough bullets
-            IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, "BULLET");
-            if (bullet != null && bullet.Count > 0)
+            // Check if the type weapon is not "Fist"
+            if (e.Player.PlayerWeapon is not Fist)
             {
-                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, "BULLET", 1);
-            }
-            else
-            {
-                throw new InvalidOperationException("Player has no bullet.");
-            }
-        }
-
-        // Attack the target
-        List<Position>? bulletDirections = e.Player.PlayerWeapon.GetBulletDirections(e.Player.PlayerPosition, e.TargetPosition);
-        // Traverse all bullets
-        if (bulletDirections != null)
-        {
-            foreach (Position normalizedDirection in bulletDirections)
-            {
-                foreach (Player targetPlayer in AllPlayers)
+                // Check if the player has enough bullets
+                IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, "BULLET");
+                if (bullet != null && bullet.Count > 0)
                 {
-                    // Skip the player itself
-                    if (targetPlayer == e.Player)
-                    {
-                        continue;
-                    }
+                    e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, "BULLET", 1);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Player has no bullet.");
+                }
+            }
 
-                    Position start = targetPlayer.PlayerPosition;
-                    Position end = start + normalizedDirection * targetPlayer.PlayerWeapon.Range;
-                    // Parameter equation
-                    Func<float, Position> getLinearPosition = (float t) =>
+            // Attack the target
+            List<Position>? bulletDirections = e.Player.PlayerWeapon.GetBulletDirections(e.Player.PlayerPosition, e.TargetPosition);
+            // Traverse all bullets
+            if (bulletDirections != null)
+            {
+                foreach (Position normalizedDirection in bulletDirections)
+                {
+                    foreach (Player targetPlayer in AllPlayers)
                     {
-                        return start + normalizedDirection * t;
-                    };
+                        // Skip the player itself
+                        if (targetPlayer == e.Player)
+                        {
+                            continue;
+                        }
 
-                    // The player is represented by a circular collision box, calculating the point closest to the player's collision box along the line (intersection of two lines)
-                    (Position closetPoint, bool isSameDirection) = CalculatePlayerClosestPoint(start, end, targetPlayer.PlayerPosition);
-                    // Calculate the distance between this point and the player's collision box
-                    double distance = Position.Distance(closetPoint, targetPlayer.PlayerPosition);
-                    // Not hitting the player
-                    if (distance > targetPlayer.PlayerRadius)
-                    {
-                        continue;
-                    }
-                    // Different directions
-                    if (!isSameDirection)
-                    {
-                        continue;
-                    }
+                        Position start = targetPlayer.PlayerPosition;
+                        Position end = start + normalizedDirection * targetPlayer.PlayerWeapon.Range;
+                        // Parameter equation
+                        Func<float, Position> getLinearPosition = (float t) =>
+                        {
+                            return start + normalizedDirection * t;
+                        };
 
-                    // Otherwise, we need to check if hitting obstacles
-                    Position endJudgementPoint = closetPoint;
-                    // Ray casting, check if hitting the wall, dividing the map into small grids, and calculating all grid intersection points of the ray from start to end
-                    bool isHittingWall = false;
+                        // The player is represented by a circular collision box, calculating the point closest to the player's collision box along the line (intersection of two lines)
+                        (Position closetPoint, bool isSameDirection) = CalculatePlayerClosestPoint(start, end, targetPlayer.PlayerPosition);
+                        // Calculate the distance between this point and the player's collision box
+                        double distance = Position.Distance(closetPoint, targetPlayer.PlayerPosition);
+                        // Not hitting the player
+                        if (distance > targetPlayer.PlayerRadius)
+                        {
+                            continue;
+                        }
+                        // Different directions
+                        if (!isSameDirection)
+                        {
+                            continue;
+                        }
 
-                    // If direction.x is close to 0, xGrids will be an empty list, so there's no need for separate handling
-                    List<int> xGrids = new();
-                    if (start.x < end.x)
-                    {
-                        for (int i = (int)start.x + 1; i <= (int)end.x; i++)
-                        {
-                            xGrids.Add(i);
-                        }
-                    }
-                    else
-                    {
-                        for (int i = (int)end.x - 1; i >= (int)start.x; i--)
-                        {
-                            xGrids.Add(i);
-                        }
-                    }
-                    foreach (int xGrid in xGrids)
-                    {
-                        // Calculate all grid intersection points and check if the adjacent point is an obstacle
-                        Position intersection = getLinearPosition((float)((xGrid - start.x) / normalizedDirection.x));
-                        int intersectionIntX = xGrid;
-                        int intersectionIntY = (int)intersection.y;
-                        if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
-                        {
-                            isHittingWall = true;
-                            break;
-                        }
-                    }
+                        // Otherwise, we need to check if hitting obstacles
+                        Position endJudgementPoint = closetPoint;
+                        // Ray casting, check if hitting the wall, dividing the map into small grids, and calculating all grid intersection points of the ray from start to end
+                        bool isHittingWall = false;
 
-                    // If direction.y is close to 0, yGrids will be an empty list, so there's no need for separate handling
-                    List<int> yGrids = new();
-                    if (start.y < end.y)
-                    {
-                        for (int i = (int)start.y + 1; i <= (int)end.y; i++)
+                        // If direction.x is close to 0, xGrids will be an empty list, so there's no need for separate handling
+                        List<int> xGrids = new();
+                        if (start.x < end.x)
                         {
-                            yGrids.Add(i);
+                            for (int i = (int)start.x + 1; i <= (int)end.x; i++)
+                            {
+                                xGrids.Add(i);
+                            }
                         }
-                    }
-                    else
-                    {
-                        for (int i = (int)end.y - 1; i >= (int)start.y; i--)
+                        else
                         {
-                            yGrids.Add(i);
+                            for (int i = (int)end.x - 1; i >= (int)start.x; i--)
+                            {
+                                xGrids.Add(i);
+                            }
                         }
-                    }
-                    foreach (int yGrid in yGrids)
-                    {
-                        // Calculate all grid intersection points and check if the adjacent point is an obstacle
-                        Position intersection = getLinearPosition((float)((yGrid - start.y) / normalizedDirection.y));
-                        int intersectionIntX = (int)intersection.x;
-                        int intersectionIntY = yGrid;
-                        if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
+                        foreach (int xGrid in xGrids)
                         {
-                            isHittingWall = true;
-                            break;
+                            // Calculate all grid intersection points and check if the adjacent point is an obstacle
+                            Position intersection = getLinearPosition((float)((xGrid - start.x) / normalizedDirection.x));
+                            int intersectionIntX = xGrid;
+                            int intersectionIntY = (int)intersection.y;
+                            if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
+                            {
+                                isHittingWall = true;
+                                break;
+                            }
                         }
-                    }
-                    // If isHittingWall is false and cooldown of the weapon is done, the player is hit and health is deducted
-                    if (!isHittingWall && e.Player.PlayerWeapon.IsAvailable)
-                    {
-                        targetPlayer.Health -= e.Player.PlayerWeapon.Damage;
+
+                        // If direction.y is close to 0, yGrids will be an empty list, so there's no need for separate handling
+                        List<int> yGrids = new();
+                        if (start.y < end.y)
+                        {
+                            for (int i = (int)start.y + 1; i <= (int)end.y; i++)
+                            {
+                                yGrids.Add(i);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = (int)end.y - 1; i >= (int)start.y; i--)
+                            {
+                                yGrids.Add(i);
+                            }
+                        }
+                        foreach (int yGrid in yGrids)
+                        {
+                            // Calculate all grid intersection points and check if the adjacent point is an obstacle
+                            Position intersection = getLinearPosition((float)((yGrid - start.y) / normalizedDirection.y));
+                            int intersectionIntX = (int)intersection.x;
+                            int intersectionIntY = yGrid;
+                            if (GameMap.GetBlock(new Position(intersectionIntX, intersectionIntY))?.IsWall == true)
+                            {
+                                isHittingWall = true;
+                                break;
+                            }
+                        }
+                        // If isHittingWall is false and cooldown of the weapon is done, the player is hit and health is deducted
+                        if (!isHittingWall && e.Player.PlayerWeapon.IsAvailable)
+                        {
+                            targetPlayer.Health -= e.Player.PlayerWeapon.Damage;
+                        }
                     }
                 }
             }
-        }
 
-        Recorder.PlayerAttackRecord record = new()
-        {
-            Data = new()
-            {
-                playerId = e.Player.PlayerId,
-                turgetPosition = new()
-                {
-                    x = e.TargetPosition.x,
-                    y = e.TargetPosition.y
-                }
-            }
-        };
-
-        _events.Add(record);
-    }
-
-    private void OnPlayerPickUp(object? sender, Player.PlayerPickUpEventArgs e)
-    {
-        if (Stage != GameStage.Fighting)
-        {
-            _logger.Error($"Player {e.Player.PlayerId} cannot pick up supplies when the game is at stage {Stage}.");
-            return;
-        }
-
-        // Check if the player is close enough to the supply
-        if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
-        {
-            _logger.Error($"Player {e.Player.PlayerId} is not close enough to the supply.");
-        }
-
-        // Check if the supply exists
-        IItem? item = (
-            GameMap.GetBlock((int)e.TargetPosition.x, (int)e.TargetPosition.y)?
-            .Items.Find(i => i.ItemSpecificName == e.TargetSupply && e.Numb < 0 && i.Count <= e.Numb))
-            ?? throw new InvalidOperationException("Supply does not exist or the numb is invalid."
-        );
-
-        // Add the supply to the player's backpack
-        e.Player.PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
-
-        // Remove the supply from the ground
-        GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, item);
-
-        Recorder.PlayerPickUpRecord record = new()
-        {
-            Data = new()
-            {
-                playerId = e.Player.PlayerId,
-                targetPosition = new()
-                {
-                    x = e.TargetPosition.x,
-                    y = e.TargetPosition.y
-                },
-                targetSupply = item.ItemSpecificName,
-                numb = e.Numb
-            }
-        };
-
-        _events.Add(record);
-    }
-
-    private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
-    {
-        if (Stage != GameStage.Fighting)
-        {
-            _logger.Error($"Player {e.Player.PlayerId} cannot switch arm when the game is at stage {Stage}.");
-            return;
-        }
-
-        //iterate player's backpack to find the weapon with weaponItemId
-        //if found, set PlayerWeapon to the weapon and keep its cooldown.
-        //if not found, throw new ArgumentException("Weapon not found in backpack.");
-        // TODO: 切枪BUG: 可以来回切换两次枪，导致冷却时间不生效
-        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Weapon, e.TargetFirearm);
-        if (item != null)
-        {
-            e.Player.PlayerWeapon = WeaponFactory.CreateFromItem(item);
-            Recorder.PlayerSwitchArmRecord record = new()
-            {
-                Data = new()
-                {
-                    playerId = e.Player.PlayerId,
-                    turgetFirearm = e.TargetFirearm
-                }
-            };
-
-            _events.Add(record);
-        }
-
-        else
-        {
-            throw new ArgumentException("Weapon not found in backpack.");
-        }
-    }
-
-    private void OnPlayerUseGrenade(object? sender, Player.PlayerUseGrenadeEventArgs e)
-    {
-        if (Stage != GameStage.Fighting)
-        {
-            _logger.Error($"Player {e.Player.PlayerId} cannot use grenade when the game is at stage {Stage}.");
-            return;
-        }
-        // Check if the player has grenade
-        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Grenade, "GRENADE");
-        if (item != null && item.Count > 0)
-        {
-            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Grenade, "GRENADE", 1);
-            Recorder.PlayerUseGrenadeRecord record = new()
+            Recorder.PlayerAttackRecord record = new()
             {
                 Data = new()
                 {
@@ -344,14 +246,148 @@ public partial class Game : IGame
 
             _events.Add(record);
         }
-
-        else
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Player has no grenade.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Failed to attack: {ex.Message}");
+        }
+    }
+
+    private void OnPlayerPickUp(object? sender, Player.PlayerPickUpEventArgs e)
+    {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot pick up supplies when the game is at stage {Stage}.");
+            return;
         }
 
-        // Generate the grenade
-        _allGrenades.Add(new Grenade(e.Player.PlayerPosition, CurrentTick));
+        try
+        {
+            // Check if the player is close enough to the supply
+            if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
+            {
+                _logger.Error($"Player {e.Player.PlayerId} is not close enough to the supply.");
+            }
+
+            // Check if the supply exists
+            IItem? item = (
+                GameMap.GetBlock((int)e.TargetPosition.x, (int)e.TargetPosition.y)?
+                .Items.Find(i => i.ItemSpecificName == e.TargetSupply && e.Numb < 0 && i.Count <= e.Numb))
+                ?? throw new InvalidOperationException("Supply does not exist or the numb is invalid."
+            );
+
+            // Add the supply to the player's backpack
+            e.Player.PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
+
+            // Remove the supply from the ground
+            GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, item);
+
+            Recorder.PlayerPickUpRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    targetPosition = new()
+                    {
+                        x = e.TargetPosition.x,
+                        y = e.TargetPosition.y
+                    },
+                    targetSupply = item.ItemSpecificName,
+                    numb = e.Numb
+                }
+            };
+
+            _events.Add(record);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Failed to pick up supplies: {ex.Message}");
+        }
+    }
+
+    private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
+    {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot switch arm when the game is at stage {Stage}.");
+            return;
+        }
+
+        try
+        {
+            //iterate player's backpack to find the weapon with weaponItemId
+            //if found, set PlayerWeapon to the weapon and keep its cooldown.
+            //if not found, throw new ArgumentException("Weapon not found in backpack.");
+            // TODO: 切枪BUG: 可以来回切换两次枪，导致冷却时间不生效
+            IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Weapon, e.TargetFirearm);
+            if (item != null)
+            {
+                e.Player.PlayerWeapon = WeaponFactory.CreateFromItem(item);
+                Recorder.PlayerSwitchArmRecord record = new()
+                {
+                    Data = new()
+                    {
+                        playerId = e.Player.PlayerId,
+                        turgetFirearm = e.TargetFirearm
+                    }
+                };
+
+                _events.Add(record);
+            }
+
+            else
+            {
+                throw new ArgumentException("Weapon not found in backpack.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Failed to switch arm: {ex.Message}");
+        }
+    }
+
+    private void OnPlayerUseGrenade(object? sender, Player.PlayerUseGrenadeEventArgs e)
+    {
+        if (Stage != GameStage.Fighting)
+        {
+            _logger.Error($"Player {e.Player.PlayerId} cannot use grenade when the game is at stage {Stage}.");
+            return;
+        }
+
+        try
+        {
+            // Check if the player has grenade
+            IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Grenade, "GRENADE");
+            if (item != null && item.Count > 0)
+            {
+                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Grenade, "GRENADE", 1);
+                Recorder.PlayerUseGrenadeRecord record = new()
+                {
+                    Data = new()
+                    {
+                        playerId = e.Player.PlayerId,
+                        turgetPosition = new()
+                        {
+                            x = e.TargetPosition.x,
+                            y = e.TargetPosition.y
+                        }
+                    }
+                };
+
+                _events.Add(record);
+            }
+
+            else
+            {
+                throw new InvalidOperationException("Player has no grenade.");
+            }
+
+            // Generate the grenade
+            _allGrenades.Add(new Grenade(e.Player.PlayerPosition, CurrentTick));
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Failed to use grenade: {ex.Message}");
+        }
     }
 
     private void OnPlayerUseMedicine(object? sender, Player.PlayerUseMedicineEventArgs e)
@@ -362,28 +398,35 @@ public partial class Game : IGame
             return;
         }
 
-        // Check if the player has medicine
-        IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Medicine, e.MedicineName);
-        if (item != null && item.Count > 0)
+        try
         {
-            e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Medicine, e.MedicineName, 1);
-            e.Player.Health += MedicineFactory.CreateFromItem(item).Heal;
-
-            Recorder.PlayerUseMedicineRecord record = new()
+            // Check if the player has medicine
+            IItem? item = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Medicine, e.MedicineName);
+            if (item != null && item.Count > 0)
             {
-                Data = new()
+                e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Medicine, e.MedicineName, 1);
+                e.Player.Health += MedicineFactory.CreateFromItem(item).Heal;
+
+                Recorder.PlayerUseMedicineRecord record = new()
                 {
-                    playerId = e.Player.PlayerId,
-                    targetMedicine = e.MedicineName
-                }
-            };
+                    Data = new()
+                    {
+                        playerId = e.Player.PlayerId,
+                        targetMedicine = e.MedicineName
+                    }
+                };
 
-            _events.Add(record);
+                _events.Add(record);
+            }
+
+            else
+            {
+                throw new InvalidOperationException("Player has no medicine.");
+            }
         }
-
-        else
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Player has no medicine.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Failed to use medicine: {ex.Message}");
         }
     }
 
@@ -394,13 +437,20 @@ public partial class Game : IGame
             _logger.Error($"Teleportation is only allowed at stage Preparing (actual stage {Stage}).");
         }
 
-        if (GameMap.GetBlock(e.TargetPosition.x, e.TargetPosition.y)?.IsWall == false)
+        try
         {
-            e.Player.PlayerPosition = e.TargetPosition;
+            if (GameMap.GetBlock(e.TargetPosition.x, e.TargetPosition.y)?.IsWall == false)
+            {
+                e.Player.PlayerPosition = e.TargetPosition;
+            }
+            else
+            {
+                _logger.Error($"Player {e.Player.PlayerId} cannot teleport to a wall or outside of the map.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot teleport to a wall or outside of the map.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Failed to teleport: {ex.Message}");
         }
     }
 }
