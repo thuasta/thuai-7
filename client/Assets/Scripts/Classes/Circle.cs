@@ -1,7 +1,7 @@
 public class Circle
 {
-    public Position Position { get; }
-    public float Radius { get; }
+    public Position Position { get; set; }
+    public float Radius { get; set; }
 
     public Circle(Position position, float radius)
     {

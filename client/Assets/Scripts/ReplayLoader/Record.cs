@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Thubg.Messages;
-using Thubg.Messages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Runtime.CompilerServices;
@@ -91,7 +90,7 @@ public class Record : MonoBehaviour
     private GameObject _playerPrefab;
     private bool[,] _isWalls;
 
-    private List<GameObject> _obstaclePrefabs = new List<GameObject>();
+    private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
 
     // record data
     private readonly string _recordFilePath = null;
