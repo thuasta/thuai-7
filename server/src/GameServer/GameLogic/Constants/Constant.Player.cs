@@ -6,7 +6,7 @@ public partial class Constant
     public const double PLAYER_COLLISION_BOX = 0.5;
 
     // Initial backpack size of player
-    public const int PLAYER_INITIAL_BACKPACK_SIZE = 150;
+    public const int PLAYER_INITIAL_BACKPACK_SIZE = 50;
 
     public const int PLAYER_PICK_UP_DISTANCE = 1;
 

@@ -5,17 +5,29 @@ public class Item : IItem
     public IItem.ItemKind Kind { get; }
     public string ItemSpecificName { get; }
     public int Count { get; set; }
+
     public int WeightOfSingleItem
     {
         get => ItemSpecificName switch
         {
-            _ => throw new NotImplementedException()
+            Constant.Names.VECTOR => Constant.Weights.VECTOR,
+            Constant.Names.AWM => Constant.Weights.AWM,
+            Constant.Names.S686 => Constant.Weights.S686,
+            Constant.Names.M16 => Constant.Weights.M16,
+            Constant.Names.BULLET => Constant.Weights.BULLET,
+            Constant.Names.FIRST_AID => Constant.Weights.FIRST_AID,
+            Constant.Names.BANDAGE => Constant.Weights.BANDAGE,
+            Constant.Names.GRENADE => Constant.Weights.GRENADE,
+            Constant.Names.PRIMARY_ARMOR => Constant.Weights.PRIMARY_ARMOR,
+            Constant.Names.PREMIUM_ARMOR => Constant.Weights.PREMIUM_ARMOR,
+            _ => throw new ArgumentException($"Unknown item: {ItemSpecificName}.")
         };
     }
     public int Weight
     {
         get => Count * WeightOfSingleItem;
     }
+
     public object? AdditionalProperties { get; init; } = null;
 
     /// <summary>
