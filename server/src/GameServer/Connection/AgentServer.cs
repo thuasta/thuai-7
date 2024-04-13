@@ -1,16 +1,17 @@
-using Serilog;
-using Fleck;
 using System.Collections.Concurrent;
 using System.Text;
+using System.Text.Json;
+using Fleck;
+using Serilog;
 
-namespace GameServer.Connction;
+namespace GameServer.Connection;
 
 public partial class AgentServer : IServer
 {
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
-    public string IpAddress { get; } = "0.0.0.0";
-    public int Port { get; } = 8080;
+    public string IpAddress { get; init; } = "0.0.0.0";
+    public int Port { get; init; } = 8080;
     public Task? TaskForPublishingMessage { get; private set; } = null;
 
     private readonly ILogger _logger = Log.Logger.ForContext("Component", "AgentServer");
@@ -18,7 +19,7 @@ public partial class AgentServer : IServer
     /// <summary>
     /// Message to publish to clients
     /// </summary>
-    private Message? _messageToPublish => throw new NotImplementedException();
+    private readonly ConcurrentQueue<Message> _messageToPublish = new();
     private bool _isRunning = false;
     private IWebSocketServer? _wsServer = null;
     private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _sockets = new();
@@ -27,7 +28,8 @@ public partial class AgentServer : IServer
     {
         if (_isRunning)
         {
-            throw new InvalidOperationException("AgentServer is already running");
+            _logger.Error("Cannot start AgentServer: AgentServer is already running.");
+            return;
         }
 
         _logger.Information("Starting...");
@@ -39,20 +41,31 @@ public partial class AgentServer : IServer
 
             _isRunning = true;
 
-            TaskForPublishingMessage = Task.Run(() =>
+            Action actionForPublishingMessage = new(() =>
             {
                 while (_isRunning)
                 {
-                    Task.Delay((int)(1000 / IServer.MessagesPublishedPerSecond)).Wait();
+                    Task.Delay(IServer.MessagePublishIntervalMilliseconds).Wait();
 
-                    if (_messageToPublish is not null)
+                    if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
                     {
-                        Publish(_messageToPublish);
+                        if (message is null)
+                        {
+                            _logger.Warning("A null message is dequeued. This message will be ignored.");
+                            continue;
+                        }
+
+                        _logger.Debug($"Dequeued message \"{message.MessageType}\".");
+                        _logger.Verbose(message.Json);
+
+                        Publish(message);
                     }
                 }
             });
 
-            _logger.Information("AgentServer started.");
+            TaskForPublishingMessage = Task.Run(actionForPublishingMessage);
+
+            _logger.Information("AgentServer started. Waiting for connections...");
         }
         catch (Exception ex)
         {
@@ -64,7 +77,8 @@ public partial class AgentServer : IServer
     {
         if (!_isRunning)
         {
-            throw new InvalidOperationException("AgentServer is not running");
+            _logger.Error("Cannot stop AgentServer: AgentServer is not running.");
+            return;
         }
 
         _logger.Information("Stopping...");
@@ -78,6 +92,10 @@ public partial class AgentServer : IServer
             _wsServer = null;
 
             _isRunning = false;
+
+            _sockets.Clear();
+
+            _messageToPublish.Clear();
 
             _logger.Information("Stopped.");
         }
@@ -96,10 +114,16 @@ public partial class AgentServer : IServer
             try
             {
                 socket.Send(jsonString).Wait();
+
+                _logger.Debug(
+                    $"Published message to {socket.ConnectionInfo.ClientIpAddress}: {message.MessageType}"
+                );
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}");
+                _logger.Error(
+                    $"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}"
+                );
             }
         }
     }
@@ -108,7 +132,104 @@ public partial class AgentServer : IServer
     /// Parse the message
     /// </summary>
     /// <param name="text">Message to parse</param>
-    private void ParseMessage(string text) => throw new NotImplementedException();
+    private void ParseMessage(string text)
+    {
+        try
+        {
+            Message? message = JsonSerializer.Deserialize<Message>(text)
+                               ?? throw new Exception("failed to deserialize Message");
+
+            _logger.Debug("Received message: {MessageType}", message.MessageType);
+            _logger.Verbose(text);
+
+            switch (message.MessageType)
+            {
+                case "PERFORM_ABANDON":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformAbandonMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformAbandonMessage")
+                    ));
+                    break;
+
+                case "PERFORM_PICK_UP":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformPickUpMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformPickUpMessage")
+                    ));
+                    break;
+
+                case "PERFORM_SWITCH_ARM":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformSwitchArmMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformSwitchArmMessage")
+                    ));
+                    break;
+
+                case "PERFORM_USE_MEDICINE":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformUseMedicineMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformUseMedicineMessage")
+                    ));
+                    break;
+
+                case "PERFORM_USE_GRENADE":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformUseGrenadeMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformUseGrenadeMessage")
+                    ));
+                    break;
+
+                case "PERFORM_MOVE":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformMoveMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformMoveMessage")
+                    ));
+                    break;
+
+                case "PERFORM_STOP":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformStopMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformStopMessage")
+                    ));
+                    break;
+
+                case "PERFORM_ATTACK":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<PerformAttackMessage>(text)
+                        ?? throw new Exception("failed to deserialize PerformAttackMessage")
+                    ));
+                    break;
+
+                case "GET_PLAYER_INFO":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<GetPlayerInfoMessage>(text)
+                        ?? throw new Exception("failed to deserialize GetPlayerInfoMessage")
+                    ));
+                    break;
+
+                case "GET_MAP_INFO":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<GetMapMessage>(text)
+                        ?? throw new Exception("failed to deserialize GetMapInfoMessage")
+                    ));
+                    break;
+
+                case "CHOOSE_ORIGIN":
+                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
+                        JsonSerializer.Deserialize<ChooseOriginMessage>(text)
+                        ?? throw new Exception("failed to deserialize ChooseOriginMessage")
+                    ));
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Invalid message type {message.MessageType}.");
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.Error($"Failed to parse message: {exception.Message}");
+        }
+    }
 
     /// <summary>
     /// Start the WebSocket server
@@ -125,7 +246,9 @@ public partial class AgentServer : IServer
         {
             socket.OnOpen = () =>
             {
-                _logger.Debug("Connection from {ClientIpAddress} opened.", socket.ConnectionInfo.ClientIpAddress);
+                _logger.Information(
+                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened."
+                );
 
                 // Remove the socket if it already exists.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
@@ -136,7 +259,9 @@ public partial class AgentServer : IServer
 
             socket.OnClose = () =>
             {
-                _logger.Debug("Connection from {ClientIpAddress} closed.", socket.ConnectionInfo.ClientIpAddress);
+                _logger.Information(
+                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} closed."
+                );
 
                 // Remove the socket.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
@@ -150,7 +275,7 @@ public partial class AgentServer : IServer
                 }
                 catch (Exception exception)
                 {
-                    _logger.Error($"Failed to parse message: {exception}");
+                    _logger.Error($"Failed to parse message: {exception.Message}");
                 }
             };
 
@@ -163,7 +288,7 @@ public partial class AgentServer : IServer
                 }
                 catch (Exception exception)
                 {
-                    _logger.Error($"Failed to parse message: {exception}");
+                    _logger.Error($"Failed to parse message: {exception.Message}");
                 }
             };
 

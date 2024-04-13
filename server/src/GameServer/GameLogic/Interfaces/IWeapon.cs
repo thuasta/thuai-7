@@ -1,5 +1,3 @@
-using GameServer.Engine.Shapes;
-
 namespace GameServer.GameLogic;
 
 /// <summary>
@@ -7,6 +5,11 @@ namespace GameServer.GameLogic;
 /// </summary>
 public interface IWeapon
 {
+    /// <summary>
+    /// The name of the weapon.
+    /// </summary>
+    public string Name { get; }
+
     /// <summary>
     /// The range of the weapon.
     /// </summary>
@@ -33,15 +36,17 @@ public interface IWeapon
     public int TicksUntilAvailable { get; }
 
     /// <summary>
-    /// Attack the target.
+    /// Get Bullet Directions.
     /// </summary>
-    /// <param name="owner"></param>
     /// <param name="target"></param>
-    public void Attack(IPlayer owner, Point<float> target);
+    /// <returns>The normalized directions of the bullets</returns>
+    public List<Position>? GetBulletDirections(Position start, Position direction);
 
     /// <summary>
     /// Update the cooldown of the weapon.
     /// Should be called every tick.
     /// </summary>
     public void UpdateCoolDown();
+
+    public string ItemSpecificName { get; }
 }

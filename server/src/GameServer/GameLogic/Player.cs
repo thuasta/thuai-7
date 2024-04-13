@@ -1,31 +1,57 @@
+using Serilog;
 using static GameServer.GameLogic.IItem;
 
 namespace GameServer.GameLogic;
 
-public class Player : IPlayer
+public partial class Player : IPlayer
 {
-    // TODO: Implement
+    public int PlayerId { get; set; }
+    public int MaxHealth { get; }
     public int Health { get; set; }
     public double Speed { get; set; }
-    public Armor? PlayerArmor { get; set; }
+    public double PlayerRadius { get; set; }
+    public Armor PlayerArmor { get; set; }
     public Position PlayerPosition { get; set; }
+    public Position? PlayerTargetPosition { get; set; }
     public IWeapon PlayerWeapon { get; set; }
     public IBackPack PlayerBackPack { get; set; }
+    public bool IsAlive => Health > 0;
+
+    private readonly ILogger _logger;
 
     //生成构造函数
-    public Player(int health, double speed, Position position)
+    public Player(int playerId, int maxHealth, double speed, Position position)
     {
-        Health = health;
+        PlayerId = playerId;
+        Health = maxHealth;
+        MaxHealth = maxHealth;
         Speed = speed;
+        PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
-        PlayerArmor = null;
+        PlayerArmor = new Armor("NO_ARMOR", Constant.NO_ARMOR_DEFENSE);
         PlayerWeapon = new Fist();
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
+
+        _logger = Log.ForContext("Component", $"Player {playerId}");
     }
 
+    public void Teleport(Position position)
+    {
+        PlayerTeleportEvent?.Invoke(this, new PlayerTeleportEventArgs(this, position));
+    }
 
     public void TakeDamage(int damage)
     {
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to take damage: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        if (damage < 0)
+        {
+            _logger.Error($"Damage should be non-negative, but actually {damage}.");
+        }
         if (PlayerArmor != null)
         {
             Health -= PlayerArmor.Hurt(damage);
@@ -36,74 +62,123 @@ public class Player : IPlayer
         }
     }
 
-    public void playerMove(Position position)
-    {
-        PlayerPosition = position;
-    }
-
-    public bool playerAttack()
-    {
-        if (PlayerBackPack.FindItems(ItemKind.Bullet, 1) > 0)
-        {
-            PlayerBackPack.RemoveItems(ItemKind.Bullet, 1, 1);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public bool playerUseGrenade()
-    {
-        if (PlayerBackPack.FindItems(ItemKind.Grenade, 1) > 0)
-        {
-            PlayerBackPack.RemoveItems(ItemKind.Grenade, 1, 1);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public bool playerUseMedicine()
-    {
-        if (PlayerBackPack.FindItems(ItemKind.Medicine, 1) > 0)
-        {
-            PlayerBackPack.RemoveItems(ItemKind.Medicine, 1, 1);
-
-            //Health += Medicine.Heal;
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
     public void TakeHeal(int heal)
     {
-        throw new NotImplementedException();
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to take heal: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        if (heal < 0)
+        {
+            throw new ArgumentException($"Heal should be non-negative, but actually {heal}.");
+        }
+        if (Health + heal > MaxHealth)
+        {
+            Health = MaxHealth;
+        }
+        else
+        {
+            Health += heal;
+        }
     }
 
-    public bool playerChangeWeapon()
+    public void MoveTo(Position destination)
     {
-        // TODO:Implement
-        throw new NotImplementedException();
+        PlayerTargetPosition = destination;
     }
-    public void SwitchWeapon(int weaponItemId)
+
+    public void Stop()
     {
-        //iterate player's backpack to find the weapon with weaponItemId
-        //if found, set PlayerWeapon to the weapon
-        //if not found, throw new ArgumentException("Weapon not found in backpack.");
-        foreach (IItem item in PlayerBackPack.Items)
+        PlayerTargetPosition = null;
+    }
+
+    public bool TryPickUpItem(Item item)
+    {
+        if (IsAlive == false)
         {
-            if (item.ItemSpecificId == weaponItemId)
-            {
-                PlayerWeapon = WeaponFactory.CreateFromItem(item);
-                return;
-            }
+            _logger.Error($"Failed to try to pick up item {item.ItemSpecificName}: Player {PlayerId} is already dead.");
+            return false;
         }
+
+        try
+        {
+            PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public void PlayerAbandon(int number, List<(ItemKind itemKind, string itemSpecificName)> abandonedSupplies)
+    {
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to abandon items: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        PlayerAbandonEvent?.Invoke(this, new PlayerAbandonEventArgs(this, number, abandonedSupplies));
+    }
+
+    public void PlayerAttack(Position targetPosition)
+    {
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to attack: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        PlayerAttackEvent?.Invoke(this, new PlayerAttackEventArgs(this, targetPosition));
+    }
+
+    public void PlayerUseGrenade(Position targetPosition)
+    {
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to use grenade: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        PlayerUseGrenadeEvent?.Invoke(this, new PlayerUseGrenadeEventArgs(this, targetPosition));
+
+    }
+
+    public void PlayerUseMedicine(string medicineName)
+    {
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to use medicine: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        PlayerUseMedicineEvent?.Invoke(this, new PlayerUseMedicineEventArgs(this, medicineName));
+    }
+
+
+    public void PlayerSwitchArm(string weaponItemId)
+    {
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to switch arm: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        PlayerSwitchArmEvent?.Invoke(this, new PlayerSwitchArmEventArgs(this, weaponItemId));
+    }
+
+    public void PlayerPickUp(string targetSupply, Position targetPosition, int numb)
+    {
+        if (IsAlive == false)
+        {
+            _logger.Error($"Failed to pick up: Player {PlayerId} is already dead.");
+            return;
+        }
+
+        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition, numb));
     }
 }

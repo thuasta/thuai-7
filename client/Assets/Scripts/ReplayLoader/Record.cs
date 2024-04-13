@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using System.Runtime.CompilerServices;
 using Mono.Data.Sqlite;
 using Unity.IO.LowLevel.Unsafe;
+using System;
 
 
 public class Record : MonoBehaviour
@@ -64,7 +65,7 @@ public class Record : MonoBehaviour
         public int MaxTick;
         public void Reset()
         {
-            //this.RecordSpeed = 1f;
+            // RecordSpeed = 1f;
             NowTick = 0;
             NowRecordNum = 0;
             JumpTargetTick = int.MaxValue;
@@ -74,7 +75,9 @@ public class Record : MonoBehaviour
     public RecordInfo _recordInfo;
 
     // GUI
-    private readonly Button _stopButton;
+    private Button _stopButton;
+    private Sprite _stopButtonSprite;
+    private Sprite _continueButtonSprite;
     private readonly Button _replayButton;
     private readonly Slider _recordSpeedSlider;
     private readonly TMP_Text _recordSpeedText;
@@ -83,37 +86,242 @@ public class Record : MonoBehaviour
     private readonly Slider _processSlider;
     private readonly TMP_Text _jumpTargetTickText;
     private readonly TMP_Text _maxTickText;
+    private GameObject _groundPrefab;
+    private GameObject _playerPrefab;
+    private bool[,] _isWalls;
+
+    private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
 
     // record data
     private readonly string _recordFilePath = null;
-    private List<CompetitionUpdate> _competitionUpdates;
-    private Map _map;
-    private List<Supply> _supplies;
-    
+    private JArray _recordArray;
+    private string _recordFile;
+    private Observe _observe;
     // viewer
-
-
-    private void LoadRecordData()
+    private void Start()
     {
-        JObject recordJsonObject = JsonUtility.UnzipRecord(_recordFilePath);
-        JObject mapJsonObject = (JObject)recordJsonObject["map"];
-        JArray suppliesJsonObject = (JArray)recordJsonObject["supplies"];
-        JArray recordArray = (JArray)recordJsonObject["competitionUpdates"];
-        if (mapJsonObject == null || suppliesJsonObject == null || recordArray == null)
+        // Initialize the _recordInfo
+        _recordInfo = new();
+        //// Initialize the ItemCreator
+        // _entityCreator = GameObject.Find("EntityCreator").GetComponent<EntityCreator>();
+        // Get json file
+        FileLoaded fileLoaded = GameObject.Find("RecordReader").GetComponent<FileLoaded>();
+        // Check if the file is Level json
+        _recordFile = fileLoaded.File;
+        _observe = GameObject.Find("Camera").GetComponent<Observe>();
+
+        // Prefab
+        _groundPrefab = Resources.Load<GameObject>("Prefabs/Ground_01");
+        _playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Rock_01"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Rock_02"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Rock_03"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Rock_04"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Rock_05"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Tree_01"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Tree_02"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Tree_03"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Tree_04"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Tree_05"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Stump_01"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_01"));
+        _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_02"));
+
+
+
+        // GUI //
+
+        // Get stop button 
+        _stopButton = GameObject.Find("Canvas/StopButton").GetComponent<Button>();
+        // Get stop button sprites
+        _stopButtonSprite = Resources.Load<Sprite>("GUI/Button/StopButton");
+        _continueButtonSprite = Resources.Load<Sprite>("GUI/Button/ContinueButton");
+        // Pause at beginning
+        _stopButton.GetComponent<Image>().sprite = _continueButtonSprite;
+        // Add listener to stop button
+        _stopButton.onClick.AddListener(() =>
+       {
+           if (_recordInfo.NowPlayState == PlayState.Play)
+           {
+               _stopButton.GetComponent<Image>().sprite = _continueButtonSprite;
+               _recordInfo.NowPlayState = PlayState.Pause;
+           }
+           else if (_recordInfo.NowPlayState == PlayState.Pause)
+           {
+               _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
+               _recordInfo.NowPlayState = PlayState.Play;
+           }
+       });
+
+        // Get Replay button
+        // _replayButton = GameObject.Find("Canvas/ReplayButton").GetComponent<Button>();
+        // _replayButton.onClick.AddListener(() =>
+        //{
+        //     _recordInfo.Reset();
+        //     _entityCreator.DeleteAllEntities();
+        //});
+
+
+        //// Record playing rate slider
+        // _recordSpeedSlider = GameObject.Find("Canvas/RecordSpeedSlider").GetComponent<Slider>();
+        // _recordSpeedText = GameObject.Find("Canvas/RecordSpeedSlider/Value").GetComponent<TMP_Text>();
+
+        // _recordSpeedSliderMinValue =  _recordSpeedSlider.minValue;
+        // _recordSpeedSliderMaxValue =  _recordSpeedSlider.maxValue;
+        //// Set the default slider speed to 1;
+        //// Linear: 0~1
+        //float speedRate = (1 - RecordInfo.MinSpeed) / (RecordInfo.MaxSpeed - RecordInfo.MinSpeed);
+        // _recordSpeedSlider.value =  _recordSpeedSliderMinValue + ( _recordSpeedSliderMaxValue -  _recordSpeedSliderMinValue) * speedRate;
+        //// Add listener
+        // _recordSpeedSlider.onValueChanged.AddListener((float value) =>
+        //{
+        //    // Linear
+        //    float sliderRate = (value -  _recordSpeedSliderMinValue) / ( _recordSpeedSliderMaxValue -  _recordSpeedSliderMinValue);
+        //    // Compute current speed
+        //     _recordInfo.RecordSpeed = RecordInfo.MinSpeed + (RecordInfo.MaxSpeed - RecordInfo.MinSpeed) * sliderRate;
+        //    // Update speed text
+        //    _recordSpeedText.text = $"Speed: {Mathf.Round( _recordInfo.RecordSpeed * 100) / 100f:F2}";
+        //    foreach (Player player in EntitySource.PlayerDict.Values)
+        //    {
+        //        player.PlayerAnimations.SetAnimatorSpeed( _recordInfo.RecordSpeed);
+        //    }
+        //});
+
+
+        // Check
+        if (_recordFile == null)
         {
-            Debug.Log("Initialization Failed!");
+            Debug.Log("Loading file error!");
             return;
         }
+        _recordArray = LoadRecordData();
+        _recordInfo.MaxTick = (int)_recordArray.Last["tick"];
+        GenerateMap();
+        // Generate Map and Supplies
+
+        // Generate record Dict according to record array
+        //foreach (JToken eventJson in  _recordArray)
+        //{
+        //    string identifier = eventJson["identifier"].ToString();
+        //    if ( _recordDict.ContainsKey(identifier))
+        //    {
+        //         _recordDict[identifier].Add(eventJson);
+        //    }
+        //    else
+        //    {
+        //         _recordDict.Add(identifier, new JArray(eventJson));
+        //    }
+        //}
+
+        //// Process slider
+        // _processSlider = GameObject.Find("Canvas/ProcessSlider").GetComponent<Slider>();
+        // _processSlider.value = 1;
+        // _jumpTargetTickText = GameObject.Find("Canvas/ProcessSlider/Handle Slide Area/Handle/Value").GetComponent<TMP_Text>();
+        // _maxTickText = GameObject.Find("Canvas/ProcessSlider/Max").GetComponent<TMP_Text>();
+        // _recordInfo.MaxTick = (int)( _recordArray.Last["tick"]);
+        // _maxTickText.text = $"{ _recordInfo.MaxTick}";
+        //// Add listener
+        // _processSlider.onValueChanged.AddListener((float value) =>
+        //{
+        //    int nowTargetTick = (int)(value *  _recordInfo.MaxTick) + 1; // Add 1 owing to interpolation
+        //    if (PlayState.Play ==  _recordInfo.NowPlayState && Mathf.Abs( _recordInfo.NowTick - nowTargetTick) > 1)
+        //    {
+        //        // Jump //
+        //        // Reset the scene if the jump tick is smaller than now tick
+        //        if ( _recordInfo.NowTick > nowTargetTick)
+        //        {
+        //             _recordInfo.Reset();
+        //             _entityCreator.DeleteAllEntities();
+        //            // Reset All blocks;
+        //            // foreach (JToken blockChangeEventJson in  _recordDict["after_block_change"])
+        //        }
+        //        // Change current state
+        //         _recordInfo.NowPlayState = PlayState.Jump;
+        //        // Change target tick
+        //         _recordInfo.JumpTargetTick = nowTargetTick;
+
+        //        _registeredAgents.Clear();
+
+        //    }
+        //});
+    }
+
+    private JArray LoadRecordData()
+    {
+        JObject recordJsonObject = JsonUtility.UnzipRecord(_recordFile);
+        // Load the record array
+        JArray recordArray = (JArray)recordJsonObject["records"];
+
+        if (recordArray == null)
+        {
+            Debug.Log("Record file is empty!");
+            return null;
+        }
         Debug.Log(recordArray.ToString());
-        _map = mapJsonObject.ToObject<Map>();
-        _supplies = suppliesJsonObject.ToObject<List<Supply>>();
-        _competitionUpdates = recordArray.ToObject<List<CompetitionUpdate>>();
+        return recordArray;
     }
 
     #region Event Definition
 
     private void GenerateMap()
-    {   
+    {
+        // Generate map according to the _recordArray
+        // Find the JObject with "messageType": "MAP"
+        JObject mapJson = null;
+        foreach (JToken eventJson in _recordArray)
+        {
+            if (eventJson["messageType"].ToString() == "MAP")
+            {
+                mapJson = (JObject)eventJson;
+                break;
+            }
+        }
+        if (mapJson == null)
+        {
+            Debug.Log("Map not found!");
+            return;
+        }
+        // Generate map according to the mapJson, and store the map in the _blocks
+        int width = (int)mapJson["width"];
+        int height = (int)mapJson["height"];
+        JArray mapArray = (JArray)mapJson["walls"];
+        // Initialize the ground
+        Transform groundParent = GameObject.Find("Map/Ground").transform;
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                GameObject ground = Instantiate(_groundPrefab, new Vector3(i, 0, j), Quaternion.identity);
+
+                ground.transform.SetParent(groundParent);
+                // The direction of ground is random
+                ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
+            }
+        }
+
+        _isWalls = new bool[width, height];
+        // Initialize the walls
+        foreach (JToken wallJson in mapArray)
+        {
+            int x = (int)wallJson["x"];
+            int y = (int)wallJson["y"];
+            _isWalls[x, y] = true;
+        }
+        // Randomly initialize the walls according to the _isWalls
+        Transform obstacleParent = GameObject.Find("Map/Obstacles").transform;
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (_isWalls[i, j])
+                {
+                    GameObject obstacle = Instantiate(_obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i, 0, j), Quaternion.identity);
+                    obstacle.transform.SetParent(obstacleParent);
+                    // The direction of ground is random
+                    obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360) , 0);
+                }
+            }
+        }
     }
 
     private void UpdatePlayers(CompetitionUpdate update)
@@ -123,7 +331,7 @@ public class Record : MonoBehaviour
             Dictionary<Items, int> inventory = new();
             foreach (CompetitionUpdate.Player.Inventory item in player.inventory)
             {
-                switch(item.name)
+                switch (item.name)
                 {
                     default:
                         break;
@@ -144,7 +352,6 @@ public class Record : MonoBehaviour
                     player.speed,
                     player.firearm.name switch
                     {
-
                         _ => FirearmTypes.Fists,
                     },
                     player.position,
@@ -156,17 +363,17 @@ public class Record : MonoBehaviour
 
     private void AfterPlayerPickUpEvent()
     {
-        
+
     }
 
     private void AfterPlayerAbandonEvent()
     {
-        
+
     }
 
     private void AfterPlayerAttackEvent()
     {
-        
+
     }
 
     private void AfterPlayerUseMedicineEvent()
@@ -175,7 +382,7 @@ public class Record : MonoBehaviour
 
     private void AfterPlayerSwitchArmEvent()
     {
-        
+
     }
 
     private void AfterPlayerUseGrenadeEvent()
@@ -185,10 +392,7 @@ public class Record : MonoBehaviour
 
     #endregion
 
-    private void Start()
-    {
 
-    }
 
     private void UpdateTick()
     {

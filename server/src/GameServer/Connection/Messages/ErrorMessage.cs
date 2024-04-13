@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace GameServer.Connction;
+namespace GameServer.Connection;
 
 public record ErrorMessage : Message
 {

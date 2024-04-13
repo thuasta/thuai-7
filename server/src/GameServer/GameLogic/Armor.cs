@@ -1,6 +1,14 @@
 namespace GameServer.GameLogic;
 
 /// <summary>
+/// Additional properties of an armor (if it changes to an item).
+/// </summary>
+public record ArmorProperties
+{
+    public int CurrentHealth { get; init; }
+}
+
+/// <summary>
 /// Factory for converting between items and armors.
 /// </summary>
 public class ArmorFactory
@@ -18,17 +26,40 @@ public class ArmorFactory
             throw new ArgumentException($"Item kind {item.Kind} is not an armor.");
         }
 
-        int maxHealth = item.ItemSpecificId switch
+        int maxHealth = item.ItemSpecificName switch
         {
-            // TODO: Create a mapping from item specific id to max health
-            _ => throw new ArgumentException($"Item specific id {item.ItemSpecificId} is not valid for armor.")
+            "NO_ARMOR" => Constant.NO_ARMOR_DEFENSE,
+            "PRIMARY_ARMOR" => Constant.PRIMARY_ARMOR_DEFENSE,
+            "PREMIUM_ARMOR" => Constant.PREMIUM_ARMOR_DEFENSE,
+            _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for armor.")
         };
-        return new Armor(item.ItemSpecificId, maxHealth);
+
+        if (item.AdditionalProperties is null)
+        {
+
+            return new Armor(item.ItemSpecificName, maxHealth);
+        }
+        else if (item.AdditionalProperties is ArmorProperties properties)
+        {
+            return new Armor(item.ItemSpecificName, maxHealth, properties.CurrentHealth);
+        }
+        else
+        {
+            throw new ArgumentException(
+                $"Additional properties {item.AdditionalProperties.GetType().Name} is not valid for armor."
+            );
+        }
     }
 
     public static IItem ToItem(IArmor armor, int count)
     {
-        return new Item(IItem.ItemKind.Armor, armor.ItemSpecificId, count);
+        return new Item(IItem.ItemKind.Armor, armor.ItemSpecificName, count)
+        {
+            AdditionalProperties = new ArmorProperties
+            {
+                CurrentHealth = armor.Health
+            }
+        };
 
     }
 }
@@ -38,15 +69,15 @@ public class ArmorFactory
 /// </summary>
 public class Armor : IArmor
 {
-    public int ItemSpecificId { get; }
+    public string ItemSpecificName { get; }
     public int Health { get; private set; }
     public int MaxHealth { get; }
 
-    public Armor(int itemSpecificId, int maxHealth)
+    public Armor(string itemSpecificName, int maxHealth, int? currentHealth = null)
     {
-        ItemSpecificId = itemSpecificId;
+        ItemSpecificName = itemSpecificName;
         MaxHealth = maxHealth;
-        Health = maxHealth;
+        Health = currentHealth ?? maxHealth;
     }
 
     public int Hurt(int Damage)

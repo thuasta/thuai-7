@@ -1,11 +1,11 @@
-namespace GameServer.Connction;
+namespace GameServer.Connection;
 
 public interface IServer
 {
     /// <summary>
-    /// The number of messages published per second
+    /// Interval between two message publishings. In milliseconds.
     /// </summary>
-    public const float MessagesPublishedPerSecond = 20;
+    public const int MessagePublishIntervalMilliseconds = 10;
 
     /// <summary>
     /// Event raised after a message is received
@@ -15,12 +15,12 @@ public interface IServer
     /// <summary>
     /// IP address of the server
     /// </summary>
-    public string IpAddress { get; }
+    public string IpAddress { get; init; }
 
     /// <summary>
     /// Port of the server
     /// </summary>
-    public int Port { get; }
+    public int Port { get; init; }
 
     public Task? TaskForPublishingMessage { get; }
 
