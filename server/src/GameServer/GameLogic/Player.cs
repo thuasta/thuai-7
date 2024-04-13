@@ -114,7 +114,7 @@ public partial class Player : IPlayer
         return true;
     }
 
-    public void PlayerAbandon(int number, List<(ItemKind itemKind, string itemSpecificName)> abandonedSupplies)
+    public void PlayerAbandon(int number, (ItemKind itemKind, string itemSpecificName) abandonedSupplies)
     {
         if (IsAlive == false)
         {

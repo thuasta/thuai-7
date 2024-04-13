@@ -23,34 +23,35 @@ public partial class Game : IGame
 
         try
         {
-            foreach ((IItem.ItemKind itemKind, string itemSpecificName) in e.AbandonedSupplies)
+            IItem.ItemKind itemKind = e.AbandonedSupplies.ItemKind;
+            string itemSpecificName = e.AbandonedSupplies.ItemSpecificName;
+
+            IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
+            if (item != null && item.Count >= e.Number)
             {
-                IItem? item = e.Player.PlayerBackPack.FindItems(itemKind, itemSpecificName);
-                if (item != null && item.Count >= e.Number)
-                {
-                    // Remove abandon items from the backpack
-                    e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
+                // Remove abandon items from the backpack
+                e.Player.PlayerBackPack.RemoveItems(itemKind, itemSpecificName, e.Number);
 
-                    // Add abandon items to the ground
-                    // Get the block at the position of the player
-                    Position playerPosition = e.Player.PlayerPosition;
-                    int playerIntX = (int)playerPosition.x;
-                    int playerIntY = (int)playerPosition.y;
-                    GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
-                }
-
-                Recorder.PlayerAbandonRecord record = new()
-                {
-                    Data = new()
-                    {
-                        playerId = e.Player.PlayerId,
-                        numb = e.Number,
-                        abandonedSupplies = itemSpecificName
-                    }
-                };
-
-                _events.Add(record);
+                // Add abandon items to the ground
+                // Get the block at the position of the player
+                Position playerPosition = e.Player.PlayerPosition;
+                int playerIntX = (int)playerPosition.x;
+                int playerIntY = (int)playerPosition.y;
+                GameMap.AddSupplies(playerIntX, playerIntY, new Item(itemKind, itemSpecificName, e.Number));
             }
+
+            Recorder.PlayerAbandonRecord record = new()
+            {
+                Data = new()
+                {
+                    playerId = e.Player.PlayerId,
+                    numb = e.Number,
+                    abandonedSupplies = itemSpecificName
+                }
+            };
+
+            _events.Add(record);
+
         }
         catch (Exception ex)
         {

@@ -20,10 +20,10 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        List<(IItem.ItemKind, string)> abandonedSupplies = new()
-                        {
-                            (IItem.GetItemKind(performAbandonMessage.TargetSupply), performAbandonMessage.TargetSupply)
-                        };
+                        (IItem.ItemKind, string) abandonedSupplies = new(
+                            IItem.GetItemKind(performAbandonMessage.TargetSupply),
+                            performAbandonMessage.TargetSupply
+                        );
 
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performAbandonMessage.Token])?
                         .PlayerAbandon(performAbandonMessage.Numb, abandonedSupplies);
