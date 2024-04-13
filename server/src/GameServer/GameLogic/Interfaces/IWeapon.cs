@@ -5,6 +5,8 @@ namespace GameServer.GameLogic;
 /// </summary>
 public interface IWeapon
 {
+    public static IWeapon DefaultWeapon => new Fist();
+
     /// <summary>
     /// The name of the weapon.
     /// </summary>
@@ -47,6 +49,4 @@ public interface IWeapon
     /// Should be called every tick.
     /// </summary>
     public void UpdateCoolDown();
-
-    public string ItemSpecificName { get; }
 }

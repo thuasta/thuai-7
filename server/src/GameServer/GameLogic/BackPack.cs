@@ -29,20 +29,29 @@ public class BackPack : IBackPack
 
     public void AddItems(IItem.ItemKind kind, string itemSpecificName, int count)
     {
+        if (IItem.AllowInBackpack(kind) == false)
+        {
+            throw new InvalidOperationException($"Item with kind {kind} cannot be put in the backpack");
+        }
+
         if (CurrentWeight + new Item(kind, itemSpecificName, count).Weight > Capacity)
         {
             throw new InvalidOperationException($"No enough capacity for the item {itemSpecificName}");
         }
 
-        for (int i = 0; i < Items.Count; i++)
+        if (IItem.AllowPileUp(kind) == true)
         {
-            if (Items[i].Kind == kind && Items[i].ItemSpecificName == itemSpecificName)
+            for (int i = 0; i < Items.Count; i++)
             {
-                Items[i].Count += count;
-                return;
+                if (Items[i].Kind == kind && Items[i].ItemSpecificName == itemSpecificName)
+                {
+                    Items[i].Count += count;
+                    return;
+                }
             }
         }
-        // Inventory does not contain the item
+
+        // Inventory does not contain the item or the item cannot be piled up
         Items.Add(new Item(kind, itemSpecificName, count));
     }
 

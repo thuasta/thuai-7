@@ -7,7 +7,7 @@ public class Item : IItem
     public int Count { get; set; }
     public int WeightOfSingleItem
     {
-        get => Kind switch
+        get => ItemSpecificName switch
         {
             _ => throw new NotImplementedException()
         };
@@ -26,6 +26,15 @@ public class Item : IItem
     /// <param name="count"></param>
     public Item(IItem.ItemKind kind, string itemSpecificName, int count)
     {
+        if (count <= 0)
+        {
+            throw new ArgumentException("Count must be positive.");
+        }
+        if (IItem.AllowPileUp(kind) == false && count > 1)
+        {
+            throw new ArgumentException($"Item kind {kind} does not allow piling up.");
+        }
+
         Kind = kind;
         ItemSpecificName = itemSpecificName;
         Count = count;

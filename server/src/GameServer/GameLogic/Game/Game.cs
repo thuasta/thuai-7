@@ -218,7 +218,7 @@ public partial class Game
                                 speed = player.Speed,
                                 firearm = new()
                                 {
-                                    name = player.PlayerWeapon.ItemSpecificName,
+                                    name = player.PlayerWeapon.Name,
                                     distance = player.PlayerWeapon.Range
                                 },
                                 inventory = (from supplies in player.PlayerBackPack.Items

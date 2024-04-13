@@ -20,10 +20,10 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        List<(IItem.ItemKind, string)> abandonedSupplies = new()
-                        {
-                            (IItem.GetItemKind(performAbandonMessage.TargetSupply), performAbandonMessage.TargetSupply)
-                        };
+                        (IItem.ItemKind, string) abandonedSupplies = new(
+                            IItem.GetItemKind(performAbandonMessage.TargetSupply),
+                            performAbandonMessage.TargetSupply
+                        );
 
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performAbandonMessage.Token])?
                         .PlayerAbandon(performAbandonMessage.Numb, abandonedSupplies);
@@ -209,9 +209,12 @@ public partial class GameRunner : IGameRunner
                             )
                         );
                         _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
-                        _nextPlayerId++;
 
-                        _logger.Information($"Player with token \"{getPlayerInfoMessage.Token}\" joined the game.");
+                        _logger.Information(
+                            $"Player with token \"{getPlayerInfoMessage.Token}\" joined the game (With id {_nextPlayerId})."
+                        );
+
+                        _nextPlayerId++;
                     }
                     catch (Exception ex)
                     {
