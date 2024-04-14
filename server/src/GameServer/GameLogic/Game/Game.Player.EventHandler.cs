@@ -66,7 +66,7 @@ public partial class Game : IGame
                     if (e.Number > 1)
                     {
                         _logger.Error(
-                            $"[Player {e.Player.PlayerId}] Cannot abandon more than one {itemSpecificName}."
+                            $"[Player {e.Player.PlayerId}] Cannot abandon more than one {itemSpecificName} at once."
                         );
                         return;
                     }
@@ -79,7 +79,7 @@ public partial class Game : IGame
                     if (e.Number > 1)
                     {
                         _logger.Error(
-                            $"[Player {e.Player.PlayerId}] Cannot abandon more than one {itemSpecificName}."
+                            $"[Player {e.Player.PlayerId}] Cannot abandon more than one {itemSpecificName} at once."
                         );
                         return;
                     }
@@ -158,7 +158,7 @@ public partial class Game : IGame
         {
             if (!e.Player.PlayerWeapon.IsAvailable)
             {
-                _logger.Error($"[Player {e.Player.PlayerId}] Weapon is not available.");
+                _logger.Error($"[Player {e.Player.PlayerId}] Weapon is still in cool down.");
                 return;
             }
 
@@ -232,7 +232,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot pick up supplies when the game is at stage {Stage}.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies when the game is at stage {Stage}.");
             return;
         }
         if (e.Numb <= 0)
@@ -242,7 +242,7 @@ public partial class Game : IGame
         }
         if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
         {
-            _logger.Error($"Player {e.Player.PlayerId} is not close enough to the supply.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Not close enough to the supply.");
             return;
         }
         if (GameMap.GetBlock(e.TargetPosition) is null || GameMap.GetBlock(e.TargetPosition)?.IsWall == true)
@@ -263,7 +263,7 @@ public partial class Game : IGame
                 case IItem.ItemKind.Armor:
                     if (e.Numb > 1)
                     {
-                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up more than one armor.");
+                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up more than one armor at once.");
                         return;
                     }
 
@@ -296,7 +296,7 @@ public partial class Game : IGame
                     }
                     if (e.Numb > 1)
                     {
-                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up more than one weapon.");
+                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up more than one weapon at once.");
                         return;
                     }
 
@@ -310,7 +310,9 @@ public partial class Game : IGame
                     }
                     if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetSupply) == true)
                     {
-                        _logger.Error($"[Player {e.Player.PlayerId}] Cannot own more than one {e.TargetSupply}.");
+                        _logger.Error(
+                            $"[Player {e.Player.PlayerId}] Cannot own more than one {e.TargetSupply}."
+                        );
                         return;
                     }
 
@@ -381,7 +383,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot switch arm when the game is at stage {Stage}.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot switch arm when the game is at stage {Stage}.");
             return;
         }
 
@@ -423,7 +425,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot use grenade when the game is at stage {Stage}.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot use grenade when the game is at stage {Stage}.");
             return;
         }
 
@@ -475,7 +477,7 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Fighting)
         {
-            _logger.Error($"Player {e.Player.PlayerId} cannot use medicine when the game is at stage {Stage}.");
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot use medicine when the game is at stage {Stage}.");
             return;
         }
 
@@ -513,7 +515,9 @@ public partial class Game : IGame
     {
         if (Stage != GameStage.Preparing)
         {
-            _logger.Error($"Teleportation is only allowed at stage Preparing (actual stage {Stage}).");
+            _logger.Error(
+                $"[Player {e.Player.PlayerId}] Teleportation is only allowed at stage Preparing (actual stage {Stage})."
+            );
         }
 
         try
@@ -524,7 +528,7 @@ public partial class Game : IGame
             }
             else
             {
-                _logger.Error($"Player {e.Player.PlayerId} cannot teleport to a wall or outside of the map.");
+                _logger.Error($"[Player {e.Player.PlayerId}] Cannot teleport to a wall or outside of the map.");
             }
         }
         catch (Exception ex)
