@@ -21,7 +21,7 @@ jobs:
 
       - run: |
           sudo apt-get install -y pandoc
-          pandoc -s -o site/index.html docs/THUAI_Handbook.md
+          sudo pandoc -s -o site/index.html docs/THUAI_Handbook.md
 
       - uses: actions/upload-artifact@v4
         with:
