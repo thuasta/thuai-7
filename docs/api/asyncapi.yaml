@@ -294,6 +294,8 @@ components:
                   $ref: '#/components/schemas/PositionInt'
 
     SafeZone:
+      title: SafeZone
+      description: Information of the safe zone
       payload:
         type: object
         required:
