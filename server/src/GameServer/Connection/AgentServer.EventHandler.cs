@@ -93,7 +93,7 @@ public partial class AgentServer : IServer
         _messageToPublish.Enqueue(
             new MapMessage
             {
-                Length = walls.Count,
+                Length = e.Game.GameMap.Height,
                 Walls = walls
             }
         );
