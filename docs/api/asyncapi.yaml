@@ -9,6 +9,7 @@ info:
 
 channels:
   /competition/control:
+    description: Channel for recorder to generate record files. Skip this part if you are a player.
     address: /competition/control
     messages:
       Error:
@@ -21,8 +22,9 @@ channels:
         $ref: '#/components/messages/Supplies'
       SafeZone:
         $ref: '#/components/messages/SafeZone'
-  
+
   /competition/player:
+    description: Channel for player to get information and perform actions.
     address: /competition/player
     messages:
       PlayerPerform:
