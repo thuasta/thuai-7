@@ -2,10 +2,11 @@ namespace GameServer.GameLogic;
 
 public partial class Constant
 {
-    //玩家的碰撞箱的半径（圆形，单位为格数）
+    // Collision box of player (only for collision with bullet, not for collision with wall)
     public const double PLAYER_COLLISION_BOX = 0.5;
-    //玩家初始背包大小
-    public const int PLAYER_INITIAL_BACKPACK_SIZE = 150;
+
+    // Initial backpack size of player
+    public const int PLAYER_INITIAL_BACKPACK_SIZE = 50;
 
     public const int PLAYER_PICK_UP_DISTANCE = 1;
 

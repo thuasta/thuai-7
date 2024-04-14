@@ -28,7 +28,7 @@ public interface IBlock
     /// <param name="kind"></param>
     /// <param name="itemSpecificName"></param>
     /// <param name="count"></param>
-    public void GenerateItems(IItem.ItemKind kind, string itemSpecificName, int count);
+    public void GenerateItems(IItem item);
 
     /// <summary>
     /// Remove items from the block.
@@ -36,5 +36,5 @@ public interface IBlock
     /// <param name="kind"></param>
     /// <param name="itemSpecificName"></param>
     /// <param name="count"></param>
-    public void RemoveItems(IItem.ItemKind kind, string itemSpecificName, int count);
+    public void RemoveItems(IItem item);
 }

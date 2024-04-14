@@ -11,6 +11,32 @@ public interface IItem
         Armor
     }
 
+    public static bool AllowInBackpack(ItemKind kind)
+    {
+        return kind switch
+        {
+            ItemKind.Armor => false,
+            ItemKind.Weapon => false,
+            ItemKind.Grenade => true,
+            ItemKind.Bullet => true,
+            ItemKind.Medicine => true,
+            _ => throw new ArgumentException($"Unknown item kind: {kind}.")
+        };
+    }
+
+    public static bool AllowPileUp(ItemKind kind)
+    {
+        return kind switch
+        {
+            ItemKind.Armor => false,
+            ItemKind.Weapon => false,
+            ItemKind.Grenade => true,
+            ItemKind.Bullet => true,
+            ItemKind.Medicine => true,
+            _ => throw new ArgumentException($"Unknown item kind: {kind}.")
+        };
+    }
+
     public static ItemKind GetItemKind(string itemName)
     {
         return itemName switch
@@ -53,4 +79,9 @@ public interface IItem
     /// Weight of the item in total.
     /// </summary>
     public int Weight { get; }
+
+    /// <summary>
+    /// Additional properties of the item.
+    /// </summary>
+    public object? AdditionalProperties { get; init; }
 }

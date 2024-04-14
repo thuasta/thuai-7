@@ -26,51 +26,83 @@ class Program
         ILogger _logger = Log.ForContext("Component", "GameServer");
 
         Version version = typeof(Program).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
+
+        _logger.Information(
+            "--------------------------------------------------------------------------------------------"
+            );
         _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
-        _logger.Information("Copyright (c) 2024 THUASTA");
-
-        IGameRunner gameRunner = new GameRunner(config);
-
-        AgentServer agentServer = new()
-        {
-            Port = config.ServerPort
-        };
-
-        SubscribeEvents();
+        _logger.Information("Copyright (c) 2024");
+        _logger.Information(
+            "Student Association of Science and Technology, Department of Automation, Tsinghua University"
+        );
+        _logger.Information(
+            "--------------------------------------------------------------------------------------------\n"
+            );
 
         try
         {
+            IGameRunner gameRunner = new GameRunner(config);
+
+            AgentServer agentServer = new()
+            {
+                Port = config.ServerPort
+            };
+
+            SubscribeEvents();
             agentServer.Start();
 
             // Wait for players to connect
             Task.Delay((int)(config.WaitingTime * 1000)).Wait();
 
+            while (gameRunner.Game.PlayerCount < config.ExpectedPlayerNum)
+            {
+                _logger.Information(
+                    $"Waiting for {config.ExpectedPlayerNum - gameRunner.Game.PlayerCount} more players to join..."
+                );
+                Task.Delay(1000).Wait();
+            }
+
             gameRunner.Start();
 
-            while (true)
+            HandleCommand();
+
+            Task.Delay(-1).Wait();
+
+            #region Local Functions
+            void SubscribeEvents()
             {
-                // TODO: Read commands from console
-                string? input = Console.ReadLine();
-                if (input == "stop")
-                {
-                    gameRunner.Stop();
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    _logger.Error($"Unknown command: {input}. Please check that the command exists and that you have permission to use it.");
-                }
+                gameRunner.Game.AfterGameTickEvent += agentServer.HandleAfterGameTickEvent;
+                agentServer.AfterMessageReceiveEvent += gameRunner.HandleAfterMessageReceiveEvent;
             }
+
+            void HandleCommand()
+            {
+                ILogger loggerForConsole = Log.ForContext("Component", "Console");
+                Task taskForHandlingCommand = Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        // TODO: Read commands from console
+                        string? input = Console.ReadLine();
+                        if (input == "stop")
+                        {
+                            gameRunner.Stop();
+                            Environment.Exit(0);
+                        }
+                        else
+                        {
+                            loggerForConsole.Error(
+                                $"Unknown command: {input}."
+                            );
+                        }
+                    }
+                });
+            }
+            #endregion
         }
         catch (Exception ex)
         {
             _logger.Fatal($"GameServer crashed with exception: {ex}");
-        }
-
-        void SubscribeEvents()
-        {
-            gameRunner.Game.AfterGameTickEvent += agentServer.HandleAfterGameTickEvent;
-            agentServer.AfterMessageReceiveEvent += gameRunner.HandleAfterMessageReceiveEvent;
         }
     }
 

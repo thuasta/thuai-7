@@ -1,46 +1,64 @@
+using GameServer.Geometry;
 using Serilog;
 using static GameServer.GameLogic.IItem;
 
 namespace GameServer.GameLogic;
 
-public partial class Player : IPlayer
+public partial class Player
 {
-    public int Id { get; set; }
+    public int PlayerId { get; set; }
+
+    public double PlayerRadius { get; set; }
+
     public int MaxHealth { get; }
     public int Health { get; set; }
+    public bool IsAlive => Health > 0;
+
     public double Speed { get; set; }
-    public double PlayerRadius { get; set; }
+
     public Armor PlayerArmor { get; set; }
+
     public Position PlayerPosition { get; set; }
     public Position? PlayerTargetPosition { get; set; }
+
     public IWeapon PlayerWeapon { get; set; }
+    public List<IWeapon> WeaponSlot { get; private set; } = new();
+
     public IBackPack PlayerBackPack { get; set; }
-    public int PlayerId { get; set; }
-    public bool IsAlive => Health > 0;
+    public int MaxWeaponSlotSize => 1 + Constant.PLAYER_WEAPON_SLOT_SIZE;
+    public bool IsWeaponSlotFull => WeaponSlot.Count >= MaxWeaponSlotSize;
 
     private readonly ILogger _logger;
 
     //生成构造函数
-    public Player(int id, int maxHealth, double speed, Position position)
+    public Player(int playerId, int maxHealth, double speed, Position position)
     {
-        Id = id;
+        PlayerId = playerId;
         Health = maxHealth;
         MaxHealth = maxHealth;
         Speed = speed;
         PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
         PlayerArmor = new Armor("NO_ARMOR", Constant.NO_ARMOR_DEFENSE);
-        PlayerWeapon = new Fist();
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
 
-        _logger = Log.ForContext("Component", $"Player {id}");
+        IWeapon defaultWeapon = IWeapon.DefaultWeapon;
+        WeaponSlot.Add(defaultWeapon);
+        PlayerWeapon = WeaponSlot[0];
+
+        _logger = Log.ForContext("Component", $"Player {playerId}");
+    }
+
+    public void Teleport(Position position)
+    {
+        PlayerTeleportEvent?.Invoke(this, new PlayerTeleportEventArgs(this, position));
     }
 
     public void TakeDamage(int damage)
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to take damage: Player {Id} is already dead.");
+            _logger.Error($"Failed to take damage: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -62,13 +80,13 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to take heal: Player {Id} is already dead.");
+            _logger.Error($"Failed to take heal: Player {PlayerId} is already dead.");
             return;
         }
 
         if (heal < 0)
         {
-            throw new ArgumentException($"Heal should be non-negative, but actually {heal}.");
+            _logger.Error($"Heal should be non-negative, but actually {heal}.");
         }
         if (Health + heal > MaxHealth)
         {
@@ -94,7 +112,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to try to pick up item {item.ItemSpecificName}: Player {Id} is already dead.");
+            _logger.Error($"Failed to try to pick up item {item.ItemSpecificName}: Player {PlayerId} is already dead.");
             return false;
         }
 
@@ -102,19 +120,20 @@ public partial class Player : IPlayer
         {
             PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
         }
-        catch (InvalidOperationException)
+        catch (Exception ex)
         {
+            _logger.Error($"Failed to pick up item {item.ItemSpecificName}: {ex.Message}.");
             return false;
         }
 
         return true;
     }
 
-    public void PlayerAbandon(int number, List<(ItemKind itemKind, string itemSpecificName)> abandonedSupplies)
+    public void PlayerAbandon(int number, (ItemKind itemKind, string itemSpecificName) abandonedSupplies)
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to abandon items: Player {Id} is already dead.");
+            _logger.Error($"Failed to abandon items: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -125,7 +144,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to attack: Player {Id} is already dead.");
+            _logger.Error($"Failed to attack: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -136,7 +155,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to use grenade: Player {Id} is already dead.");
+            _logger.Error($"Failed to use grenade: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -148,19 +167,18 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to use medicine: Player {Id} is already dead.");
+            _logger.Error($"Failed to use medicine: Player {PlayerId} is already dead.");
             return;
         }
 
         PlayerUseMedicineEvent?.Invoke(this, new PlayerUseMedicineEventArgs(this, medicineName));
     }
 
-
     public void PlayerSwitchArm(string weaponItemId)
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to switch arm: Player {Id} is already dead.");
+            _logger.Error($"Failed to switch arm: Player {PlayerId} is already dead.");
             return;
         }
 
@@ -171,7 +189,7 @@ public partial class Player : IPlayer
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to pick up: Player {Id} is already dead.");
+            _logger.Error($"Failed to pick up: Player {PlayerId} is already dead.");
             return;
         }
 

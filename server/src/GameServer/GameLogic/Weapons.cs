@@ -1,4 +1,11 @@
+using GameServer.Geometry;
+
 namespace GameServer.GameLogic;
+
+public class WeaponProperties
+{
+    public int TicksUntilAvailable { get; init; }
+}
 
 public class WeaponFactory
 {
@@ -17,43 +24,73 @@ public class WeaponFactory
             throw new ArgumentException($"Item kind {item.Kind} is not a weapon.");
         }
 
-        return item.ItemSpecificName switch
+        if (item.AdditionalProperties is null)
         {
-            Constant.Names.FIST => new Fist(),
-            Constant.Names.S686 => new ShotGun(),
-            Constant.Names.M16 => new AssaultRifle(),
-            Constant.Names.VECTOR => new SubMachineGun(),
-            Constant.Names.AWM => new SniperRifle(),
-            _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for weapon.")
-        };
+            return item.ItemSpecificName switch
+            {
+                Constant.Names.S686 => new ShotGun(),
+                Constant.Names.M16 => new AssaultRifle(),
+                Constant.Names.VECTOR => new SubMachineGun(),
+                Constant.Names.AWM => new SniperRifle(),
+                Constant.Names.FIST => throw new ArgumentException("Cannot create Fist from item."),
+                _ => throw new ArgumentException($"Item specific name {item.ItemSpecificName} is not valid for weapon.")
+            };
+        }
+        else if (item.AdditionalProperties is WeaponProperties properties)
+        {
+            return item.ItemSpecificName switch
+            {
+                Constant.Names.S686 => new ShotGun(properties.TicksUntilAvailable),
+                Constant.Names.M16 => new AssaultRifle(properties.TicksUntilAvailable),
+                Constant.Names.VECTOR => new SubMachineGun(properties.TicksUntilAvailable),
+                Constant.Names.AWM => new SniperRifle(properties.TicksUntilAvailable),
+                Constant.Names.FIST => throw new ArgumentException("Cannot create Fist from item."),
+                _ => throw new ArgumentException($"Item specific name {item.ItemSpecificName} is not valid for weapon.")
+            };
+        }
+        else
+        {
+            throw new ArgumentException(
+                $"Additional properties {item.AdditionalProperties.GetType().Name} is not valid for weapon."
+            );
+        }
     }
 
     public static IItem ToItem(IWeapon weapon)
     {
-        return weapon switch
+        if (weapon is Fist || weapon.Name == Constant.Names.FIST)
         {
-            Fist _ => new Item(IItem.ItemKind.Weapon, Constant.Names.FIST, 1),
-            ShotGun _ => new Item(IItem.ItemKind.Weapon, Constant.Names.S686, 1),
-            AssaultRifle _ => new Item(IItem.ItemKind.Weapon, Constant.Names.M16, 1),
-            SubMachineGun _ => new Item(IItem.ItemKind.Weapon, Constant.Names.VECTOR, 1),
-            SniperRifle _ => new Item(IItem.ItemKind.Weapon, Constant.Names.AWM, 1),
-            _ => throw new ArgumentException($"Weapon is not of valid weapon-class.")
-        };
+            throw new ArgumentException("Cannot create item from Fist.");
+        }
+        try
+        {
+            return new Item(IItem.ItemKind.Weapon, weapon.Name, 1)
+            {
+                AdditionalProperties = new WeaponProperties
+                {
+                    TicksUntilAvailable = weapon.TicksUntilAvailable
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException($"Cannot create item from weapon {weapon.Name}.", ex);
+        }
     }
 }
 
 public class Fist : IWeapon
 {
-    public string Name { get; } = "FIST";
+    public string Name { get; } = Constant.Names.FIST;
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
-    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => false;
 
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
@@ -70,30 +107,29 @@ public class Fist : IWeapon
         }
     }
 
-    public Fist()
+    public Fist(int? ticksUntilAvailable = null)
     {
         Range = Constant.FIST_RANGE;
         Damage = Constant.FIST_DAMAGE;
         CoolDownTicks = Constant.FIST_COOLDOWNTICKS;
-        TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.Names.FIST;
+        TicksUntilAvailable = ticksUntilAvailable ?? 0;
     }
 }
 
 public class ShotGun : IWeapon
 {
-    public string Name { get; } = "S686";
+    public string Name { get; } = Constant.Names.S686;
     private int BulletNum { get; }
     private int DeltaDegree { get; }
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
-    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -122,30 +158,29 @@ public class ShotGun : IWeapon
             TicksUntilAvailable--;
         }
     }
-    public ShotGun()
+    public ShotGun(int? ticksUntilAvailable = null)
     {
         Range = Constant.S686_RANGE;
         BulletNum = Constant.S686_BULLET_NUM;
         DeltaDegree = Constant.S686_DELTA_DEG;
         Damage = Constant.S686_SINGLE_BULLET_DAMAGE;
         CoolDownTicks = Constant.S686_COOLDOWNTICKS;
-        TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.Names.S686;
+        TicksUntilAvailable = ticksUntilAvailable ?? 0;
     }
 }
 
 public class SubMachineGun : IWeapon
 {
-    public string Name { get; } = "VECTOR";
+    public string Name { get; } = Constant.Names.VECTOR;
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
-    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -160,28 +195,27 @@ public class SubMachineGun : IWeapon
             TicksUntilAvailable--;
         }
     }
-    public SubMachineGun()
+    public SubMachineGun(int? ticksUntilAvailable = null)
     {
         Range = Constant.VECTOR_RANGE;
         Damage = Constant.VECTOR_DAMAGE;
         CoolDownTicks = Constant.VECTOR_COOLDOWNTICKS;
-        TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.Names.VECTOR;
+        TicksUntilAvailable = ticksUntilAvailable ?? 0;
     }
 }
 
 public class SniperRifle : IWeapon
 {
-    public string Name { get; } = "AWM";
+    public string Name { get; } = Constant.Names.AWM;
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
-    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -196,28 +230,27 @@ public class SniperRifle : IWeapon
             TicksUntilAvailable--;
         }
     }
-    public SniperRifle()
+    public SniperRifle(int? ticksUntilAvailable = null)
     {
         Range = Constant.AWM_RANGE;
         Damage = Constant.AWM_DAMAGE;
         CoolDownTicks = Constant.AWM_COOLDOWNTICKS;
-        TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.Names.M16;
+        TicksUntilAvailable = ticksUntilAvailable ?? 0;
     }
 }
 
 public class AssaultRifle : IWeapon
 {
-    public string Name { get; } = "M16";
+    public string Name { get; } = Constant.Names.M16;
     public float Range { get; }
     public int Damage { get; }
     public int CoolDownTicks { get; }
-    public string ItemSpecificName { get; }
     public bool IsAvailable
     {
         get => (TicksUntilAvailable == 0);
     }
     public int TicksUntilAvailable { get; private set; }
+    public bool RequiresBullet => true;
     public List<Position>? GetBulletDirections(Position start, Position target)
     {
         if (TicksUntilAvailable > 0) return null;
@@ -225,6 +258,7 @@ public class AssaultRifle : IWeapon
         TicksUntilAvailable = CoolDownTicks;
         return new List<Position> { (target - start).Normalize() };
     }
+
     public void UpdateCoolDown()
     {
         if (TicksUntilAvailable > 0)
@@ -232,12 +266,11 @@ public class AssaultRifle : IWeapon
             TicksUntilAvailable--;
         }
     }
-    public AssaultRifle()
+    public AssaultRifle(int? ticksUntilAvailable = null)
     {
         Range = Constant.M16_RANGE;
         Damage = Constant.M16_DAMAGE;
         CoolDownTicks = Constant.M16_COOLDOWNTICKS;
-        TicksUntilAvailable = 0;
-        ItemSpecificName = Constant.Names.AWM;
+        TicksUntilAvailable = ticksUntilAvailable ?? 0;
     }
 }

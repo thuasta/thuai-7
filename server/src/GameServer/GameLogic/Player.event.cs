@@ -1,8 +1,9 @@
+using GameServer.Geometry;
 using static GameServer.GameLogic.IItem;
 
 namespace GameServer.GameLogic;
 
-public partial class Player : IPlayer
+public partial class Player
 {
     public enum PlayerEventType
     {
@@ -11,7 +12,8 @@ public partial class Player : IPlayer
         PlayerPickUp,
         PlayerSwitchArm,
         PlayerUseGrenade,
-        PlayerUseMedicine
+        PlayerUseMedicine,
+        PlayerTeleport
     };
 
     public class PlayerAbandonEventArgs : EventArgs
@@ -19,9 +21,9 @@ public partial class Player : IPlayer
         public const PlayerEventType EventName = PlayerEventType.PlayerAbandon;
         public Player Player { get; }
         public int Number { get; }
-        public List<(IItem.ItemKind itemKind, string itemSpecificName)> AbandonedSupplies { get; }
+        public (ItemKind ItemKind, string ItemSpecificName) AbandonedSupplies { get; }
 
-        public PlayerAbandonEventArgs(Player player, int number, List<(IItem.ItemKind itemKind, string itemSpecificName)> abandonedSupplies)
+        public PlayerAbandonEventArgs(Player player, int number, (ItemKind itemKind, string itemSpecificName) abandonedSupplies)
         {
             Player = player;
             Number = number;
@@ -72,6 +74,18 @@ public partial class Player : IPlayer
         }
     }
 
+    public class PlayerTeleportEventArgs : EventArgs
+    {
+        public const PlayerEventType EventName = PlayerEventType.PlayerTeleport;
+        public Player Player { get; }
+        public Position TargetPosition { get; }
+
+        public PlayerTeleportEventArgs(Player player, Position targetPosition)
+        {
+            Player = player;
+            TargetPosition = targetPosition;
+        }
+    }
 
     public class PlayerUseGrenadeEventArgs : EventArgs
     {
@@ -99,11 +113,11 @@ public partial class Player : IPlayer
         }
     }
 
-
     public event EventHandler<PlayerAbandonEventArgs>? PlayerAbandonEvent;
     public event EventHandler<PlayerAttackEventArgs>? PlayerAttackEvent;
     public event EventHandler<PlayerPickUpEventArgs>? PlayerPickUpEvent;
     public event EventHandler<PlayerSwitchArmEventArgs>? PlayerSwitchArmEvent;
+    public event EventHandler<PlayerTeleportEventArgs>? PlayerTeleportEvent;
     public event EventHandler<PlayerUseGrenadeEventArgs>? PlayerUseGrenadeEvent;
     public event EventHandler<PlayerUseMedicineEventArgs>? PlayerUseMedicineEvent;
 }

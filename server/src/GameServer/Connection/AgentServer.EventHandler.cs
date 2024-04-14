@@ -70,7 +70,7 @@ public partial class AgentServer : IServer
             players.Add(
                 new PlayersInfoMessage.Player
                 {
-                    PlayerId = player.Id,
+                    PlayerId = player.PlayerId,
                     Armor = (player.PlayerArmor is not null) ? player.PlayerArmor.ItemSpecificName : "NO_ARMOR",
                     Health = player.Health,
                     Speed = player.Speed,

@@ -104,8 +104,8 @@ public class MenuController : MonoBehaviour
 
         _scrollView = GameObject.Find("Canvas/RecordViewer");
         _scrollViewContent = GameObject.Find("Canvas/RecordViewer/Viewport/Content");
-        _recordButtonPrefab ??= Resources.Load<GameObject>("GUI/Buttton/LevelButton");
-
+        _recordButtonPrefab = Resources.Load<GameObject>("GUI/Button/LevelButton");
+        Debug.Log(_recordButtonPrefab);
         // Define the event of start button
         _title = GameObject.Find("Canvas/Title");
         _startGameButton = GameObject.Find("Canvas/StartGameButton").GetComponent<Button>();
@@ -161,22 +161,22 @@ public class MenuController : MonoBehaviour
         void ListAllLevels(bool startServer = false, bool isRecord = true)
         {
             // Prior: find folders
-            List<string> LevelFolders = Directory.GetDirectories($"{_projectPath}/worlds").ToList();
+            List<string> LevelFolders = Directory.GetDirectories($"{_projectPath}/records").ToList();
             // Next: find files
-            string[] allLevels = Directory.GetFiles($"{_projectPath}/worlds", "*.nclevel", SearchOption.AllDirectories);
+            //string[] allLevels = Directory.GetFiles($"{_projectPath}/worlds", "*.nclevel", SearchOption.AllDirectories);
             // Compare them
-            foreach (string file in allLevels)
-            {
-                bool haveFolder = false;
-                foreach (string folder in LevelFolders)
-                {
-                    if (folder == file) { haveFolder = true; break; }
-                }
-                if (!haveFolder)
-                {
-                    LevelFolders.Add(file);
-                }
-            }
+            //foreach (string file in allLevels)
+            //{
+            //    bool haveFolder = false;
+            //    foreach (string folder in LevelFolders)
+            //    {
+            //        if (folder == file) { haveFolder = true; break; }
+            //    }
+            //    if (!haveFolder)
+            //    {
+            //        LevelFolders.Add(file);
+            //    }
+            //}
             _levels = LevelFolders.ToArray();
 
             foreach (string fileName in _levels)
@@ -203,7 +203,8 @@ public class MenuController : MonoBehaviour
 
                 // Put the button into the content
                 newRecordButtonObject.transform.SetParent(_scrollViewContent.transform);
-                newRecordButtonObject.transform.localScale = Vector3.one;
+                newRecordButtonObject.GetComponent<RectTransform>().position=Vector3.zero;
+                //newRecordButtonObject.transform.localScale = Vector3.one;
                 _recordButtons.Add(newRecordButton);
             }
         }
