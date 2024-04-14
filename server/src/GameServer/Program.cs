@@ -26,8 +26,18 @@ class Program
         ILogger _logger = Log.ForContext("Component", "GameServer");
 
         Version version = typeof(Program).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
+
+        _logger.Information(
+            "--------------------------------------------------------------------------------------------"
+            );
         _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
-        _logger.Information("Copyright (c) 2024 THUASTA");
+        _logger.Information("Copyright (c) 2024");
+        _logger.Information(
+            "Student Association of Science and Technology, Department of Automation, Tsinghua University"
+        );
+        _logger.Information(
+            "--------------------------------------------------------------------------------------------\n"
+            );
 
         try
         {
@@ -67,6 +77,7 @@ class Program
 
             void HandleCommand()
             {
+                ILogger loggerForConsole = Log.ForContext("Component", "Console");
                 Task taskForHandlingCommand = Task.Run(() =>
                 {
                     while (true)
@@ -80,7 +91,7 @@ class Program
                         }
                         else
                         {
-                            _logger.Error(
+                            loggerForConsole.Error(
                                 $"Unknown command: {input}."
                             );
                         }
