@@ -77,6 +77,7 @@ class Program
 
             void HandleCommand()
             {
+                ILogger loggerForConsole = Log.ForContext("Component", "Console");
                 Task taskForHandlingCommand = Task.Run(() =>
                 {
                     while (true)
@@ -90,7 +91,7 @@ class Program
                         }
                         else
                         {
-                            _logger.Error(
+                            loggerForConsole.Error(
                                 $"Unknown command: {input}."
                             );
                         }
