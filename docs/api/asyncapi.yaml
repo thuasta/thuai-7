@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: THU API
+  title: THUAI7 API
   version: ''
 
 servers:
@@ -367,6 +367,7 @@ components:
             type: string
   schemas:
     ChooseOrigin:
+      title: ChooseOrigin
       type: object
       additionalProperties: false
       required:
@@ -383,6 +384,7 @@ components:
           $ref: '#/components/schemas/Position'
 
     GetMap:
+      title: GetMap
       type: object
       additionalProperties: false
       required:
@@ -397,6 +399,7 @@ components:
 
 
     GetPlayerInfo:
+      title: GetPlayerInfo
       type: object
       additionalProperties: false
       required:
@@ -410,6 +413,7 @@ components:
           type: string
 
     PerformAttack:
+      title: PerformAttack
       type: object
       additionalProperties: false
       required:
@@ -426,6 +430,7 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformMove:
+      title: PerformMove
       type: object
       additionalProperties: false
       required:
@@ -442,6 +447,7 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformStop:
+      title: PerformStop
       type: object
       additionalProperties: false
       required:
@@ -455,6 +461,7 @@ components:
           type: string
 
     PerformUseGrenade:
+      title: PerformUseGrenade
       type: object
       additionalProperties: false
       required:
@@ -471,6 +478,7 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformUseMedicine:
+      title: PerformUseMedicine
       type: object
       additionalProperties: false
       required:
@@ -491,6 +499,7 @@ components:
             - FIRST_AID
 
     PerformSwitchArm:
+      title: PerformSwitchArm
       type: object
       additionalProperties: false
       required:
@@ -512,6 +521,7 @@ components:
             - M16
 
     PerformPickUp:
+      title: PerformPickUp
       type: object
       additionalProperties: false
       required:
@@ -545,6 +555,7 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformAbandon:
+      title: PerformAbandon
       type: object
       additionalProperties: false
       required:
@@ -574,6 +585,7 @@ components:
             - FIRST_AID
             - GRENADE
     PlayerAttackEvent:
+      title: PlayerAttackEvent
       type: object
       additionalProperties: false
       required:
@@ -589,6 +601,7 @@ components:
         targetPosition:
           $ref: '#/components/schemas/Position'
     PlayerPrepareEvent:
+      title: PlayerPrepareEvent
       type: object
       additionalProperties: false
       required:
@@ -604,6 +617,7 @@ components:
         targetPosition:
           $ref: '#/components/schemas/Position'
     PlayerSwitchArmEvent:
+      title: PlayerSwitchArmEvent
       type: object
       additionalProperties: false
       required:
@@ -624,6 +638,7 @@ components:
             - AWM
             - M16
     PlayerPickUpEvent:
+      title: PlayerPickUpEvent
       type: object
       additionalProperties: false
       required:
@@ -657,6 +672,7 @@ components:
         numb:
           type: integer
     PlayerUseMedicineEvent:
+      title: PlayerUseMedicineEvent
       type: object
       additionalProperties: false
       required:
@@ -676,6 +692,7 @@ components:
             - BANDAGE
              
     PlayerUseGrenadeEvent:
+      title: PlayerUseGrenadeEvent
       type: object
       additionalProperties: false
       required:
@@ -691,6 +708,7 @@ components:
         targetPosition:
           $ref: '#/components/schemas/Position'
     PlayerAbandonEvent:
+      title: PlayerAbandonEvent
       type: object
       additionalProperties: false
       required:
