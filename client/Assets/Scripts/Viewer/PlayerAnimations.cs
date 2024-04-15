@@ -35,16 +35,16 @@ public class PlayerAnimations : MonoBehaviour
     /// </summary>
     /// <param name="originalPosition"></param>
     /// <param name="newPosition"></param>
-    public void WalkAnimationPlayer(Vector3 originalPosition, Vector3 newPosition)
+    public void WalkTo(Vector3 originalPosition, Vector3 newPosition)
     {
         TryGetAnimator();
 
-
         if (Vector3.Distance(originalPosition, newPosition) > MinWalkDistance * Record.RecordInfo.FrameTime)
-            _animator.SetBool("IsWalking", true);
+            _animator.SetBool("Running", true);
         else
-            _animator.SetBool("IsWalking", false);
+            _animator.SetBool("Running", false);
     }
+
     /// <summary>
     /// Play the dead animation
     /// </summary>
@@ -54,48 +54,37 @@ public class PlayerAnimations : MonoBehaviour
 
         _animator.SetBool("IsDead", false);
     }
-    public IEnumerator DeadAnimationPlayer()
+    public void SetDead()
     {
         TryGetAnimator();
 
         _animator.SetBool("IsDead", true);
-        yield return new WaitForSeconds(DeadTime);
-
-        SetNotDead();
-    }
-    private void SetAttackingFalse()
-    {
-        TryGetAnimator();
-
-        _animator.SetBool("IsAttacking", false);
+        Invoke(nameof(SetNotDead), DeadTime);
     }
 
-    public void AttackAnimationPlayer(bool isContinuous, bool isAttackStart)
+    public void SetNotFiring()
     {
         TryGetAnimator();
-        if (isAttackStart)
-            _animator.SetBool("IsAttacking", true);
-        else
-            _animator.SetBool("IsAttacking", false);
-
-        if (isContinuous != true)
-        {
-            Invoke(nameof(SetAttackingFalse), AttackTime);
-        }
+        _animator.SetBool("Firing", false);
     }
 
-    private void SetNotUseMedicine()
+    public void SetFiring()
     {
         TryGetAnimator();
-        
-        _animator.SetBool("IsUsingMedicine", false);
+        _animator.SetBool("Firing", true);
+        Invoke(nameof(SetNotFiring), AttackTime);
     }
 
-    public void UseMedicineAnimationPlayer()
+    private void SetNotDrinking()
     {
         TryGetAnimator();
+        _animator.SetBool("Drinking", false);
+    }
 
-        _animator.SetBool("IsUsingMedicine", true);
-        Invoke(nameof(SetNotUseMedicine), UseMedicineTime);
+    public void SetDrinking()
+    {
+        TryGetAnimator();
+        _animator.SetBool("Drinking", true);
+        Invoke(nameof(SetNotDrinking), UseMedicineTime);
     }
 }

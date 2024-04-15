@@ -131,7 +131,7 @@ public class JsonUtility
                 string messageType = records[0]["messageType"].ToString();
                 if (messageType != null && messageType == "MAP" && records.Count > 1)
                 {
-                    JValue tick = (JValue)records[1]["tick"];
+                    JValue tick = (JValue)records[1]["currentTicks"];
                     if (tick != null)
                     {
                         // The first tick
@@ -144,7 +144,7 @@ public class JsonUtility
                 }
                 else
                 {
-                    JValue tick = (JValue)records[0]["tick"];
+                    JValue tick = (JValue)records[0]["currentTicks"];
                     if (tick != null)
                     {
                         // The first tick

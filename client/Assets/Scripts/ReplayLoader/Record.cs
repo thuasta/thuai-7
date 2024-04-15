@@ -339,55 +339,59 @@ public class Record : MonoBehaviour
             }
 
             PlayerSource.UpdatePlayer(
-                new Player(
-                    player["playerId"].ToString(),
-                    player["health"].ToObject<int>(),
-                    player["armor"].ToString() switch
-                    {
-                        "NO_ARMOR" => ArmorTypes.NoArmor,
-                        "PRIMARY_ARMOR" => ArmorTypes.PrimaryArmor,
-                        "PREMIUM_ARMOR" => ArmorTypes.PremiumArmor,
-                        _ => ArmorTypes.NoArmor
-                    },
-                    player["speed"].ToObject<float>(),
-                    player["firearm"].ToString() switch
-                    {
-                        _ => FirearmTypes.Fists,
-                    },
-                    player["position"].ToObject<Position>(),
-                    inventory
-                )
+                player["playerId"].ToObject<int>(),
+                player["health"].ToObject<int>(),
+                player["armor"].ToString() switch
+                {
+                    "NO_ARMOR" => ArmorTypes.NoArmor,
+                    "PRIMARY_ARMOR" => ArmorTypes.PrimaryArmor,
+                    "PREMIUM_ARMOR" => ArmorTypes.PremiumArmor,
+                    _ => ArmorTypes.NoArmor
+                },
+                player["speed"].ToObject<float>(),
+                player["firearm"].ToString() switch
+                {
+                    "S686" => FirearmTypes.S686,
+                    "AWM" => FirearmTypes.Awm,
+                    "VECTOR" => FirearmTypes.Vector,
+                    "FISTS" => FirearmTypes.Fists,
+                    _ => FirearmTypes.Fists,
+                },
+                inventory,
+                player["position"].ToObject<Position>()
             );
         }
     }
 
-    private void AfterPlayerPickUpEvent()
+    private void AfterPlayerPickUpEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerAbandonEvent()
+    private void AfterPlayerAbandonEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerAttackEvent()
+    private void AfterPlayerAttackEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
+        Position targetPosition = eventJson["targetPosition"].ToObject<Position>();
     }
 
-    private void AfterPlayerUseMedicineEvent()
+    private void AfterPlayerUseMedicineEvent(JObject eventJson)
     {
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerSwitchArmEvent()
+    private void AfterPlayerSwitchArmEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerUseGrenadeEvent()
+    private void AfterPlayerUseGrenadeEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
     #endregion
