@@ -26,6 +26,7 @@ public partial class AgentServer
     private bool _isRunning = false;
     private IWebSocketServer? _wsServer = null;
     private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _sockets = new();
+    private readonly ConcurrentDictionary<Guid, string> _socketTokens = new();
 
     public void Start()
     {
@@ -112,20 +113,31 @@ public partial class AgentServer
     {
         string jsonString = message.Json;
 
-        foreach (IWebSocketConnection socket in _sockets.Values)
+        foreach (Guid connectionId in _sockets.Keys)
         {
             try
             {
-                socket.Send(jsonString).Wait();
+                if (token is null || _socketTokens[connectionId] == token)
+                {
+                    _sockets[connectionId].Send(jsonString).Wait();
 
-                _logger.Debug(
-                    $"Published message to {socket.ConnectionInfo.ClientIpAddress}: {message.MessageType}"
-                );
+                    _logger.Debug($"Message published");
+                    _logger.Debug(
+                        $"Target ip: \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}\""
+                    );
+                    _logger.Debug(
+                        $"Target port: \"{_sockets[connectionId].ConnectionInfo.ClientPort}\""
+                    );
+                    _logger.Debug(
+                        $"Message type: \"{message.MessageType}\""
+                    );
+                    _logger.Verbose(jsonString);
+                }
             }
             catch (Exception ex)
             {
                 _logger.Error(
-                    $"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}"
+                    $"Failed to send message to \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\": {ex.Message}"
                 );
             }
         }
