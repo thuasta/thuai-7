@@ -6,7 +6,7 @@ public class AfterMessageReceiveEventArgs : EventArgs
     /// The message received
     /// </summary>
     public Message Message { get; }
-    public Guid SocketId { get;}
+    public Guid SocketId { get; }
 
     /// <summary>
     /// Constructor
