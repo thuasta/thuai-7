@@ -4,24 +4,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-api-docs:
+  build-documents:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - run: |
-          mkdir -p site/
+          mkdir -p site/api/
 
       - uses: asyncapi/github-action-for-cli@v3.1.1
         with:
           command: generate
           filepath: docs/api/asyncapi.yaml
           template: '@asyncapi/html-template@2.1.7'
-          output: site/
+          output: site/api/
+
+      - run: |
+          sudo apt-get install -y pandoc
+          sudo pandoc -s -o site/index.html docs/THUAI_Handbook.md
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}-api-docs-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
           path: site/
 
   build-client:
@@ -34,7 +38,6 @@ jobs:
           - StandaloneLinux64
           - StandaloneOSX
           - StandaloneWindows64
-          - WebGL
     steps:
       - uses: actions/checkout@v4
 
@@ -98,8 +101,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs:
-      - build-api-docs
-      - build-client
+      - build-documents
     permissions:
       id-token: write
       pages: write
@@ -109,16 +111,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}-api-docs-${{ github.sha }}
-          path: site/api
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-client-WebGL-${{ github.sha }}
-          path: build
-
-      - run: |
-          cp -r build/WebGL/* site/client
+          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
+          path: site
 
       - uses: actions/upload-pages-artifact@v3
         with:

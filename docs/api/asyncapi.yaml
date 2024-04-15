@@ -1,17 +1,15 @@
 asyncapi: 3.0.0
 info:
-  title: THU API
-  version: ''
+  title: THUAI7 API
+  version: 'v0.0.1'
+  description: |
+    Copyright (c) 2024 Student Association of Science and Technology, Department of Automation, Tsinghua University
 
-servers:
-  production:
-    host: broker.mycompany.com
-    protocol: qwee
-    security:
-      - $ref: "#/components/securitySchemes/user-password"
+    API for THUAI7.
 
 channels:
   /competition/control:
+    description: Channel for recorder to generate record files. Skip this part if you are a player.
     address: /competition/control
     messages:
       Error:
@@ -24,8 +22,9 @@ channels:
         $ref: '#/components/messages/Supplies'
       SafeZone:
         $ref: '#/components/messages/SafeZone'
-  
+
   /competition/player:
+    description: Channel for player to get information and perform actions.
     address: /competition/player
     messages:
       PlayerPerform:
@@ -79,14 +78,10 @@ operations:
       - $ref: '#/channels/~1competition~1player/messages/SafeZone'
 
 components:
-
-  securitySchemes:
-    user-password:
-      type: userPassword
-
   messages:
-          
     PlayersInfo:
+      title: PlayersInfo
+      description: Information of all players
       payload:
         type: object
         required:
@@ -156,6 +151,8 @@ components:
                       type: integer
 
     CompetitionUpdate:
+      title: CompetitionUpdate
+      description: Information of the game in one tick
       payload:
         type: object
         additionalProperties: false
@@ -252,8 +249,10 @@ components:
                 - $ref: '#/components/schemas/PlayerUseGrenadeEvent'
                 - $ref: '#/components/schemas/PlayerAbandonEvent'
                 - $ref: '#/components/schemas/PlayerPrepareEvent'
-          
+
     PlayerPerform:
+      title: PlayerPerform
+      description: Player's action
       payload:
         type: array
         items:
@@ -270,8 +269,9 @@ components:
             - $ref: '#/components/schemas/GetMap'
             - $ref: '#/components/schemas/ChooseOrigin'
 
-    
     Map:
+      title: Map
+      description: Information of the map
       payload:
         type: object
         additionalProperties: false
@@ -296,6 +296,8 @@ components:
                   $ref: '#/components/schemas/PositionInt'
 
     SafeZone:
+      title: SafeZone
+      description: Information of the safe zone
       payload:
         type: object
         required:
@@ -312,6 +314,8 @@ components:
             type: number
 
     Supplies:
+      title: Supplies
+      description: Information of the supplies
       payload:
         type: object
         required:
@@ -350,6 +354,8 @@ components:
                   type: integer
           
     Error:
+      title: Error
+      description: Error message
       payload:
         type: object
         additionalProperties: false
@@ -365,8 +371,11 @@ components:
             type: integer
           message:
             type: string
+
   schemas:
     ChooseOrigin:
+      title: ChooseOrigin
+      description: Choose a position as the origin
       type: object
       additionalProperties: false
       required:
@@ -383,6 +392,8 @@ components:
           $ref: '#/components/schemas/Position'
 
     GetMap:
+      title: GetMap
+      description: Get the map
       type: object
       additionalProperties: false
       required:
@@ -395,8 +406,9 @@ components:
         token:
           type: string
 
-
     GetPlayerInfo:
+      title: GetPlayerInfo
+      description: Get the player's information
       type: object
       additionalProperties: false
       required:
@@ -410,6 +422,8 @@ components:
           type: string
 
     PerformAttack:
+      title: PerformAttack
+      description: Attack the target position
       type: object
       additionalProperties: false
       required:
@@ -426,6 +440,8 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformMove:
+      title: PerformMove
+      description: Move to the destination
       type: object
       additionalProperties: false
       required:
@@ -442,6 +458,8 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformStop:
+      title: PerformStop
+      description: Stop moving
       type: object
       additionalProperties: false
       required:
@@ -455,6 +473,8 @@ components:
           type: string
 
     PerformUseGrenade:
+      title: PerformUseGrenade
+      description: Use grenade to the target position
       type: object
       additionalProperties: false
       required:
@@ -471,6 +491,8 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformUseMedicine:
+      title: PerformUseMedicine
+      description: Use medicine
       type: object
       additionalProperties: false
       required:
@@ -491,6 +513,8 @@ components:
             - FIRST_AID
 
     PerformSwitchArm:
+      title: PerformSwitchArm
+      description: Switch to the target firearm
       type: object
       additionalProperties: false
       required:
@@ -512,6 +536,8 @@ components:
             - M16
 
     PerformPickUp:
+      title: PerformPickUp
+      description: Pick up the target supply
       type: object
       additionalProperties: false
       required:
@@ -545,6 +571,8 @@ components:
           $ref: '#/components/schemas/Position'
 
     PerformAbandon:
+      title: PerformAbandon
+      description: Abandon the target supply
       type: object
       additionalProperties: false
       required:
@@ -573,7 +601,10 @@ components:
             - PREMIUM_ARMOR
             - FIRST_AID
             - GRENADE
+
     PlayerAttackEvent:
+      title: PlayerAttackEvent
+      description: Happens when a player successfully attacks
       type: object
       additionalProperties: false
       required:
@@ -588,7 +619,10 @@ components:
           type: integer
         targetPosition:
           $ref: '#/components/schemas/Position'
+
     PlayerPrepareEvent:
+      title: PlayerPrepareEvent
+      description: I don't know. This event is created by someone else.
       type: object
       additionalProperties: false
       required:
@@ -603,7 +637,10 @@ components:
           type: integer
         targetPosition:
           $ref: '#/components/schemas/Position'
+
     PlayerSwitchArmEvent:
+      title: PlayerSwitchArmEvent
+      description: Happens when a player successfully switches firearm
       type: object
       additionalProperties: false
       required:
@@ -623,7 +660,10 @@ components:
             - VECTORY
             - AWM
             - M16
+
     PlayerPickUpEvent:
+      title: PlayerPickUpEvent
+      description: Happens when a player successfully picks up a supply
       type: object
       additionalProperties: false
       required:
@@ -656,7 +696,10 @@ components:
           $ref: '#/components/schemas/Position'
         numb:
           type: integer
+
     PlayerUseMedicineEvent:
+      title: PlayerUseMedicineEvent
+      description: Happens when a player successfully uses medicine
       type: object
       additionalProperties: false
       required:
@@ -676,6 +719,8 @@ components:
             - BANDAGE
              
     PlayerUseGrenadeEvent:
+      title: PlayerUseGrenadeEvent
+      description: Happens when a player successfully uses grenade
       type: object
       additionalProperties: false
       required:
@@ -690,7 +735,10 @@ components:
           type: integer
         targetPosition:
           $ref: '#/components/schemas/Position'
+
     PlayerAbandonEvent:
+      title: PlayerAbandonEvent
+      description: Happens when a player successfully abandons supplies
       type: object
       additionalProperties: false
       required:
@@ -724,25 +772,31 @@ components:
                 - VECTOR
                 - M16
                 - AWM
+
     Position:
+      title: Position
+      description: Refers to a position with real number coordinates
       type: object
       additionalProperties: false
       required:
         - x
-        - 'y'
+        - y
       properties:
         x:
           type: number
-        'y':
+        y:
           type: number
+
     PositionInt:
+      title: PositionInt
+      description: Refers to a position with integer coordinates
       type: object
       additionalProperties: false
       required:
         - x
-        - 'y'
+        - y
       properties:
         x:
           type: integer
-        'y':
+        y:
           type: integer

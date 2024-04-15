@@ -1,21 +1,32 @@
+using GameServer.Geometry;
 using Serilog;
 using static GameServer.GameLogic.IItem;
 
 namespace GameServer.GameLogic;
 
-public partial class Player : IPlayer
+public partial class Player
 {
     public int PlayerId { get; set; }
+
+    public double PlayerRadius { get; set; }
+
     public int MaxHealth { get; }
     public int Health { get; set; }
+    public bool IsAlive => Health > 0;
+
     public double Speed { get; set; }
-    public double PlayerRadius { get; set; }
+
     public Armor PlayerArmor { get; set; }
+
     public Position PlayerPosition { get; set; }
     public Position? PlayerTargetPosition { get; set; }
+
     public IWeapon PlayerWeapon { get; set; }
+    public List<IWeapon> WeaponSlot { get; private set; } = new();
+
     public IBackPack PlayerBackPack { get; set; }
-    public bool IsAlive => Health > 0;
+    public int MaxWeaponSlotSize => 1 + Constant.PLAYER_WEAPON_SLOT_SIZE;
+    public bool IsWeaponSlotFull => WeaponSlot.Count >= MaxWeaponSlotSize;
 
     private readonly ILogger _logger;
 
@@ -29,8 +40,11 @@ public partial class Player : IPlayer
         PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
         PlayerArmor = new Armor("NO_ARMOR", Constant.NO_ARMOR_DEFENSE);
-        PlayerWeapon = new Fist();
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
+
+        IWeapon defaultWeapon = IWeapon.DefaultWeapon;
+        WeaponSlot.Add(defaultWeapon);
+        PlayerWeapon = WeaponSlot[0];
 
         _logger = Log.ForContext("Component", $"Player {playerId}");
     }
@@ -72,7 +86,7 @@ public partial class Player : IPlayer
 
         if (heal < 0)
         {
-            throw new ArgumentException($"Heal should be non-negative, but actually {heal}.");
+            _logger.Error($"Heal should be non-negative, but actually {heal}.");
         }
         if (Health + heal > MaxHealth)
         {
@@ -106,15 +120,16 @@ public partial class Player : IPlayer
         {
             PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
         }
-        catch (InvalidOperationException)
+        catch (Exception ex)
         {
+            _logger.Error($"Failed to pick up item {item.ItemSpecificName}: {ex.Message}.");
             return false;
         }
 
         return true;
     }
 
-    public void PlayerAbandon(int number, List<(ItemKind itemKind, string itemSpecificName)> abandonedSupplies)
+    public void PlayerAbandon(int number, (ItemKind itemKind, string itemSpecificName) abandonedSupplies)
     {
         if (IsAlive == false)
         {
@@ -158,7 +173,6 @@ public partial class Player : IPlayer
 
         PlayerUseMedicineEvent?.Invoke(this, new PlayerUseMedicineEventArgs(this, medicineName));
     }
-
 
     public void PlayerSwitchArm(string weaponItemId)
     {

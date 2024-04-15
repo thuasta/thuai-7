@@ -37,10 +37,10 @@ public record PerformPickUpMessage : Message
     public record TargetPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
@@ -82,10 +82,10 @@ public record PerformUseGrenadeMessage : Message
     public record TargetPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
@@ -103,10 +103,10 @@ public record PerformMoveMessage : Message
     public record DestinationInfo
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
@@ -134,10 +134,10 @@ public record PerformAttackMessage : Message
     public record TargetPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
@@ -173,9 +173,9 @@ public record ChooseOriginMessage : Message
     public record OriginPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }

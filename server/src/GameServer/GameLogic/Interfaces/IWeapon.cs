@@ -1,3 +1,5 @@
+using GameServer.Geometry;
+
 namespace GameServer.GameLogic;
 
 /// <summary>
@@ -5,6 +7,8 @@ namespace GameServer.GameLogic;
 /// </summary>
 public interface IWeapon
 {
+    public static IWeapon DefaultWeapon => new Fist();
+
     /// <summary>
     /// The name of the weapon.
     /// </summary>
@@ -36,17 +40,20 @@ public interface IWeapon
     public int TicksUntilAvailable { get; }
 
     /// <summary>
+    /// Whether the weapon requires bullets.
+    /// </summary>
+    public bool RequiresBullet { get; }
+
+    /// <summary>
     /// Get Bullet Directions.
     /// </summary>
     /// <param name="target"></param>
     /// <returns>The normalized directions of the bullets</returns>
-    public List<Position>? GetBulletDirections(Position start, Position direction);
+    public List<Position>? GetBulletDirections(Position start, Position target);
 
     /// <summary>
     /// Update the cooldown of the weapon.
     /// Should be called every tick.
     /// </summary>
     public void UpdateCoolDown();
-
-    public string ItemSpecificName { get; }
 }

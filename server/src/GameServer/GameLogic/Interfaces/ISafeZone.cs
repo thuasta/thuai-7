@@ -1,4 +1,4 @@
-using GameServer.Engine.Shapes;
+using GameServer.Geometry;
 
 namespace GameServer.GameLogic;
 

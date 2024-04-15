@@ -12,8 +12,8 @@ public class MedicineFactory
     {
         return item.ItemSpecificName switch
         {
-            "BANDAGE" => new Medicine(item.ItemSpecificName, Constant.BANDAGE_HEAL),
-            "FIRST_AID_KIT" => new Medicine(item.ItemSpecificName, Constant.FIRST_AID_HEAL),
+            Constant.Names.BANDAGE => new Medicine(item.ItemSpecificName, Constant.BANDAGE_HEAL),
+            Constant.Names.FIRST_AID => new Medicine(item.ItemSpecificName, Constant.FIRST_AID_HEAL),
             _ => throw new ArgumentException($"Item specific id {item.ItemSpecificName} is not valid for medicine."),
         };
     }

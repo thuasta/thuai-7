@@ -1,5 +1,6 @@
 using GameServer.Connection;
 using GameServer.GameLogic;
+using GameServer.Geometry;
 
 namespace GameServer.GameController;
 
@@ -20,10 +21,10 @@ public partial class GameRunner : IGameRunner
                 {
                     try
                     {
-                        List<(IItem.ItemKind, string)> abandonedSupplies = new()
-                        {
-                            (IItem.GetItemKind(performAbandonMessage.TargetSupply), performAbandonMessage.TargetSupply)
-                        };
+                        (IItem.ItemKind, string) abandonedSupplies = new(
+                            IItem.GetItemKind(performAbandonMessage.TargetSupply),
+                            performAbandonMessage.TargetSupply
+                        );
 
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performAbandonMessage.Token])?
                         .PlayerAbandon(performAbandonMessage.Numb, abandonedSupplies);
@@ -195,7 +196,7 @@ public partial class GameRunner : IGameRunner
                 break;
 
             case GetPlayerInfoMessage getPlayerInfoMessage:
-                if (!_tokenToPlayerId.ContainsKey(getPlayerInfoMessage.Token))
+                if (_tokenToPlayerId.ContainsKey(getPlayerInfoMessage.Token) == false)
                 {
                     _logger.Information($"Adding player with token \"{getPlayerInfoMessage.Token}\" to the game.");
                     try
@@ -209,9 +210,18 @@ public partial class GameRunner : IGameRunner
                             )
                         );
                         _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
-                        _nextPlayerId++;
 
-                        _logger.Information($"Player with token \"{getPlayerInfoMessage.Token}\" joined the game.");
+                        _logger.Information(
+                            $"Player with token \"{getPlayerInfoMessage.Token}\" joined the game (With id {_nextPlayerId})."
+                        );
+
+                        AfterNewPlayerJoinEvent?.Invoke(this, new AfterNewPlayerJoinEventArgs(
+                            _nextPlayerId,
+                            getPlayerInfoMessage.Token,
+                            e.SocketId
+                        ));
+
+                        _nextPlayerId++;
                     }
                     catch (Exception ex)
                     {
