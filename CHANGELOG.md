@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0]
+## [0.0.1] - 2024-04-15
 
 ### Added
 
 - First version of server
 
-[0.1.0]: https://github.com/thuasta/thuai-7/releases/tag/0.1.0
+[Unreleased]: https://github.com/thuasta/thuai-7/compare/0.0.1...HEAD
+[0.0.1]: https://github.com/thuasta/thuai-7/releases/tag/0.0.1
