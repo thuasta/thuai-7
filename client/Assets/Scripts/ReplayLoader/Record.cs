@@ -140,7 +140,7 @@ public class Record : MonoBehaviour
         _stopButton.GetComponent<Image>().sprite = _continueButtonSprite;
         // Add listener to stop button
         _stopButton.onClick.AddListener(() =>
-       {
+        {
            if (_recordInfo.NowPlayState == PlayState.Play)
            {
                _stopButton.GetComponent<Image>().sprite = _continueButtonSprite;
@@ -151,7 +151,7 @@ public class Record : MonoBehaviour
                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
                _recordInfo.NowPlayState = PlayState.Play;
            }
-       });
+        });
 
         // Get Replay button
         // _replayButton = GameObject.Find("Canvas/ReplayButton").GetComponent<Button>();
@@ -195,7 +195,7 @@ public class Record : MonoBehaviour
             return;
         }
         _recordArray = LoadRecordData();
-        _recordInfo.MaxTick = (int)_recordArray.Last["tick"];
+        //_recordInfo.MaxTick = (int)_recordArray.Last["tick"];
         GenerateMap();
         // Generate Map and Supplies
 
@@ -272,7 +272,7 @@ public class Record : MonoBehaviour
         {
             if (eventJson["messageType"].ToString() == "MAP")
             {
-                mapJson = (JObject)eventJson;
+                mapJson = (JObject)eventJson["data"];
                 break;
             }
         }
@@ -324,14 +324,14 @@ public class Record : MonoBehaviour
         }
     }
 
-    private void UpdatePlayers(CompetitionUpdate update)
+    private void UpdatePlayers(JArray players)
     {
-        foreach (CompetitionUpdate.Player player in update.players)
+        foreach (JObject player in players)
         {
             Dictionary<Items, int> inventory = new();
-            foreach (CompetitionUpdate.Player.Inventory item in player.inventory)
+            foreach (JObject item in (JArray)player["inventory"])
             {
-                switch (item.name)
+                switch (item["name"].ToString())
                 {
                     default:
                         break;
@@ -340,21 +340,21 @@ public class Record : MonoBehaviour
 
             PlayerSource.UpdatePlayer(
                 new Player(
-                    player.playerId,
-                    player.health,
-                    player.armor switch
+                    player["playerId"].ToString(),
+                    player["health"].ToObject<int>(),
+                    player["armor"].ToString() switch
                     {
                         "NO_ARMOR" => ArmorTypes.NoArmor,
                         "PRIMARY_ARMOR" => ArmorTypes.PrimaryArmor,
                         "PREMIUM_ARMOR" => ArmorTypes.PremiumArmor,
                         _ => ArmorTypes.NoArmor
                     },
-                    player.speed,
-                    player.firearm.name switch
+                    player["speed"].ToObject<float>(),
+                    player["firearm"].ToString() switch
                     {
                         _ => FirearmTypes.Fists,
                     },
-                    player.position,
+                    player["position"].ToObject<Position>(),
                     inventory
                 )
             );
@@ -400,7 +400,10 @@ public class Record : MonoBehaviour
         {
             if (_recordInfo.RecordSpeed > 0)
             {
-
+                Debug.Log(_recordArray[_recordInfo.NowRecordNum]["tick"].ToString());
+                UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["players"]);
+                _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["tick"]);
+                _recordInfo.NowRecordNum++;
             }
         }
         catch

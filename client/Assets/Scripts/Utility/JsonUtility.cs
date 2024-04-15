@@ -60,6 +60,7 @@ public class JsonUtility
 
         if (Directory.Exists(path))
         {
+            Debug.Log("Record is a Directory.");
             string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
             //Loop through each file
             foreach (string file in files)
@@ -72,9 +73,9 @@ public class JsonUtility
                         {
                             // Unzip the record
                             ZipArchive recordZipArchive = new(stream);
-
                             StreamReader recordStreamReader = new(recordZipArchive.Entries[0].Open());
                             allRecordJsonObject.Add((JObject)JToken.ReadFrom(new JsonTextReader(recordStreamReader)));
+                            Debug.Log(recordStreamReader.ReadToEnd().ToString());
                         }
                     }
                 }
@@ -86,26 +87,23 @@ public class JsonUtility
         }
         else if (File.Exists(path))
         {
+            Debug.Log("Record is a Zipped File.");
             ZipArchive ncLevelDataZipFile = ZipFile.OpenRead($"{path}");
             foreach (ZipArchiveEntry recordEntry in ncLevelDataZipFile.Entries)
             {
                 try
                 {
+                    Debug.Log($"Unzipped record file name: {recordEntry.FullName}");
                     // If the recordEntry is not folder and not level
                     if (!recordEntry.FullName.Contains("level") && !recordEntry.FullName.EndsWith("/"))
                     {
-                        Stream recordEntryStream = recordEntry.Open();
-                        // Unzip the record
-                        ZipArchive recordZipArchive = new(recordEntryStream);
-
-                        StreamReader recordStreamReader = new(recordZipArchive.Entries[0].Open());
+                        StreamReader recordStreamReader = new(recordEntry.Open());
                         allRecordJsonObject.Add((JObject)JToken.ReadFrom(new JsonTextReader(recordStreamReader)));
-                        //Debug.Log(recordStreamReader.ReadToEnd().ToString());
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-
+                    Debug.Log(e.Message);
                 }
             }
         }
@@ -130,11 +128,32 @@ public class JsonUtility
             JArray records = (JArray)jsonObject["records"];
             if (records != null && records.Count > 0)
             {
-                JValue tick = (JValue)records[0]["tick"];
-                if (tick != null)
+                string messageType = records[0]["messageType"].ToString();
+                if (messageType != null && messageType == "MAP" && records.Count > 1)
                 {
-                    // The first tick
-                    indexAndTicks[nowRecordIndex].Item2 = (int)tick;
+                    JValue tick = (JValue)records[1]["tick"];
+                    if (tick != null)
+                    {
+                        // The first tick
+                        indexAndTicks[nowRecordIndex].Item2 = (int)tick;
+                    }
+                    else
+                    {
+                        indexAndTicks[nowRecordIndex].Item2 = -1;
+                    }
+                }
+                else
+                {
+                    JValue tick = (JValue)records[0]["tick"];
+                    if (tick != null)
+                    {
+                        // The first tick
+                        indexAndTicks[nowRecordIndex].Item2 = (int)tick;
+                    }
+                    else
+                    {
+                        indexAndTicks[nowRecordIndex].Item2 = -2;
+                    }
                 }
             }
             nowRecordIndex++;
@@ -153,7 +172,7 @@ public class JsonUtility
 
         foreach ((int, int) indexAndTick in indexAndTicksList)
         {
-            if (indexAndTick.Item2 != -1)
+            if (indexAndTick.Item2 != -2)
             {
                 // Serial number in allRecordJsonObject: indexAndTick.Item1
                 JObject jsonObject = allRecordJsonObject[indexAndTick.Item1];
@@ -166,7 +185,7 @@ public class JsonUtility
         // Sort the final array according to tick
         JArray allRecordsArray = (JArray)recordJsonObject["records"];
 
-        allRecordJsonObject.OrderBy(record => (int)record["tick"]);
+        //allRecordJsonObject.OrderBy(record => (int)record["tick"]);
 
         return recordJsonObject;
     }

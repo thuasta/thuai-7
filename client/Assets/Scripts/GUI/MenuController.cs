@@ -29,7 +29,7 @@ public class MenuController : MonoBehaviour
     /// Load file objects
     /// </summary>
     // private Upload _upload = new();
-    // private FileLoaded _fileLoaded;
+    private FileLoaded _fileLoaded;
     /// <summary>
     /// Switch button
     /// </summary>
@@ -47,7 +47,6 @@ public class MenuController : MonoBehaviour
     /// The address of all nclevels
     /// </summary>
     private string[] _levels;
-
     /// <summary>
     /// The button that is displayed in the 'record' column
     /// </summary>
@@ -71,7 +70,7 @@ public class MenuController : MonoBehaviour
     void Start()
     {
         _projectPath = Directory.GetCurrentDirectory();
-        // _fileLoaded = GameObject.Find("FileLoaded").GetComponent<FileLoaded>();
+        _fileLoaded = GameObject.Find("RecordReader").GetComponent<FileLoaded>();
 
 
         _helpButton = GameObject.Find("Canvas/HelpButton").GetComponent<Button>();
@@ -160,13 +159,14 @@ public class MenuController : MonoBehaviour
 
         void ListAllLevels(bool startServer = false, bool isRecord = true)
         {
+            Debug.Log($"{_projectPath}");
             // Prior: find folders
-            List<string> LevelFolders = Directory.GetDirectories($"{_projectPath}/records").ToList();
+            List<string> LevelFolders = Directory.GetDirectories($"{_projectPath}/Records").ToList();
             // Next: find files
-            //string[] allLevels = Directory.GetFiles($"{_projectPath}/worlds", "*.nclevel", SearchOption.AllDirectories);
+            // string[] allLevels = Directory.GetFiles($"{_projectPath}/record", "*.dat", SearchOption.AllDirectories);
             // Compare them
-            //foreach (string file in allLevels)
-            //{
+            // foreach (string file in allLevels)
+            // {
             //    bool haveFolder = false;
             //    foreach (string folder in LevelFolders)
             //    {
@@ -176,19 +176,19 @@ public class MenuController : MonoBehaviour
             //    {
             //        LevelFolders.Add(file);
             //    }
-            //}
+            // }
             _levels = LevelFolders.ToArray();
 
-            foreach (string fileName in _levels)
+            foreach (string folderName in _levels)
             {
-                Debug.Log(fileName);
+                Debug.Log(folderName);
                 // Create record button objects 
                 GameObject newRecordButtonObject = Instantiate(_recordButtonPrefab);
                 Button newRecordButton = newRecordButtonObject.GetComponent<Button>();
                 TMP_Text recordText = newRecordButtonObject.GetComponentInChildren<TMP_Text>();
                 // Get nclevel name
-                int index = Math.Max(fileName.LastIndexOf('/'), fileName.LastIndexOf('\\'));
-                string name = fileName[(index + 1)..];
+                int index = Math.Max(folderName.LastIndexOf('/'), folderName.LastIndexOf('\\'));
+                string name = folderName[(index + 1)..];
                 recordText.text = $" {name}";
 
                 // Bind the event onto the button
@@ -197,14 +197,16 @@ public class MenuController : MonoBehaviour
                     // Play sound
                     _buttonSound.Play();
                     // Load the record file
+                    _fileLoaded.File = Directory.GetFiles(folderName, "*.dat", SearchOption.AllDirectories)[0];
+                    Debug.Log($"INFO: Record file name: {_fileLoaded.File}");
                     
                     SceneManager.LoadScene("Record");
                 });
 
                 // Put the button into the content
                 newRecordButtonObject.transform.SetParent(_scrollViewContent.transform);
-                newRecordButtonObject.GetComponent<RectTransform>().position=Vector3.zero;
-                //newRecordButtonObject.transform.localScale = Vector3.one;
+                newRecordButtonObject.GetComponent<RectTransform>().position = Vector3.one;
+                newRecordButtonObject.transform.localScale = Vector3.one;
                 _recordButtons.Add(newRecordButton);
             }
         }
