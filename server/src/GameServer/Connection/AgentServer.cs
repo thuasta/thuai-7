@@ -6,8 +6,11 @@ using Serilog;
 
 namespace GameServer.Connection;
 
-public partial class AgentServer : IServer
+public partial class AgentServer
 {
+    // In milliseconds.
+    public const int MESSAGE_PUBLISH_INTERVAL = 10;
+
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
     public string IpAddress { get; init; } = "0.0.0.0";
@@ -45,7 +48,7 @@ public partial class AgentServer : IServer
             {
                 while (_isRunning)
                 {
-                    Task.Delay(IServer.MessagePublishIntervalMilliseconds).Wait();
+                    Task.Delay(MESSAGE_PUBLISH_INTERVAL).Wait();
 
                     if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
                     {
@@ -105,7 +108,7 @@ public partial class AgentServer : IServer
         }
     }
 
-    public void Publish(Message message)
+    public void Publish(Message message, string? token = null)
     {
         string jsonString = message.Json;
 

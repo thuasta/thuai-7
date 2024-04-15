@@ -2,7 +2,7 @@ using GameServer.GameLogic;
 
 namespace GameServer.Connection;
 
-public partial class AgentServer : IServer
+public partial class AgentServer
 {
     public void HandleAfterGameTickEvent(object? sender, AfterGameTickEventArgs e)
     {
