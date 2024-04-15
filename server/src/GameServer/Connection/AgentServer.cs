@@ -147,7 +147,7 @@ public partial class AgentServer
     /// Parse the message
     /// </summary>
     /// <param name="text">Message to parse</param>
-    private void ParseMessage(string text)
+    private void ParseMessage(string text, Guid socketId)
     {
         try
         {
@@ -162,77 +162,88 @@ public partial class AgentServer
                 case "PERFORM_ABANDON":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformAbandonMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformAbandonMessage")
+                        ?? throw new Exception("failed to deserialize PerformAbandonMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_PICK_UP":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformPickUpMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformPickUpMessage")
+                        ?? throw new Exception("failed to deserialize PerformPickUpMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_SWITCH_ARM":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformSwitchArmMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformSwitchArmMessage")
+                        ?? throw new Exception("failed to deserialize PerformSwitchArmMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_USE_MEDICINE":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformUseMedicineMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformUseMedicineMessage")
+                        ?? throw new Exception("failed to deserialize PerformUseMedicineMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_USE_GRENADE":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformUseGrenadeMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformUseGrenadeMessage")
+                        ?? throw new Exception("failed to deserialize PerformUseGrenadeMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_MOVE":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformMoveMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformMoveMessage")
+                        ?? throw new Exception("failed to deserialize PerformMoveMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_STOP":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformStopMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformStopMessage")
+                        ?? throw new Exception("failed to deserialize PerformStopMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_ATTACK":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformAttackMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformAttackMessage")
+                        ?? throw new Exception("failed to deserialize PerformAttackMessage"),
+                        socketId
                     ));
                     break;
 
                 case "GET_PLAYER_INFO":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<GetPlayerInfoMessage>(text)
-                        ?? throw new Exception("failed to deserialize GetPlayerInfoMessage")
+                        ?? throw new Exception("failed to deserialize GetPlayerInfoMessage"),
+                        socketId
                     ));
                     break;
 
                 case "GET_MAP_INFO":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<GetMapMessage>(text)
-                        ?? throw new Exception("failed to deserialize GetMapInfoMessage")
+                        ?? throw new Exception("failed to deserialize GetMapInfoMessage"),
+                        socketId
                     ));
                     break;
 
                 case "CHOOSE_ORIGIN":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<ChooseOriginMessage>(text)
-                        ?? throw new Exception("failed to deserialize ChooseOriginMessage")
+                        ?? throw new Exception("failed to deserialize ChooseOriginMessage"),
+                        socketId
                     ));
                     break;
 
@@ -286,7 +297,7 @@ public partial class AgentServer
             {
                 try
                 {
-                    ParseMessage(text);
+                    ParseMessage(text, socket.ConnectionInfo.Id);
                 }
                 catch (Exception exception)
                 {
@@ -299,7 +310,7 @@ public partial class AgentServer
                 try
                 {
                     string text = Encoding.UTF8.GetString(bytes);
-                    ParseMessage(text);
+                    ParseMessage(text, socket.ConnectionInfo.Id);
                 }
                 catch (Exception exception)
                 {

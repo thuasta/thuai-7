@@ -72,6 +72,7 @@ class Program
             void SubscribeEvents()
             {
                 gameRunner.Game.AfterGameTickEvent += agentServer.HandleAfterGameTickEvent;
+                gameRunner.AfterNewPlayerJoinEvent += agentServer.HandleAfterNewPlayerJoinEvent;
                 agentServer.AfterMessageReceiveEvent += gameRunner.HandleAfterMessageReceiveEvent;
             }
 

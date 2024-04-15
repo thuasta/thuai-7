@@ -1,3 +1,4 @@
+using GameServer.GameController;
 using GameServer.GameLogic;
 
 namespace GameServer.Connection;
@@ -119,6 +120,15 @@ public partial class AgentServer
                 },
                 Radius = e.Game.GameMap.SafeZone.Radius
             }
+        );
+    }
+
+    public void HandleAfterNewPlayerJoinEvent(object? sender, AfterNewPlayerJoinEventArgs e)
+    {
+        _socketTokens.TryAdd(e.SocketId, e.Token);
+        Publish(
+            new PlayerIdMessage() { PlayerId = e.PlayerId },
+            e.Token
         );
     }
 }

@@ -196,7 +196,7 @@ public partial class GameRunner : IGameRunner
                 break;
 
             case GetPlayerInfoMessage getPlayerInfoMessage:
-                if (!_tokenToPlayerId.ContainsKey(getPlayerInfoMessage.Token))
+                if (_tokenToPlayerId.ContainsKey(getPlayerInfoMessage.Token) == false)
                 {
                     _logger.Information($"Adding player with token \"{getPlayerInfoMessage.Token}\" to the game.");
                     try
@@ -214,6 +214,12 @@ public partial class GameRunner : IGameRunner
                         _logger.Information(
                             $"Player with token \"{getPlayerInfoMessage.Token}\" joined the game (With id {_nextPlayerId})."
                         );
+
+                        AfterNewPlayerJoinEvent?.Invoke(this, new AfterNewPlayerJoinEventArgs(
+                            _nextPlayerId,
+                            getPlayerInfoMessage.Token,
+                            e.SocketId
+                        ));
 
                         _nextPlayerId++;
                     }
