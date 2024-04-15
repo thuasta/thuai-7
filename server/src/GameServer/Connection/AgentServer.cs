@@ -6,8 +6,11 @@ using Serilog;
 
 namespace GameServer.Connection;
 
-public partial class AgentServer : IServer
+public partial class AgentServer
 {
+    // In milliseconds.
+    public const int MESSAGE_PUBLISH_INTERVAL = 10;
+
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
     public string IpAddress { get; init; } = "0.0.0.0";
@@ -23,6 +26,7 @@ public partial class AgentServer : IServer
     private bool _isRunning = false;
     private IWebSocketServer? _wsServer = null;
     private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _sockets = new();
+    private readonly ConcurrentDictionary<Guid, string> _socketTokens = new();
 
     public void Start()
     {
@@ -45,7 +49,7 @@ public partial class AgentServer : IServer
             {
                 while (_isRunning)
                 {
-                    Task.Delay(IServer.MessagePublishIntervalMilliseconds).Wait();
+                    Task.Delay(MESSAGE_PUBLISH_INTERVAL).Wait();
 
                     if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
                     {
@@ -105,24 +109,35 @@ public partial class AgentServer : IServer
         }
     }
 
-    public void Publish(Message message)
+    public void Publish(Message message, string? token = null)
     {
         string jsonString = message.Json;
 
-        foreach (IWebSocketConnection socket in _sockets.Values)
+        foreach (Guid connectionId in _sockets.Keys)
         {
             try
             {
-                socket.Send(jsonString).Wait();
+                if (token is null || _socketTokens[connectionId] == token)
+                {
+                    _sockets[connectionId].Send(jsonString).Wait();
 
-                _logger.Debug(
-                    $"Published message to {socket.ConnectionInfo.ClientIpAddress}: {message.MessageType}"
-                );
+                    _logger.Debug($"Message published");
+                    _logger.Debug(
+                        $"Target ip: \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}\""
+                    );
+                    _logger.Debug(
+                        $"Target port: \"{_sockets[connectionId].ConnectionInfo.ClientPort}\""
+                    );
+                    _logger.Debug(
+                        $"Message type: \"{message.MessageType}\""
+                    );
+                    _logger.Verbose(jsonString);
+                }
             }
             catch (Exception ex)
             {
                 _logger.Error(
-                    $"Failed to send message to {socket.ConnectionInfo.ClientIpAddress}: {ex.Message}"
+                    $"Failed to send message to \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\": {ex.Message}"
                 );
             }
         }
@@ -132,7 +147,7 @@ public partial class AgentServer : IServer
     /// Parse the message
     /// </summary>
     /// <param name="text">Message to parse</param>
-    private void ParseMessage(string text)
+    private void ParseMessage(string text, Guid socketId)
     {
         try
         {
@@ -147,77 +162,88 @@ public partial class AgentServer : IServer
                 case "PERFORM_ABANDON":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformAbandonMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformAbandonMessage")
+                        ?? throw new Exception("failed to deserialize PerformAbandonMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_PICK_UP":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformPickUpMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformPickUpMessage")
+                        ?? throw new Exception("failed to deserialize PerformPickUpMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_SWITCH_ARM":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformSwitchArmMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformSwitchArmMessage")
+                        ?? throw new Exception("failed to deserialize PerformSwitchArmMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_USE_MEDICINE":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformUseMedicineMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformUseMedicineMessage")
+                        ?? throw new Exception("failed to deserialize PerformUseMedicineMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_USE_GRENADE":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformUseGrenadeMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformUseGrenadeMessage")
+                        ?? throw new Exception("failed to deserialize PerformUseGrenadeMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_MOVE":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformMoveMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformMoveMessage")
+                        ?? throw new Exception("failed to deserialize PerformMoveMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_STOP":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformStopMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformStopMessage")
+                        ?? throw new Exception("failed to deserialize PerformStopMessage"),
+                        socketId
                     ));
                     break;
 
                 case "PERFORM_ATTACK":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<PerformAttackMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformAttackMessage")
+                        ?? throw new Exception("failed to deserialize PerformAttackMessage"),
+                        socketId
                     ));
                     break;
 
                 case "GET_PLAYER_INFO":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<GetPlayerInfoMessage>(text)
-                        ?? throw new Exception("failed to deserialize GetPlayerInfoMessage")
+                        ?? throw new Exception("failed to deserialize GetPlayerInfoMessage"),
+                        socketId
                     ));
                     break;
 
                 case "GET_MAP_INFO":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<GetMapMessage>(text)
-                        ?? throw new Exception("failed to deserialize GetMapInfoMessage")
+                        ?? throw new Exception("failed to deserialize GetMapInfoMessage"),
+                        socketId
                     ));
                     break;
 
                 case "CHOOSE_ORIGIN":
                     AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
                         JsonSerializer.Deserialize<ChooseOriginMessage>(text)
-                        ?? throw new Exception("failed to deserialize ChooseOriginMessage")
+                        ?? throw new Exception("failed to deserialize ChooseOriginMessage"),
+                        socketId
                     ));
                     break;
 
@@ -271,7 +297,7 @@ public partial class AgentServer : IServer
             {
                 try
                 {
-                    ParseMessage(text);
+                    ParseMessage(text, socket.ConnectionInfo.Id);
                 }
                 catch (Exception exception)
                 {
@@ -284,7 +310,7 @@ public partial class AgentServer : IServer
                 try
                 {
                     string text = Encoding.UTF8.GetString(bytes);
-                    ParseMessage(text);
+                    ParseMessage(text, socket.ConnectionInfo.Id);
                 }
                 catch (Exception exception)
                 {
