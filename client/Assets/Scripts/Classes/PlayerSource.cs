@@ -6,19 +6,34 @@ using UnityEditor.MPE;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
 
-public class PlayerSource
+public class PlayerSource: MonoBehaviour
 {
     private static readonly Dictionary<int, Player> _playerDict = new();
+    private static readonly GameObject playerPrefab = Resources.Load<GameObject>("Player/models/Soldier");
+    private void Start()
+    {
+    }
+    public static Dictionary<int ,Player> GetPlayers()
+    {
+        return _playerDict;
+    }
     public static bool AddPlayer(int id, string name)
     {
         if (_playerDict.ContainsKey(id))
         {
             return false;
         }
+        // Create Player obj
+        GameObject newPlayerObj = Instantiate(playerPrefab);
+        newPlayerObj.transform.position = Vector3.zero;
+
         _playerDict.Add(id, new Player {
                                     Id = id,
                                     Name = name,
-                                    playerAnimations = GameObject.Find(name).GetComponent<PlayerAnimations>()});
+                                    playerAnimations = newPlayerObj.GetComponent<PlayerAnimations>(),
+                                    playerObj=newPlayerObj
+        });
+
         return true;
     }
 
@@ -32,7 +47,7 @@ public class PlayerSource
             player.Speed = speed;
             player.Firearm = firearm;
             player.Inventory = inventory;
-            player.PlayerPosition = position;
+            player.UpdatePosition(position);
             player.TryGetPlayerAnimations();
         }
     }
