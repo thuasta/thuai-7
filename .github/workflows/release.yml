@@ -6,6 +6,8 @@ on:
 jobs:
   build-client:
     needs: create-release-notes
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -33,8 +35,7 @@ jobs:
           cp -r build/* release/
 
       - run: |
-          zip -r ../${{ github.event.repository.name }}-client-${{ matrix.targetPlatform }}.zip *
-        working-directory: release
+          zip -r ${{ github.event.repository.name }}-client-${{ matrix.targetPlatform }}.zip release/*
 
       - uses: softprops/action-gh-release@v2
         with:
@@ -43,6 +44,8 @@ jobs:
 
   build-server:
     needs: create-release-notes
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -73,8 +76,7 @@ jobs:
           cp -r server/bin/* release/
 
       - run: |
-          zip -r ../${{ github.event.repository.name }}-server-${{ matrix.runtime }}.zip *
-        working-directory: release
+          zip -r ${{ github.event.repository.name }}-server-${{ matrix.runtime }}.zip release/*
 
       - uses: softprops/action-gh-release@v2
         with:
