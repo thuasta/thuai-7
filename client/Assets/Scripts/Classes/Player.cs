@@ -1,24 +1,34 @@
 using System.Collections.Generic;
-using Thubg.Sdk;
+using Thubg.Messages;
+using UnityEngine;
 
 public class Player
 {
-    public string Id;
+    public int Id;
+    public string Name;
     public int Health;
     public ArmorTypes Armor;
     public float Speed;
     public FirearmTypes Firearm;
     public Dictionary<Items, int> Inventory;
     public Position PlayerPosition;
+    public PlayerAnimations playerAnimations;
 
-    public Player(string id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Position position, Dictionary<Items, int> inventory)
+    public void TryGetPlayerAnimations()
     {
-        Id = id;
-        Health = health;
-        Armor = armor;
-        Speed = speed;
-        Firearm = firearm;
-        PlayerPosition = position;
-        Inventory = inventory;
+        if (playerAnimations == null)
+        {
+            playerAnimations = GameObject.Find(Name).GetComponent<PlayerAnimations>();
+        }
+    }
+
+    public void Attack()
+    {
+        playerAnimations.SetFiring();
+    }
+
+    public void UseMedicine()
+    {
+        playerAnimations.SetDrinking();
     }
 }
