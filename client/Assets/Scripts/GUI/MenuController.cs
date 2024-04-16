@@ -178,7 +178,7 @@ public class MenuController : MonoBehaviour
             //    }
             // }
             _levels = LevelFolders.ToArray();
-
+            int cnt = 0;
             foreach (string folderName in _levels)
             {
                 Debug.Log(folderName);
@@ -205,9 +205,12 @@ public class MenuController : MonoBehaviour
 
                 // Put the button into the content
                 newRecordButtonObject.transform.SetParent(_scrollViewContent.transform);
-                newRecordButtonObject.GetComponent<RectTransform>().position = Vector3.one;
                 newRecordButtonObject.transform.localScale = Vector3.one;
+                newRecordButtonObject.GetComponent<RectTransform>().localPosition = new Vector3(0,-20+cnt*40,0);
+                //Debug.Log(newRecordButtonObject.transform.position);
+                //Debug.Log(newRecordButtonObject.GetComponent<RectTransform>().transform.position);
                 _recordButtons.Add(newRecordButton);
+                cnt += 1;
             }
         }
 

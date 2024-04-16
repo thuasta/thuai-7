@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerAnimations : MonoBehaviour
 {
-    public const float MinWalkDistance = 1f;
+    public const float MinWalkDistance = 0.1f;
     public const float DeadTime = 2f;
     public const float AttackTime = 0.5f;
     public const float UseMedicineTime = 1f;

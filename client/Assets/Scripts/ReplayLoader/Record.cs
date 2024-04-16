@@ -10,10 +10,11 @@ using System.Runtime.CompilerServices;
 using Mono.Data.Sqlite;
 using Unity.IO.LowLevel.Unsafe;
 using System;
-
+using UnityEditor;
 
 public class Record : MonoBehaviour
 {
+    public const float ObjPrefabScaling=0.4f;
     public enum PlayState
     {
         Prepare,
@@ -86,6 +87,7 @@ public class Record : MonoBehaviour
     private readonly Slider _processSlider;
     private readonly TMP_Text _jumpTargetTickText;
     private readonly TMP_Text _maxTickText;
+    private  TMP_Text _currentTickText;
     private GameObject _groundPrefab;
     private GameObject _playerPrefab;
     private bool[,] _isWalls;
@@ -97,6 +99,10 @@ public class Record : MonoBehaviour
     private JArray _recordArray;
     private string _recordFile;
     private Observe _observe;
+
+    private GameObject _supplyParent;
+
+    private Dictionary<string, GameObject> _propDict = new();
     // viewer
     private void Start()
     {
@@ -109,7 +115,7 @@ public class Record : MonoBehaviour
         // Check if the file is Level json
         _recordFile = fileLoaded.File;
         _observe = GameObject.Find("Camera").GetComponent<Observe>();
-
+        _recordInfo.NowPlayState = PlayState.Pause;
         // Prefab
         _groundPrefab = Resources.Load<GameObject>("Prefabs/Ground_01");
         _playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
@@ -127,8 +133,15 @@ public class Record : MonoBehaviour
         _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_01"));
         _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_02"));
 
+        _currentTickText = GameObject.Find("Canvas/Tick").GetComponent<TMP_Text>();
 
-
+        _propDict.Add("BANDAGE",Resources.Load<GameObject>("Prefabs/Bandage"));
+        _propDict.Add("FIRST_AID", Resources.Load<GameObject>("Prefabs/FirstAid"));
+        _propDict.Add("AWM", Resources.Load<GameObject>("Prefabs/AWM"));
+        _propDict.Add("VECTOR", Resources.Load<GameObject>("Prefabs/Vector"));
+        _propDict.Add("S686", Resources.Load<GameObject>("Prefabs/S686"));
+        _propDict.Add("GRENADE", Resources.Load<GameObject>("Prefabs/Grenade"));
+        _supplyParent = GameObject.Find("Supplies");
         // GUI //
 
         // Get stop button 
@@ -195,10 +208,10 @@ public class Record : MonoBehaviour
             return;
         }
         _recordArray = LoadRecordData();
-        //_recordInfo.MaxTick = (int)_recordArray.Last["tick"];
-        GenerateMap();
+        _recordInfo.MaxTick = (int)_recordArray.Last["currentTicks"];
         // Generate Map and Supplies
-
+        GenerateMap();
+        GenerateSupplies();
         // Generate record Dict according to record array
         //foreach (JToken eventJson in  _recordArray)
         //{
@@ -257,7 +270,6 @@ public class Record : MonoBehaviour
             Debug.Log("Record file is empty!");
             return null;
         }
-        Debug.Log(recordArray.ToString());
         return recordArray;
     }
 
@@ -291,11 +303,13 @@ public class Record : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                GameObject ground = Instantiate(_groundPrefab, new Vector3(i, 0, j), Quaternion.identity);
+                // offset 0.5
+                GameObject ground = Instantiate(_groundPrefab, new Vector3(i+0.5f, 0, j+0.5f), Quaternion.identity);
 
                 ground.transform.SetParent(groundParent);
                 // The direction of ground is random
                 ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
+                ground.transform.localScale *= ObjPrefabScaling;
             }
         }
 
@@ -317,17 +331,58 @@ public class Record : MonoBehaviour
                 {
                     GameObject obstacle = Instantiate(_obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i, 0, j), Quaternion.identity);
                     obstacle.transform.SetParent(obstacleParent);
-                    // The direction of ground is random
+                    // The scale and direction of ground is random
                     obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360) , 0);
+
+                    obstacle.transform.localScale *= ObjPrefabScaling*(UnityEngine.Random.Range(0.7f,1.5f));
                 }
             }
         }
     }
-
+    void GenerateSupplies()
+    {
+        // TODO:
+        // Generate supplies according to the _recordArray
+        // Find the JObject with "messageType": "MAP"
+        JObject suppliesJson = null;
+        foreach (JToken eventJson in _recordArray)
+        {
+            if (eventJson["messageType"].ToString() == "SUPPLIES")
+            {
+                suppliesJson = (JObject)eventJson["data"];
+                break;
+            }
+        }
+        if (suppliesJson == null)
+        {
+            Debug.Log("Supplies not found!");
+            return;
+        }
+        JArray suppliesArray = (JArray)suppliesJson["supplies"];
+        foreach (JToken supplyJson in suppliesArray)
+        {
+            string name = supplyJson["name"].ToString();
+            if (_propDict.ContainsKey(name))
+            {
+                Vector3 supplyPosition = new Vector3((float)supplyJson["position"]["x"], 0.1f, (float)supplyJson["position"]["y"]);
+                GameObject newSupply= Instantiate(_propDict[name],_supplyParent.transform);
+                newSupply.transform.position = supplyPosition;
+                newSupply.transform.Rotate(0,0, UnityEngine.Random.Range(0, 360));
+            }
+        }
+    }
     private void UpdatePlayers(JArray players)
     {
+        if (players is null)
+            return;
         foreach (JObject player in players)
         {
+            int playerId = player["playerId"].ToObject<int>();
+            Position playerPosition = new Position((float)player["position"]["x"], (float)player["position"]["y"]);
+
+            // Check if the player is in dict
+            PlayerSource.AddPlayer(playerId, "");
+
             Dictionary<Items, int> inventory = new();
             foreach (JObject item in (JArray)player["inventory"])
             {
@@ -339,7 +394,7 @@ public class Record : MonoBehaviour
             }
 
             PlayerSource.UpdatePlayer(
-                player["playerId"].ToObject<int>(),
+                playerId,
                 player["health"].ToObject<int>(),
                 player["armor"].ToString() switch
                 {
@@ -358,7 +413,7 @@ public class Record : MonoBehaviour
                     _ => FirearmTypes.Fists,
                 },
                 inventory,
-                player["position"].ToObject<Position>()
+                playerPosition
             );
         }
     }
@@ -400,25 +455,30 @@ public class Record : MonoBehaviour
 
     private void UpdateTick()
     {
-        try
-        {
+        //try
+        //{
             if (_recordInfo.RecordSpeed > 0)
             {
-                Debug.Log(_recordArray[_recordInfo.NowRecordNum]["tick"].ToString());
-                UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["players"]);
-                _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["tick"]);
+                if (_recordArray[_recordInfo.NowRecordNum].Value<string>("currentTicks") != null &&
+                    _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "COMPETITION_UPDATE")
+                {
+                    Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
+                    UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
+                    _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
+                    _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
+                }
                 _recordInfo.NowRecordNum++;
-            }
         }
-        catch
-        {
+        //}
+        //catch
+        //{
 
-        }
+        //}
     }
 
     private void Update()
     {
-        if ((_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowRecordNum < _recordInfo.MaxTick) || (_recordInfo.NowPlayState == PlayState.Jump))
+        if ((_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowTick < _recordInfo.MaxTick) || (_recordInfo.NowPlayState == PlayState.Jump))
         {
             if (_recordInfo.NowDeltaTime > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
             {

@@ -13,12 +13,13 @@ public class Player
     public Dictionary<Items, int> Inventory;
     public Position PlayerPosition;
     public PlayerAnimations playerAnimations;
+    public GameObject playerObj;
 
     public void TryGetPlayerAnimations()
     {
         if (playerAnimations == null)
         {
-            playerAnimations = GameObject.Find(Name).GetComponent<PlayerAnimations>();
+            playerAnimations = playerObj.GetComponent<PlayerAnimations>();
         }
     }
 
@@ -30,5 +31,18 @@ public class Player
     public void UseMedicine()
     {
         playerAnimations.SetDrinking();
+    }
+
+    public void UpdatePosition(Position pos)
+    {
+        PlayerPosition =pos;
+        // Compute Delta
+        Vector3 newPos = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
+        TryGetPlayerAnimations();
+        if (playerAnimations is not null)
+        {
+            playerAnimations.WalkTo(playerObj.transform.position, newPos);
+        }
+        playerObj.transform.position = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
     }
 }
