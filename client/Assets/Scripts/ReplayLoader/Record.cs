@@ -99,6 +99,10 @@ public class Record : MonoBehaviour
     private JArray _recordArray;
     private string _recordFile;
     private Observe _observe;
+
+    private GameObject _supplyParent;
+
+    private Dictionary<string, GameObject> _propDict = new();
     // viewer
     private void Start()
     {
@@ -131,6 +135,13 @@ public class Record : MonoBehaviour
 
         _currentTickText = GameObject.Find("Canvas/Tick").GetComponent<TMP_Text>();
 
+        _propDict.Add("BANDAGE",Resources.Load<GameObject>("Prefabs/Bandage"));
+        _propDict.Add("FIRST_AID", Resources.Load<GameObject>("Prefabs/FirstAid"));
+        _propDict.Add("AWM", Resources.Load<GameObject>("Prefabs/AWM"));
+        _propDict.Add("VECTOR", Resources.Load<GameObject>("Prefabs/Vector"));
+        _propDict.Add("S686", Resources.Load<GameObject>("Prefabs/S686"));
+        _propDict.Add("GRENADE", Resources.Load<GameObject>("Prefabs/Grenade"));
+        _supplyParent = GameObject.Find("Supplies");
         // GUI //
 
         // Get stop button 
@@ -292,7 +303,8 @@ public class Record : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                GameObject ground = Instantiate(_groundPrefab, new Vector3(i, 0, j), Quaternion.identity);
+                // offset 0.5
+                GameObject ground = Instantiate(_groundPrefab, new Vector3(i+0.5f, 0, j+0.5f), Quaternion.identity);
 
                 ground.transform.SetParent(groundParent);
                 // The direction of ground is random
@@ -330,6 +342,34 @@ public class Record : MonoBehaviour
     void GenerateSupplies()
     {
         // TODO:
+        // Generate supplies according to the _recordArray
+        // Find the JObject with "messageType": "MAP"
+        JObject suppliesJson = null;
+        foreach (JToken eventJson in _recordArray)
+        {
+            if (eventJson["messageType"].ToString() == "SUPPLIES")
+            {
+                suppliesJson = (JObject)eventJson["data"];
+                break;
+            }
+        }
+        if (suppliesJson == null)
+        {
+            Debug.Log("Supplies not found!");
+            return;
+        }
+        JArray suppliesArray = (JArray)suppliesJson["supplies"];
+        foreach (JToken supplyJson in suppliesArray)
+        {
+            string name = supplyJson["name"].ToString();
+            if (_propDict.ContainsKey(name))
+            {
+                Vector3 supplyPosition = new Vector3((float)supplyJson["position"]["x"], 0.1f, (float)supplyJson["position"]["y"]);
+                GameObject newSupply= Instantiate(_propDict[name],_supplyParent.transform);
+                newSupply.transform.position = supplyPosition;
+                newSupply.transform.Rotate(0,0, UnityEngine.Random.Range(0, 360));
+            }
+        }
     }
     private void UpdatePlayers(JArray players)
     {
