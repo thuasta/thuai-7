@@ -55,7 +55,14 @@ public partial class Map
         }
 
         // Adjust the ratio slightly to avoid the edge case
-        ratio *= 0.99;
-        return startPosition + direction * ratio;
+        if (ratio < 0.01)
+        {
+            return startPosition;
+        }
+        else
+        {
+            ratio *= 0.99;
+            return startPosition + direction * ratio;
+        }
     }
 }
