@@ -33,7 +33,20 @@ public partial class Map
             new HouseShape(),
             new TreeShape(),
             new RockShape(),
-            new TubeShape()
+            new TubeShape(),
+            new PoleShape(),
+            new CottageNShape(),
+            new CottageEShape(),
+            new CottageSShape(),
+            new CottageWShape(),
+            new WallEWShape(),
+            new WallNSShape(),
+            new MazeShape(),
+            new Corner1Shape(),
+            new Corner2Shape(),
+            new Corner3Shape(),
+            new Corner4Shape(),
+            new CarShape()
         };
 
         _tryTimes = Constant.WALL_GENERATE_TRY_TIMES;
