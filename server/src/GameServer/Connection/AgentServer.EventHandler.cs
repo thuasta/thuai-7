@@ -11,12 +11,12 @@ public partial class AgentServer
         List<SuppliesMessage.Supply> supplies = new();
 
         // Add walls and supplies
-        for (int x = 0; x < e.Game.GameMap.Width; x++)
+        for (int x = 0; x < e.GameMap.Width; x++)
         {
-            for (int y = 0; y < e.Game.GameMap.Height; y++)
+            for (int y = 0; y < e.GameMap.Height; y++)
             {
                 // Add walls
-                if (e.Game.GameMap.MapChunk[x, y].IsWall == true)
+                if (e.GameMap.MapChunk[x, y].IsWall == true)
                 {
                     walls.Add(
                         new MapMessage.Wall
@@ -31,7 +31,7 @@ public partial class AgentServer
                 }
 
                 // Add supplies
-                foreach (IItem item in e.Game.GameMap.MapChunk[x, y].Items)
+                foreach (IItem item in e.GameMap.MapChunk[x, y].Items)
                 {
                     supplies.Add(
                         new SuppliesMessage.Supply
@@ -51,7 +51,7 @@ public partial class AgentServer
         List<PlayersInfoMessage.Player> players = new();
 
         // Add players
-        foreach (Player player in e.Game.AllPlayers)
+        foreach (Player player in e.AllPlayers)
         {
             List<PlayersInfoMessage.Player.Item> inventory = new();
 
@@ -94,8 +94,8 @@ public partial class AgentServer
         _messageToPublish.Enqueue(
             new MapMessage
             {
-                Length = e.Game.GameMap.Height,
-                Walls = walls
+                Length = e.GameMap.Height,
+                Walls = new(walls)
             }
         );
         _messageToPublish.Enqueue(
@@ -115,10 +115,10 @@ public partial class AgentServer
             {
                 CenterOfCircle = new SafeZoneMessage.Center
                 {
-                    X = e.Game.GameMap.SafeZone.Center.x,
-                    Y = e.Game.GameMap.SafeZone.Center.y
+                    X = e.GameMap.SafeZone.Center.x,
+                    Y = e.GameMap.SafeZone.Center.y
                 },
-                Radius = e.Game.GameMap.SafeZone.Radius
+                Radius = e.GameMap.SafeZone.Radius
             }
         );
     }

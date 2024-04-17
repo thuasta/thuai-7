@@ -14,11 +14,7 @@ class Program
 
     static void Main(string[] args)
     {
-        // Load config
-        // Read the config file and deserialize it into a Config object.
-        // string configJsonStr = File.ReadAllText("config.json");
-        string configJsonStr = "{\"log_level\": \"INFORMATION\"}";
-
+        string configJsonStr = File.ReadAllText("config.json");
         Config config = JsonSerializer.Deserialize<Config>(configJsonStr) ?? new();
 
         SetLogLevel(config.LogLevel);

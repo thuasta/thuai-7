@@ -9,13 +9,19 @@ namespace GameServer.Connection;
 public partial class AgentServer
 {
     // In milliseconds.
-    public const int MESSAGE_PUBLISH_INTERVAL = 10;
+    public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
+    public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
+    public double RealMpps { get; private set; }
+    public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
+    public double MppsUpperBound => 1.1 * MESSAGE_PUBLISHED_PER_SECOND;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
     public string IpAddress { get; init; } = "0.0.0.0";
     public int Port { get; init; } = 8080;
     public Task? TaskForPublishingMessage { get; private set; } = null;
+
+    private DateTime _lastMppsCheckTime = DateTime.Now;
 
     private readonly ILogger _logger = Log.Logger.ForContext("Component", "AgentServer");
 
@@ -47,10 +53,10 @@ public partial class AgentServer
 
             Action actionForPublishingMessage = new(() =>
             {
+                DateTime lastPublishTime = DateTime.Now;
+
                 while (_isRunning)
                 {
-                    Task.Delay(MESSAGE_PUBLISH_INTERVAL).Wait();
-
                     if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
                     {
                         if (message is null)
@@ -63,6 +69,32 @@ public partial class AgentServer
                         _logger.Verbose(message.Json);
 
                         Publish(message);
+                    }
+
+                    while (DateTime.Now - lastPublishTime < TimeSpan.FromMilliseconds(1000 / MESSAGE_PUBLISHED_PER_SECOND))
+                    {
+                        // Wait for the next tick
+                    }
+
+                    DateTime currentTime = DateTime.Now;
+                    RealMpps = 1.0D / (double)(currentTime - lastPublishTime).TotalSeconds;
+                    lastPublishTime = currentTime;
+
+                    // Check TPS.
+                    if (DateTime.Now - _lastMppsCheckTime > MppsCheckInterval)
+                    {
+                        _lastMppsCheckTime = DateTime.Now;
+
+                        _logger.Debug($"Current message published per second: {RealMpps:0.00} msg/s");
+
+                        if (RealMpps < MppsLowerBound)
+                        {
+                            _logger.Warning($"Insufficient publish rate: {RealMpps:0.00} msg/s < {MppsLowerBound} msg/s");
+                        }
+                        if (RealMpps > MppsUpperBound)
+                        {
+                            _logger.Warning($"Excessive simulation rate: {RealMpps:0.00} msg/s > {MppsUpperBound} msg/s");
+                        }
                     }
                 }
             });
