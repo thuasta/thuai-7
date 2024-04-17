@@ -11,6 +11,7 @@ using Mono.Data.Sqlite;
 using Unity.IO.LowLevel.Unsafe;
 using System;
 using UnityEditor;
+using Unity.VisualScripting;
 
 public class Record : MonoBehaviour
 {
@@ -91,6 +92,9 @@ public class Record : MonoBehaviour
     private GameObject _groundPrefab;
     private GameObject _playerPrefab;
     private bool[,] _isWalls;
+    private ParticleSystem _poisonousCircle;
+    private TMP_Text _infoText;
+
 
     private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
 
@@ -102,7 +106,7 @@ public class Record : MonoBehaviour
 
     private GameObject _supplyParent;
 
-    private Dictionary<string, GameObject> _propDict = new();
+    private Dictionary<string, GameObject> _propDict;
     // viewer
     private void Start()
     {
@@ -116,6 +120,8 @@ public class Record : MonoBehaviour
         _recordFile = fileLoaded.File;
         _observe = GameObject.Find("Camera").GetComponent<Observe>();
         _recordInfo.NowPlayState = PlayState.Pause;
+
+        _infoText = GameObject.Find("Canvas/Info").GetComponent<TMP_Text>();
         // Prefab
         _groundPrefab = Resources.Load<GameObject>("Prefabs/Ground_01");
         _playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
@@ -135,12 +141,16 @@ public class Record : MonoBehaviour
 
         _currentTickText = GameObject.Find("Canvas/Tick").GetComponent<TMP_Text>();
 
-        _propDict.Add("BANDAGE",Resources.Load<GameObject>("Prefabs/Bandage"));
-        _propDict.Add("FIRST_AID", Resources.Load<GameObject>("Prefabs/FirstAid"));
-        _propDict.Add("AWM", Resources.Load<GameObject>("Prefabs/AWM"));
-        _propDict.Add("VECTOR", Resources.Load<GameObject>("Prefabs/Vector"));
-        _propDict.Add("S686", Resources.Load<GameObject>("Prefabs/S686"));
-        _propDict.Add("GRENADE", Resources.Load<GameObject>("Prefabs/Grenade"));
+        _poisonousCircle = GameObject.Find("PoisonousCircle").GetComponent<ParticleSystem>();
+        _propDict = new()
+        {
+            { "BANDAGE", Resources.Load<GameObject>("Prefabs/Bandage") },
+            { "FIRST_AID", Resources.Load<GameObject>("Prefabs/FirstAid") },
+            { "AWM", Resources.Load<GameObject>("Prefabs/AWM") },
+            { "VECTOR", Resources.Load<GameObject>("Prefabs/Vector") },
+            { "S686", Resources.Load<GameObject>("Prefabs/S686") },
+            { "GRENADE", Resources.Load<GameObject>("Prefabs/Grenade") }
+        };
         _supplyParent = GameObject.Find("Supplies");
         // GUI //
 
@@ -375,6 +385,8 @@ public class Record : MonoBehaviour
     {
         if (players is null)
             return;
+
+        string infoString = "";
         foreach (JObject player in players)
         {
             int playerId = player["playerId"].ToObject<int>();
@@ -392,10 +404,10 @@ public class Record : MonoBehaviour
                         break;
                 }
             }
-
+            int health = player["health"].ToObject<int>();
             PlayerSource.UpdatePlayer(
                 playerId,
-                player["health"].ToObject<int>(),
+                health,
                 player["armor"].ToString() switch
                 {
                     "NO_ARMOR" => ArmorTypes.NoArmor,
@@ -415,9 +427,16 @@ public class Record : MonoBehaviour
                 inventory,
                 playerPosition
             );
+            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})";
         }
+        _infoText.text = infoString;
     }
-
+    private void UpdateCircle(Vector2 newPos, float newRadius)
+    {
+        _poisonousCircle.transform.position = new Vector3(newPos.x, _poisonousCircle.transform.position.y, newPos.y);
+        ParticleSystem.ShapeModule shape = _poisonousCircle.shape;
+        shape.radius = newRadius;
+    }
     private void AfterPlayerPickUpEvent(JObject eventJson)
     {
         int playerId = eventJson["playerId"].ToObject<int>();
@@ -467,8 +486,13 @@ public class Record : MonoBehaviour
                     _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
                     _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
                 }
+                if (_recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "SAFE_ZONE")
+                {
+                    UpdateCircle(new Vector2((float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["x"], (float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["y"]),
+                        (float)_recordArray[_recordInfo.NowRecordNum]["data"]["radius"]);
+                }
                 _recordInfo.NowRecordNum++;
-        }
+            }
         //}
         //catch
         //{
