@@ -110,7 +110,7 @@ public partial class Map
             return new Block(IsSolid(x, y)); // Assuming Wall is a class that implements IBlock
         }
     }
-    /* The following obstacles are added on 2024.4.17 
+    /* The following obstacles are added on 2024.4.17
    Contents -------------------------------------
    Pole ( Telegraph Pole )
    Cottage ( With door on N/S/E/W side )
@@ -289,8 +289,8 @@ public partial class Map
     }
     public class MazeShape : ObstacleShape
     {
-        public override int MaxWidth => 10;
-        public override int MaxHeight => 5;
+        public override int MaxWidth => 5;
+        public override int MaxHeight => 10;
 
         private readonly char[,] _shape =
         {
