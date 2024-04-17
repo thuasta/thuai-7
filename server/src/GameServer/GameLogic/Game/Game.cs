@@ -242,7 +242,7 @@ public partial class Game
                 // Dereference of a possibly null reference.
                 // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
 
-                AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
+                AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(AllPlayers, GameMap, CurrentTick));
             }
         }
         catch (Exception e)
