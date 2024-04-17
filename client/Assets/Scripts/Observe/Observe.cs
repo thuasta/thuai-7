@@ -104,7 +104,7 @@ public class Observe : MonoBehaviour
             offset -= zoom * offset;
         }
         //镜头跟随
-        transform.position = _target.playerObj.transform.position - offset;
+        transform.position = GetHeadPos(_target.playerObj.transform.position) - offset;
     }
 
     //左右旋转、上下旋转功能:
@@ -112,6 +112,11 @@ public class Observe : MonoBehaviour
     
     public bool isRotating, lookup;
     float mousex, mousey;
+
+    Vector3 GetHeadPos(Vector3 playerPos)
+    {
+        return new Vector3(playerPos.x, playerPos.y + 1.5f, playerPos.z);
+    }
     void Rotate()
     {
         /*if (Input.GetMouseButtonDown(1))//长按鼠标右键
@@ -129,9 +134,9 @@ public class Observe : MonoBehaviour
             mousex = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
             //旋转轴的位置是目标物体处，方向是世界坐标系的y轴
 
-            transform.RotateAround(_target.playerObj.transform.position, Vector3.up, mousex);
+            transform.RotateAround(GetHeadPos(_target.playerObj.transform.position), Vector3.up, mousex);
             //每次旋转后更新偏移量
-            offset = _target.playerObj.transform.position - transform.position;
+            offset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
         }
     }
     void Rollup()
@@ -151,9 +156,9 @@ public class Observe : MonoBehaviour
             mousey = -Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
             //旋转轴的位置在目标物体处，方向是摄像机的x轴
             if (Mathf.Abs(transform.rotation.x + mousey-initialTransform.rotation.x) > 90) mousey = 0;
-            transform.RotateAround(_target.playerObj.transform.position, transform.right, mousey);
+            transform.RotateAround(GetHeadPos(_target.playerObj.transform.position), transform.right, mousey);
             //每次旋转后更新偏移量
-            offset = _target.playerObj.transform.position - transform.position;
+            offset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
         }
 
     }
