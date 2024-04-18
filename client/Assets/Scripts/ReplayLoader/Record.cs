@@ -56,7 +56,7 @@ public class Record : MonoBehaviour
         /// If NowDeltaTime is larger than NowFrameTime, then play the next frame
         /// </summary>
         public float NowDeltaTime = 0;
-
+        public long NowTime = 0;
         /// <summary>
         /// The target tick to jump
         /// </summary>
@@ -502,16 +502,16 @@ public class Record : MonoBehaviour
         //}
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if ((_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowTick < _recordInfo.MaxTick) || (_recordInfo.NowPlayState == PlayState.Jump))
         {
-            if (_recordInfo.NowDeltaTime > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
+            if ((float)(System.DateTime.Now.Ticks - _recordInfo.NowTime)/1e7 > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
             {
+                _recordInfo.NowTime = System.DateTime.Now.Ticks;
                 UpdateTick();
                 _recordInfo.NowDeltaTime = 0;
             }
-            _recordInfo.NowDeltaTime += Time.deltaTime;
         }
     }
 }
