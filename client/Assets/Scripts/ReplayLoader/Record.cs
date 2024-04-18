@@ -339,7 +339,9 @@ public class Record : MonoBehaviour
             {
                 if (_isWalls[i, j])
                 {
-                    GameObject obstacle = Instantiate(_obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i, 0, j), Quaternion.identity);
+                    GameObject obstacle = Instantiate(
+                        _obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i + 0.5f, 0, j + 0.5f), Quaternion.identity
+                    );
                     obstacle.transform.SetParent(obstacleParent);
                     // The scale and direction of ground is random
                     obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360) , 0);
