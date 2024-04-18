@@ -307,21 +307,21 @@ public class Record : MonoBehaviour
         int width = (int)mapJson["width"];
         int height = (int)mapJson["height"];
         JArray mapArray = (JArray)mapJson["walls"];
-        // Initialize the ground
-        Transform groundParent = GameObject.Find("Map/Ground").transform;
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                // offset 0.5
-                GameObject ground = Instantiate(_groundPrefab, new Vector3(i+0.5f, 0, j+0.5f), Quaternion.identity);
+        //// Initialize the ground
+        //Transform groundParent = GameObject.Find("Map/Ground").transform;
+        //for (int i = 0; i < width; i++)
+        //{
+        //    for (int j = 0; j < height; j++)
+        //    {
+        //        // offset 0.5
+        //        GameObject ground = Instantiate(_groundPrefab, new Vector3(i+0.5f, 0, j+0.5f), Quaternion.identity);
 
-                ground.transform.SetParent(groundParent);
-                // The direction of ground is random
-                ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
-                ground.transform.localScale *= ObjPrefabScaling;
-            }
-        }
+        //        ground.transform.SetParent(groundParent);
+        //        // The direction of ground is random
+        //        ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
+        //        ground.transform.localScale *= ObjPrefabScaling;
+        //    }
+        //}
 
         _isWalls = new bool[width, height];
         // Initialize the walls
@@ -429,7 +429,7 @@ public class Record : MonoBehaviour
                 inventory,
                 playerPosition
             );
-            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})";
+            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\n";
         }
         _infoText.text = infoString;
     }
