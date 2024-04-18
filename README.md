@@ -17,13 +17,10 @@ PENDING
 
 The platform supports agent template with following version:
 
-| Platform Version | [Python Template] | [C++ Template] | [C# Template] |
+| Platform Version | Python Template | C++ Template | C# Template |
 |:-:|:-:|:-:|:-:|
+| 0.0.2 | 0.1.1| | |
 | 0.0.1 | 0.1.1 | | |
-
-[Python Template]: (https://github.com/thuasta/thuai-7-agent-template-python/releases)
-[C++ Template]: (https://github.com/thuasta/thuai-7-agent-template-cpp/releases)
-[C# Template]:  (https://github.com/thuasta/thuai-7-agent-template-csharp/releases)
 
 ## Contributing
 
