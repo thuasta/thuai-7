@@ -56,7 +56,7 @@ public class Record : MonoBehaviour
         /// If NowDeltaTime is larger than NowFrameTime, then play the next frame
         /// </summary>
         public float NowDeltaTime = 0;
-
+        public long NowTime = 0;
         /// <summary>
         /// The target tick to jump
         /// </summary>
@@ -307,21 +307,21 @@ public class Record : MonoBehaviour
         int width = (int)mapJson["width"];
         int height = (int)mapJson["height"];
         JArray mapArray = (JArray)mapJson["walls"];
-        // Initialize the ground
-        Transform groundParent = GameObject.Find("Map/Ground").transform;
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                // offset 0.5
-                GameObject ground = Instantiate(_groundPrefab, new Vector3(i+0.5f, 0, j+0.5f), Quaternion.identity);
+        //// Initialize the ground
+        //Transform groundParent = GameObject.Find("Map/Ground").transform;
+        //for (int i = 0; i < width; i++)
+        //{
+        //    for (int j = 0; j < height; j++)
+        //    {
+        //        // offset 0.5
+        //        GameObject ground = Instantiate(_groundPrefab, new Vector3(i+0.5f, 0, j+0.5f), Quaternion.identity);
 
-                ground.transform.SetParent(groundParent);
-                // The direction of ground is random
-                ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
-                ground.transform.localScale *= ObjPrefabScaling;
-            }
-        }
+        //        ground.transform.SetParent(groundParent);
+        //        // The direction of ground is random
+        //        ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
+        //        ground.transform.localScale *= ObjPrefabScaling;
+        //    }
+        //}
 
         _isWalls = new bool[width, height];
         // Initialize the walls
@@ -429,7 +429,7 @@ public class Record : MonoBehaviour
                 inventory,
                 playerPosition
             );
-            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})";
+            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\n";
         }
         _infoText.text = infoString;
     }
@@ -502,16 +502,16 @@ public class Record : MonoBehaviour
         //}
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if ((_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowTick < _recordInfo.MaxTick) || (_recordInfo.NowPlayState == PlayState.Jump))
         {
-            if (_recordInfo.NowDeltaTime > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
+            if ((float)(System.DateTime.Now.Ticks - _recordInfo.NowTime)/1e7 > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
             {
+                _recordInfo.NowTime = System.DateTime.Now.Ticks;
                 UpdateTick();
                 _recordInfo.NowDeltaTime = 0;
             }
-            _recordInfo.NowDeltaTime += Time.deltaTime;
         }
     }
 }
