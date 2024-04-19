@@ -2,7 +2,7 @@ using GameServer.Geometry;
 
 namespace GameServer.GameLogic;
 
-public class Grenade : IGrenade
+public class Grenade
 {
     //定点爆炸的坐标
     public Position position { get; set; }
