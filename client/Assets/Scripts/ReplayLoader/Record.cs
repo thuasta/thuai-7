@@ -358,7 +358,7 @@ public class Record : MonoBehaviour
         {
             for (int j = -height; j < height * 2; j++)
             {
-                if (i >= -20 && i < width + 20 && j >= -20 && j < height + 20)
+                if (i >= -5 && i < width + 5 && j >= -5 && j < height + 5)
                 { continue; }
 
                 // Random rate: 0.1
