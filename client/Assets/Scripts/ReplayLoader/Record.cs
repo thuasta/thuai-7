@@ -346,8 +346,39 @@ public class Record : MonoBehaviour
                     // The scale and direction of ground is random
                     obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360) , 0);
 
-                    obstacle.transform.localScale *= ObjPrefabScaling*(UnityEngine.Random.Range(0.7f,1.5f));
+                    obstacle.transform.localScale = ObjPrefabScaling * new Vector3(
+                        obstacle.transform.localScale.x*UnityEngine.Random.Range(0.7f,1.5f),
+                        obstacle.transform.localScale.y* UnityEngine.Random.Range(1.0f,2.5f),
+                        obstacle.transform.localScale.z* UnityEngine.Random.Range(0.7f,1.5f)
+                    );
                 }
+            }
+        }
+        for (int i = -width; i < width * 2; i++)
+        {
+            for (int j = -height; j < height * 2; j++)
+            {
+                if (i >= -20 && i < width + 20 && j >= -20 && j < height + 20)
+                { continue; }
+
+                // Random rate: 0.1
+                if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.01)
+                {
+                    continue;
+                }
+
+                GameObject obstacle = Instantiate(
+                    _obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i + 0.5f, 0, j + 0.5f), Quaternion.identity
+                );
+                obstacle.transform.SetParent(obstacleParent);
+                // The scale and direction of ground is random
+                obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360), 0);
+
+                obstacle.transform.localScale = ObjPrefabScaling * new Vector3(
+                    obstacle.transform.localScale.x * UnityEngine.Random.Range(3.0f, 5.5f),
+                    obstacle.transform.localScale.y * UnityEngine.Random.Range(3.0f, 5.5f),
+                    obstacle.transform.localScale.z * UnityEngine.Random.Range(3.0f, 5.5f)
+                );
             }
         }
     }
