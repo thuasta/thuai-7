@@ -12,6 +12,7 @@ using Unity.IO.LowLevel.Unsafe;
 using System;
 using UnityEditor;
 using Unity.VisualScripting;
+using UnityEngine.Experimental.GlobalIllumination;
 
 public class Record : MonoBehaviour
 {
@@ -94,7 +95,7 @@ public class Record : MonoBehaviour
     private bool[,] _isWalls;
     private ParticleSystem _poisonousCircle;
     private TMP_Text _infoText;
-
+    private GameObject _spotLight;
 
     private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
 
@@ -107,6 +108,8 @@ public class Record : MonoBehaviour
     private GameObject _supplyParent;
 
     private Dictionary<string, GameObject> _propDict;
+
+    private Camera _camera;
     // viewer
     private void Start()
     {
@@ -176,6 +179,10 @@ public class Record : MonoBehaviour
            }
         });
 
+
+        _spotLight = GameObject.Find("Light");
+
+        _camera = GameObject.Find("Camera").GetComponent<Camera>();
         // Get Replay button
         // _replayButton = GameObject.Find("Canvas/ReplayButton").GetComponent<Button>();
         // _replayButton.onClick.AddListener(() =>
@@ -347,9 +354,9 @@ public class Record : MonoBehaviour
                     obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360) , 0);
 
                     obstacle.transform.localScale = ObjPrefabScaling * new Vector3(
-                        obstacle.transform.localScale.x*UnityEngine.Random.Range(0.7f,1.5f),
-                        obstacle.transform.localScale.y* UnityEngine.Random.Range(1.0f,2.5f),
-                        obstacle.transform.localScale.z* UnityEngine.Random.Range(0.7f,1.5f)
+                        obstacle.transform.localScale.x*UnityEngine.Random.Range(0.7f,1.4f),
+                        obstacle.transform.localScale.y* UnityEngine.Random.Range(1.0f,1.8f),
+                        obstacle.transform.localScale.z* UnityEngine.Random.Range(0.7f,1.4f)
                     );
                 }
             }
@@ -362,7 +369,7 @@ public class Record : MonoBehaviour
                 { continue; }
 
                 // Random rate: 0.1
-                if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.01)
+                if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.0075)
                 {
                     continue;
                 }
@@ -375,9 +382,9 @@ public class Record : MonoBehaviour
                 obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360), 0);
 
                 obstacle.transform.localScale = ObjPrefabScaling * new Vector3(
-                    obstacle.transform.localScale.x * UnityEngine.Random.Range(3.0f, 5.5f),
-                    obstacle.transform.localScale.y * UnityEngine.Random.Range(3.0f, 5.5f),
-                    obstacle.transform.localScale.z * UnityEngine.Random.Range(3.0f, 5.5f)
+                    obstacle.transform.localScale.x * UnityEngine.Random.Range(4.0f, 8.0f),
+                    obstacle.transform.localScale.y * UnityEngine.Random.Range(4.0f, 8.0f),
+                    obstacle.transform.localScale.z * UnityEngine.Random.Range(4.0f, 8.0f)
                 );
             }
         }
@@ -419,7 +426,7 @@ public class Record : MonoBehaviour
         if (players is null)
             return;
 
-        string infoString = "";
+        string infoString = $"Camera Position: ({_camera.transform.position.x:F2}, {_camera.transform.position.z:F2})\n";
         foreach (JObject player in players)
         {
             int playerId = player["playerId"].ToObject<int>();
@@ -469,6 +476,10 @@ public class Record : MonoBehaviour
         _poisonousCircle.transform.position = new Vector3(newPos.x, _poisonousCircle.transform.position.y, newPos.y);
         ParticleSystem.ShapeModule shape = _poisonousCircle.shape;
         shape.radius = newRadius;
+
+        Light spotLight = _spotLight.GetComponent<Light>();
+        spotLight.spotAngle = spotLight.innerSpotAngle = Mathf.Rad2Deg*(2 * Mathf.Atan2(newRadius, _spotLight.transform.position.y));
+        _spotLight.transform.position = new Vector3(newPos.x, _spotLight.transform.position.y, newPos.y);
     }
     private void AfterPlayerPickUpEvent(JObject eventJson)
     {

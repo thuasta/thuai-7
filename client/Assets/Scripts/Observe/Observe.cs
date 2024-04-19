@@ -21,7 +21,7 @@ public class Observe : MonoBehaviour
         _players = new();
         RotateSpeed = 100f;
         rotationSpeed = 75f;
-        MoveSpeed = 5f;
+        MoveSpeed = 10f;
         _cameraStatus = CameraStatus.freeCamera;
         _target = null;
         //保证摄像机看向目标物体，且z轴旋转度是0
