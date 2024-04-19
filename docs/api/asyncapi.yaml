@@ -259,14 +259,13 @@ components:
           oneOf:
             - $ref: '#/components/schemas/PerformAbandon'
             - $ref: '#/components/schemas/PerformPickUp'
-            - $ref: '#/components/schemas/PerformSwitchArm'
+            - $ref: '#/components/schemas/PerformSwitchWeapon'
             - $ref: '#/components/schemas/PerformUseMedicine'
             - $ref: '#/components/schemas/PerformUseGrenade'
             - $ref: '#/components/schemas/PerformMove'
             - $ref: '#/components/schemas/PerformStop'
             - $ref: '#/components/schemas/PerformAttack'
             - $ref: '#/components/schemas/GetPlayerInfo'
-            - $ref: '#/components/schemas/GetMap'
             - $ref: '#/components/schemas/ChooseOrigin'
 
     Map:
@@ -391,24 +390,9 @@ components:
         originPosition:
           $ref: '#/components/schemas/Position'
 
-    GetMap:
-      title: GetMap
-      description: Get the map
-      type: object
-      additionalProperties: false
-      required:
-        - messageType
-        - token
-      properties:
-        messageType:
-          type: string
-          const: GET_MAP
-        token:
-          type: string
-
     GetPlayerInfo:
       title: GetPlayerInfo
-      description: Get the player's information
+      description: Join a game. After joining, the player will receive an ID which is unique for each player.
       type: object
       additionalProperties: false
       required:
@@ -512,8 +496,8 @@ components:
             - BANDAGE
             - FIRST_AID
 
-    PerformSwitchArm:
-      title: PerformSwitchArm
+    PerformSwitchWeapon:
+      title: PerformSwitchWeapon
       description: Switch to the target firearm
       type: object
       additionalProperties: false
