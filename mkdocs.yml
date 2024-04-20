@@ -1,0 +1,6 @@
+site_name: thuai7-handbook
+theme: readthedocs
+nav:
+  - Home: THUAI_Handbook.md
+exclude_docs: |
+  /api/
