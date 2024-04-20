@@ -80,7 +80,7 @@ public partial class Game
                 // Randomly choose the position of each player
                 foreach (Player player in AllPlayers)
                 {
-                    player.PlayerPosition = GameMap.GenerateValidPosition();
+                    player.PlayerPosition = GameMap.GenerateValidPosition() + new Position(0.5, 0.5);
                 }
 
                 List<Position> walls = new();
