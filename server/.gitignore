@@ -42,5 +42,6 @@ msbuild.wrn
 
 *.sln
 *.dat
+*.json
 
 .fake

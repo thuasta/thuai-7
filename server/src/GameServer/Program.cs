@@ -16,7 +16,16 @@ class Program
     {
         if (File.Exists("config.json") == false)
         {
-            File.WriteAllText("config.json", JsonSerializer.Serialize(new Config()));
+            File.WriteAllText(
+                "config.json",
+                JsonSerializer.Serialize(
+                    new Config(),
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    }
+                )
+            );
         }
         string configJsonStr = File.ReadAllText("config.json");
         Config config = JsonSerializer.Deserialize<Config>(configJsonStr) ?? new();
