@@ -10,6 +10,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - run: |
+          mkdocs build
+
+      - run: |
           mkdir -p site/api/
 
       - uses: asyncapi/github-action-for-cli@v3.1.1
@@ -18,10 +21,6 @@ jobs:
           filepath: docs/api/asyncapi.yaml
           template: '@asyncapi/html-template@2.1.7'
           output: site/api/
-
-      - run: |
-          sudo apt-get install -y pandoc
-          sudo pandoc -s -o site/index.html docs/THUAI_Handbook.md
 
       - uses: actions/upload-artifact@v4
         with:

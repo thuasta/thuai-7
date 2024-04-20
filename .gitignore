@@ -1,2 +1,5 @@
 
 .fake
+
+# Site build output
+site/*
