@@ -1,5 +1,4 @@
-
-.fake
-
-# Site build output
-site/*
+/.vscode/
+/site/
+/config.json
+/thuai-7.sln

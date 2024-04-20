@@ -4,37 +4,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-documents:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - run: |
-          python -m pip install --upgrade pip
-          pip install mkdocs
-
-      - run: |
-          mkdocs build
-
-      - run: |
-          mkdir -p site/api/
-
-      - uses: asyncapi/github-action-for-cli@v3.1.1
-        with:
-          command: generate
-          filepath: docs/api/asyncapi.yaml
-          template: '@asyncapi/html-template@2.1.7'
-          output: site/api/
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
-          path: site/
-
   build-client:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -63,6 +32,32 @@ jobs:
           name: ${{ github.event.repository.name }}-client-${{ matrix.targetPlatform }}-${{ github.sha }}
           path: build
 
+  build-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          pip install mkdocs==1.5.3
+
+      - run: |
+          mkdocs build -f docs/mkdocs.yml
+
+      - run: |
+          mkdir -p site/api/
+
+      - uses: asyncapi/github-action-for-cli@v3.1.1
+        with:
+          command: generate
+          filepath: api/asyncapi.yaml
+          template: '@asyncapi/html-template@2.1.7'
+          output: site/api/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
+          path: site/
+
   build-server:
     strategy:
       fail-fast: false
@@ -80,7 +75,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.0.x
 
       - run: dotnet format --verify-no-changes src/GameServer
         working-directory: server
@@ -92,7 +87,6 @@ jobs:
           dotnet publish src/GameServer -c Release -o bin \
           --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
           -p:PublishSingleFile=true
-          cp src/GameServer/config.json bin/
         working-directory: server
 
       - uses: actions/upload-artifact@v4
@@ -109,7 +103,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs:
-      - build-documents
+      - build-documentation
     permissions:
       id-token: write
       pages: write
@@ -158,7 +152,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.0.x
 
       - run: |
           dotnet test src/GameServer.Tests

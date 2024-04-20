@@ -2,25 +2,13 @@
 
 Platform for the 7th Tsinghua University Artificial Intelligence Challenge
 
-## API
-https://thuasta.github.io/thuai-7/api
-
-## Install
-
-Download latest release from [here](https://github.com/thuasta/thuai-7/releases)
-
 ## Usage
 
-PENDING
+See `README.md` in each subdirectory.
 
-## Agent Template Support
+## API
 
-The platform supports agent template with following version:
-
-| Platform Version | Python Template | C++ Template | C# Template |
-|:-:|:-:|:-:|:-:|
-| 0.0.2 | 0.1.1| | |
-| 0.0.1 | 0.1.1 | | |
+See <https://thuasta.github.io/thuai-7/api>.
 
 ## Contributing
 
