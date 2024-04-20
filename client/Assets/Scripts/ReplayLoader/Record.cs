@@ -113,6 +113,14 @@ public class Record : MonoBehaviour
     // viewer
     private void Start()
     {
+        if (Debug.isDebugBuild)
+        {
+            Debug.unityLogger.logEnabled = true;
+        }
+        else
+        {
+            Debug.unityLogger.logEnabled = false;
+        }
         // Initialize the _recordInfo
         _recordInfo = new();
         //// Initialize the ItemCreator
