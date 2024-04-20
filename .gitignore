@@ -1,4 +1,11 @@
-/.vscode/
-/site/
-/config.json
-/thuai-7.sln
+/*
+!/.github/
+!/api
+!/client
+!/docs
+!/server
+!/.gitattributes
+!/.gitignore
+!/CHANGELOG.md
+!/COPYING
+!/README.md
