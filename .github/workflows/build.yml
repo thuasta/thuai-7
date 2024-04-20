@@ -65,7 +65,7 @@ jobs:
         runtime:
           - linux-arm
           - linux-arm64
-          - ubuntu-x64
+          - linux-x64
           - win-arm64
           - win-x64
           - win-x86
