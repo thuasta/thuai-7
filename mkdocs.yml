@@ -1,6 +1,8 @@
 site_name: thuai7-handbook
-theme: readthedocs
+theme:
+  name: readthedocs
+  locale: zh_CN
 nav:
-  - Home: THUAI_Handbook.md
+  - Home: index.md
 exclude_docs: |
   /api/
