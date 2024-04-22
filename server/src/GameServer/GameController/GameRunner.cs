@@ -6,7 +6,7 @@ namespace GameServer.GameController;
 
 public partial class GameRunner : IGameRunner
 {
-    public event EventHandler<AfterNewPlayerJoinEventArgs>? AfterNewPlayerJoinEvent = delegate { };
+    public event EventHandler<AfterPlayerConnect>? AfterPlayerConnectEvent = delegate { };
     public Game Game { get; }
     public int ExpectedTicksPerSecond => Constant.TICKS_PER_SECOND;
     public TimeSpan TpsCheckInterval => TimeSpan.FromSeconds(10);

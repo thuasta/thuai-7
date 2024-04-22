@@ -71,11 +71,6 @@ public partial class AgentServer
                         Publish(message);
                     }
 
-                    while (DateTime.Now - lastPublishTime < TimeSpan.FromMilliseconds(1000 / MESSAGE_PUBLISHED_PER_SECOND))
-                    {
-                        // Wait for the next tick
-                    }
-
                     DateTime currentTime = DateTime.Now;
                     RealMpps = 1.0D / (double)(currentTime - lastPublishTime).TotalSeconds;
                     lastPublishTime = currentTime;

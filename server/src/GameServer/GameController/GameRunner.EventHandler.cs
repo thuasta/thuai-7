@@ -237,7 +237,32 @@ public partial class GameRunner : IGameRunner
                     );
                     break;
 
-                case ChooseOriginMessage chooseOriginMessage:
+                        _nextPlayerId++;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(
+                            $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game: {ex.Message}"
+                        );
+                    }
+                }
+                AfterPlayerConnectEvent?.Invoke(this, new AfterPlayerConnect(
+    _tokenToPlayerId[getPlayerInfoMessage.Token],
+    getPlayerInfoMessage.Token,
+    e.SocketId
+));
+                break;
+
+            case GetMapMessage getMapMessage:
+                break;
+
+            case ChooseOriginMessage chooseOriginMessage:
+                if (!_tokenToPlayerId.ContainsKey(chooseOriginMessage.Token))
+                {
+                    _logger.Error($"Player with token \"{chooseOriginMessage.Token}\" does not exist.");
+                }
+                else
+                {
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[chooseOriginMessage.Token])?
