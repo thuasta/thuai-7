@@ -1,4 +1,5 @@
 site_name: THUAI7
 
 nav:
-  - Home: index.md
+  - 背景与规则: index.md
+  - Python SDK: python_api.md
