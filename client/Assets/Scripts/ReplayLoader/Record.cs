@@ -533,7 +533,7 @@ public class Record : MonoBehaviour
                 if (_recordArray[_recordInfo.NowRecordNum].Value<string>("currentTicks") != null &&
                     _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "COMPETITION_UPDATE")
                 {
-                    Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
+                    //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
                     UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
                     _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
                     _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
