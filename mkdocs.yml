@@ -2,3 +2,5 @@ site_name: THUAI7
 
 nav:
   - Home: index.md
+theme:
+  name: material
