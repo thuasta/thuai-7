@@ -50,7 +50,7 @@ agent = Agent("<TOKEN>")
 await agent.connect("比赛服务器地址")
 ```
 
-使用 `connect` 方法连接到比赛服务器。您需要提供比赛服务器的地址。
+使用 `connect` 方法连接到比赛服务器。您需要提供比赛服务器的地址。若本地测试，可使用默认地址 `ws://localhost:14514`。
 
 ### 断开连接
 
