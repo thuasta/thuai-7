@@ -2,6 +2,7 @@ site_name: THUAI7
 
 nav:
   - 背景与规则: index.md
+  - 前端使用说明: viewer.md
   - Python SDK: python_sdk.md
 theme:
   name: material
