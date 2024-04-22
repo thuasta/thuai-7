@@ -39,7 +39,7 @@ public partial class Player
         Speed = speed;
         PlayerRadius = Constant.PLAYER_COLLISION_BOX;
         PlayerPosition = position;
-        PlayerArmor = new Armor("NO_ARMOR", Constant.NO_ARMOR_DEFENSE);
+        PlayerArmor = new Armor(Constant.Names.NO_ARMOR, Constant.NO_ARMOR_DEFENSE);
         PlayerBackPack = new BackPack(Constant.PLAYER_INITIAL_BACKPACK_SIZE);
 
         IWeapon defaultWeapon = IWeapon.DefaultWeapon;
@@ -54,19 +54,20 @@ public partial class Player
         PlayerTeleportEvent?.Invoke(this, new PlayerTeleportEventArgs(this, position));
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, bool ignoreArmor = false)
     {
         if (IsAlive == false)
         {
             _logger.Error($"Failed to take damage: Player {PlayerId} is already dead.");
             return;
         }
-
         if (damage < 0)
         {
             _logger.Error($"Damage should be non-negative, but actually {damage}.");
+            return;
         }
-        if (PlayerArmor != null)
+
+        if (PlayerArmor != null && ignoreArmor == false)
         {
             Health -= PlayerArmor.Hurt(damage);
         }
@@ -83,11 +84,12 @@ public partial class Player
             _logger.Error($"Failed to take heal: Player {PlayerId} is already dead.");
             return;
         }
-
         if (heal < 0)
         {
             _logger.Error($"Heal should be non-negative, but actually {heal}.");
+            return;
         }
+
         if (Health + heal > MaxHealth)
         {
             Health = MaxHealth;
@@ -106,27 +108,6 @@ public partial class Player
     public void Stop()
     {
         PlayerTargetPosition = null;
-    }
-
-    public bool TryPickUpItem(Item item)
-    {
-        if (IsAlive == false)
-        {
-            _logger.Error($"Failed to try to pick up item {item.ItemSpecificName}: Player {PlayerId} is already dead.");
-            return false;
-        }
-
-        try
-        {
-            PlayerBackPack.AddItems(item.Kind, item.ItemSpecificName, item.Count);
-        }
-        catch (Exception ex)
-        {
-            _logger.Error($"Failed to pick up item {item.ItemSpecificName}: {ex.Message}.");
-            return false;
-        }
-
-        return true;
     }
 
     public void PlayerAbandon(int number, (ItemKind itemKind, string itemSpecificName) abandonedSupplies)
