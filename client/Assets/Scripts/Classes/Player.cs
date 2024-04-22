@@ -10,7 +10,7 @@ public class Player
     public ArmorTypes Armor;
     public float Speed;
     public FirearmTypes Firearm;
-    public Dictionary<Items, int> Inventory;
+    public Dictionary<string, int> Inventory;
     public Position PlayerPosition;
     public PlayerAnimations playerAnimations;
     public GameObject playerObj;
