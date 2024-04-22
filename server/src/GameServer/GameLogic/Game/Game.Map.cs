@@ -28,7 +28,7 @@ public partial class Game
         {
             if (!GameMap.SafeZone.IsInSafeZone(player.PlayerPosition))
             {
-                player.Health -= GameMap.SafeZone.DamageOutside;
+                player.TakeDamage(GameMap.SafeZone.DamageOutside, ignoreArmor: true);
             }
         }
     }

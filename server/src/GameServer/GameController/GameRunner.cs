@@ -14,9 +14,6 @@ public partial class GameRunner : IGameRunner
     public double TpsLowerBound => 0.9 * ExpectedTicksPerSecond;
     public double TpsUpperBound => 1.1 * ExpectedTicksPerSecond;
 
-    private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
-    private int _nextPlayerId = 0;
-
     private DateTime _lastTpsCheckTime = DateTime.Now;
 
     private Task? _tickTask = null;
