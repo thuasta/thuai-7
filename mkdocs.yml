@@ -3,3 +3,5 @@ site_name: THUAI7
 nav:
   - 背景与规则: index.md
   - Python SDK: python_api.md
+theme:
+  name: material
