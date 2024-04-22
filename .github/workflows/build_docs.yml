@@ -11,7 +11,7 @@ jobs:
 
       - run: |
           # pip install mkdocs==1.6.0
-          pip install mkdocs-material
+          pip install mkdocs-material=="9.*"
 
       - run: |
           mkdocs build
