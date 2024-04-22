@@ -215,12 +215,6 @@ public partial class GameRunner : IGameRunner
                             $"Player with token \"{getPlayerInfoMessage.Token}\" joined the game (With id {_nextPlayerId})."
                         );
 
-                        AfterNewPlayerJoinEvent?.Invoke(this, new AfterNewPlayerJoinEventArgs(
-                            _nextPlayerId,
-                            getPlayerInfoMessage.Token,
-                            e.SocketId
-                        ));
-
                         _nextPlayerId++;
                     }
                     catch (Exception ex)
@@ -230,10 +224,11 @@ public partial class GameRunner : IGameRunner
                         );
                     }
                 }
-                else
-                {
-                    _logger.Error($"Player with token \"{getPlayerInfoMessage.Token}\" already exists.");
-                }
+                AfterPlayerConnectEvent?.Invoke(this, new AfterPlayerConnect(
+    _tokenToPlayerId[getPlayerInfoMessage.Token],
+    getPlayerInfoMessage.Token,
+    e.SocketId
+));
                 break;
 
             case GetMapMessage getMapMessage:

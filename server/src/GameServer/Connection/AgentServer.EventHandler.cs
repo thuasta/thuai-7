@@ -5,6 +5,7 @@ namespace GameServer.Connection;
 
 public partial class AgentServer
 {
+    public static int TickCount = 0;
     public void HandleAfterGameTickEvent(object? sender, AfterGameTickEventArgs e)
     {
         List<MapMessage.Wall> walls = new();
@@ -90,20 +91,27 @@ public partial class AgentServer
             );
         }
 
+        if (_messageToPublish.Count > 11)
+        {
+            _messageToPublish.Clear();
+        }
         // Append map message, supplies message, players info message, and safe zone message to _messageToPublish
-        _messageToPublish.Enqueue(
-            new MapMessage
-            {
-                Length = e.GameMap.Height,
-                Walls = new(walls)
-            }
-        );
-        _messageToPublish.Enqueue(
-            new SuppliesMessage
-            {
-                Supplies = new(supplies)
-            }
-        );
+        if (TickCount % 100 == 0)
+        {
+            _messageToPublish.Enqueue(
+                new MapMessage
+                {
+                    Length = e.GameMap.Height,
+                    Walls = new(walls)
+                }
+            );
+            _messageToPublish.Enqueue(
+                new SuppliesMessage
+                {
+                    Supplies = new(supplies)
+                }
+            );
+        }
         _messageToPublish.Enqueue(
             new PlayersInfoMessage
             {
@@ -121,11 +129,28 @@ public partial class AgentServer
                 Radius = e.GameMap.SafeZone.Radius
             }
         );
+
+        TickCount++;
     }
 
-    public void HandleAfterNewPlayerJoinEvent(object? sender, AfterNewPlayerJoinEventArgs e)
+    public void HandleAfterPlayerConnectEvent(object? sender, AfterPlayerConnect e)
     {
-        _socketTokens.TryAdd(e.SocketId, e.Token);
+        // Remove all items whose value is e.Token
+        List<Guid> keys = [];
+        foreach (KeyValuePair<Guid, string> pair in _socketTokens)
+        {
+            if (pair.Value == e.Token)
+            {
+                keys.Add(pair.Key);
+            }
+        }
+        foreach (Guid key in keys)
+        {
+            _socketTokens.TryRemove(key, out _);
+        }
+
+        _socketTokens.AddOrUpdate(e.SocketId, e.Token, (key, oldValue) => e.Token);
+
         Publish(
             new PlayerIdMessage() { PlayerId = e.PlayerId },
             e.Token

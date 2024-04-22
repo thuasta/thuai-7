@@ -4,7 +4,7 @@ namespace GameServer.GameController;
 
 public interface IGameRunner
 {
-    public event EventHandler<AfterNewPlayerJoinEventArgs>? AfterNewPlayerJoinEvent;
+    public event EventHandler<AfterPlayerConnect>? AfterPlayerConnectEvent;
 
     /// <summary>
     /// Game to be controlled.
