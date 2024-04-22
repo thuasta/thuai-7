@@ -19,7 +19,7 @@ public class Record : MonoBehaviour
         End,
         Jump
     }
-
+    public static float MapLength = 256;
     public class RecordInfo
     {
         // 20 frame per second
@@ -329,6 +329,7 @@ public class Record : MonoBehaviour
         // Generate map according to the mapJson, and store the map in the _blocks
         int width = (int)mapJson["width"];
         int height = (int)mapJson["height"];
+        MapLength = width;
         JArray mapArray = (JArray)mapJson["walls"];
         //// Initialize the ground
         //Transform groundParent = GameObject.Find("Map/Ground").transform;
