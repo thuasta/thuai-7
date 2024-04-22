@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 using GameServer.Connection;
 using GameServer.GameLogic;
 using GameServer.Geometry;
@@ -6,6 +8,11 @@ namespace GameServer.GameController;
 
 public partial class GameRunner : IGameRunner
 {
+
+    private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
+    private readonly ConcurrentDictionary<string, Guid> _tokenToSocketId = new();
+    private int _nextPlayerId = 0;
+
     public void HandleAfterMessageReceiveEvent(object? sender, AfterMessageReceiveEventArgs e)
     {
         _logger.Debug($"Handling message: {e.Message.MessageType}");
