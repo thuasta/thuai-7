@@ -79,6 +79,11 @@ public class MenuController : MonoBehaviour
             // Play sound
             _buttonSound.Play();
             _helpDocumentWindow.SetActive(true);
+            // Hide the title and start game button self.
+            _title.SetActive(false);
+            _startGameButton.gameObject.SetActive(false);
+            _quitButton.gameObject.SetActive(false);
+            _helpButton.gameObject.SetActive(false);
         });
         _helpDocumentWindow = GameObject.Find("Canvas/HelpDocument");
         _closeHelpButton = GameObject.Find("Canvas/HelpDocument/CloseButton").GetComponent<Button>();
@@ -87,6 +92,11 @@ public class MenuController : MonoBehaviour
             // Play sound
             _buttonSound.Play();
             _helpDocumentWindow.SetActive(false);
+            // Unroll the title and start game button self.
+            _title.SetActive(true);
+            _startGameButton.gameObject.SetActive(true);
+            _quitButton.gameObject.SetActive(true);
+            _helpButton.gameObject.SetActive(true);
         });
         _helpDocumentWindow.SetActive(false);
 
@@ -190,6 +200,10 @@ public class MenuController : MonoBehaviour
                 int index = Math.Max(folderName.LastIndexOf('/'), folderName.LastIndexOf('\\'));
                 string name = folderName[(index + 1)..];
                 recordText.text = $" {name}";
+                if (recordText.text.Length > 20)
+                {
+                    recordText.text = recordText.text.Substring(0,20)+" ...";
+                }
 
                 // Bind the event onto the button
                 newRecordButton.onClick.AddListener(() =>
@@ -206,7 +220,7 @@ public class MenuController : MonoBehaviour
                 // Put the button into the content
                 newRecordButtonObject.transform.SetParent(_scrollViewContent.transform);
                 newRecordButtonObject.transform.localScale = Vector3.one;
-                newRecordButtonObject.GetComponent<RectTransform>().localPosition = new Vector3(0,-20+cnt*40,0);
+                newRecordButtonObject.GetComponent<RectTransform>().localPosition = -new Vector3(0,50+cnt*50,0);
                 //Debug.Log(newRecordButtonObject.transform.position);
                 //Debug.Log(newRecordButtonObject.GetComponent<RectTransform>().transform.position);
                 _recordButtons.Add(newRecordButton);

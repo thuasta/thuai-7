@@ -32,7 +32,7 @@ public class PlayerSource: MonoBehaviour
         return true;
     }
 
-    public static void UpdatePlayer(int id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Dictionary<Items, int> inventory, Position position)
+    public static void UpdatePlayer(int id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Dictionary<string, int> inventory, Position position)
     {
         if (_playerDict.ContainsKey(id))
         {

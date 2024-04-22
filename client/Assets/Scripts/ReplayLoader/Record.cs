@@ -6,13 +6,7 @@ using TMPro;
 using Thubg.Messages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Runtime.CompilerServices;
-using Mono.Data.Sqlite;
-using Unity.IO.LowLevel.Unsafe;
 using System;
-using UnityEditor;
-using Unity.VisualScripting;
-using UnityEngine.Experimental.GlobalIllumination;
 
 public class Record : MonoBehaviour
 {
@@ -25,7 +19,7 @@ public class Record : MonoBehaviour
         End,
         Jump
     }
-
+    public static float MapLength = 256;
     public class RecordInfo
     {
         // 20 frame per second
@@ -108,11 +102,31 @@ public class Record : MonoBehaviour
     private GameObject _supplyParent;
 
     private Dictionary<string, GameObject> _propDict;
-
+    private readonly string[] _allAvailableSupplies = new string[]
+    {
+            // Weapons
+            "S686", "M16", "VECTOR", "AWM",
+            // Medicines
+            "BANDAGE", "FIRST_AID",
+            // Armors
+            "PRIMARY_ARMOR", "PREMIUM_ARMOR",
+            // Bullets
+            "BULLET",
+            // Grenades
+            "GRENADE"
+    };
     private Camera _camera;
     // viewer
     private void Start()
     {
+        if (Debug.isDebugBuild)
+        {
+            Debug.unityLogger.logEnabled = true;
+        }
+        else
+        {
+            Debug.unityLogger.logEnabled = false;
+        }
         // Initialize the _recordInfo
         _recordInfo = new();
         //// Initialize the ItemCreator
@@ -155,6 +169,8 @@ public class Record : MonoBehaviour
             { "GRENADE", Resources.Load<GameObject>("Prefabs/Grenade") }
         };
         _supplyParent = GameObject.Find("Supplies");
+
+
         // GUI //
 
         // Get stop button 
@@ -313,6 +329,7 @@ public class Record : MonoBehaviour
         // Generate map according to the mapJson, and store the map in the _blocks
         int width = (int)mapJson["width"];
         int height = (int)mapJson["height"];
+        MapLength = width;
         JArray mapArray = (JArray)mapJson["walls"];
         //// Initialize the ground
         //Transform groundParent = GameObject.Find("Map/Ground").transform;
@@ -435,13 +452,12 @@ public class Record : MonoBehaviour
             // Check if the player is in dict
             PlayerSource.AddPlayer(playerId, "");
 
-            Dictionary<Items, int> inventory = new();
+            Dictionary<string, int> inventory = new();
             foreach (JObject item in (JArray)player["inventory"])
             {
-                switch (item["name"].ToString())
-                {
-                    default:
-                        break;
+                string name=item["name"].ToString();
+                if (Array.IndexOf(_allAvailableSupplies, item["name"].ToString())!=-1 ){
+                    inventory.Add(name, (int)item["count"]);
                 }
             }
             int health = player["health"].ToObject<int>();
@@ -468,6 +484,14 @@ public class Record : MonoBehaviour
                 playerPosition
             );
             infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\n";
+            foreach(KeyValuePair<string, int> keyValue in inventory)
+            {
+                infoString += $"{keyValue.Key}-{keyValue.Value} ";
+            }
+            if (inventory.Count != 0)
+            {
+                infoString += "\n";
+            }
         }
         _infoText.text = infoString;
     }
@@ -525,7 +549,7 @@ public class Record : MonoBehaviour
                 if (_recordArray[_recordInfo.NowRecordNum].Value<string>("currentTicks") != null &&
                     _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "COMPETITION_UPDATE")
                 {
-                    Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
+                    //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
                     UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
                     _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
                     _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";

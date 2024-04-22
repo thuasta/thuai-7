@@ -46,11 +46,12 @@ public class Observe : MonoBehaviour
             Move();
             ExchangeStatus();
         }
+
     }
     void visualAngleReset()
     {
-        offset = new Vector3(5, 5, 5);
-        transform.position = _target.playerObj.transform.position + new Vector3(-5, 5, -5);
+        offset = new Vector3(-5, 5, -5);
+        transform.position = _target.playerObj.transform.position + offset;
         transform.LookAt(new Vector3(_target.playerObj.transform.position.x, _target.playerObj.transform.position.y+1.5f, _target.playerObj.transform.position.z));
         //transform.eulerAngles = new Vector3(initialTransform.eulerAngles.x, initialTransform.eulerAngles.y, 0);
     }
@@ -72,7 +73,7 @@ public class Observe : MonoBehaviour
                 {
                     _target = _players[_playerNumber];
                     Debug.Log(transform.position);
-                    Debug.Log($"target{_target.playerObj.transform.position}");
+                    Debug.Log($"target {_target.playerObj.transform.position}");
                     visualAngleReset();
                     Debug.Log($"after {transform.position}");
                     _playerNumber += 1;
@@ -104,12 +105,15 @@ public class Observe : MonoBehaviour
             offset -= zoom * offset;
         }
         //镜头跟随
+        transform.LookAt(GetHeadPos(_target.playerObj.transform.position));
+
         transform.position = GetHeadPos(_target.playerObj.transform.position) - offset;
+
     }
 
     //左右旋转、上下旋转功能:
 
-    
+
     public bool isRotating, lookup;
     float mousex, mousey;
 

@@ -1,11 +1,10 @@
 on:
   push:
-  pull_request:
+  pull_request_target:
   workflow_dispatch:
 
 jobs:
   build-client:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -31,32 +30,6 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-client-${{ matrix.targetPlatform }}-${{ github.sha }}
           path: build
-
-  build-documentation:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: |
-          pip install mkdocs==1.5.3
-
-      - run: |
-          mkdocs build -f docs/mkdocs.yml
-
-      - run: |
-          mkdir -p site/api/
-
-      - uses: asyncapi/github-action-for-cli@v3.1.1
-        with:
-          command: generate
-          filepath: api/asyncapi.yaml
-          template: '@asyncapi/html-template@2.1.7'
-          output: site/api/
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
-          path: site/
 
   build-server:
     strategy:
@@ -94,37 +67,22 @@ jobs:
           name: ${{ github.event.repository.name }}-server-${{ matrix.runtime }}-${{ github.sha }}
           path: server/bin
 
-  deploy-pages:
-    concurrency:
-      group: github-pages
-      cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs:
-      - build-documentation
-    permissions:
-      id-token: write
-      pages: write
+  check-style-server:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
-          path: site
+          dotnet-version: 8.0.x
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
+      - run: dotnet format --verify-no-changes src/GameServer
+        working-directory: server
 
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - run: dotnet format --verify-no-changes src/GameServer.Tests
+        working-directory: server
 
   test-client:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
