@@ -17,15 +17,94 @@ public partial class GameRunner : IGameRunner
     {
         _logger.Debug($"Handling message: {e.Message.MessageType}");
 
-        switch (e.Message)
+        if (e.Message is not PerformMessage)
         {
-            case PerformAbandonMessage performAbandonMessage:
-                if (!_tokenToPlayerId.ContainsKey(performAbandonMessage.Token))
+            _logger.Error($"Message type {e.Message.MessageType} shouldn't come from a player.");
+            return;
+        }
+
+        if (e.Message is GetPlayerInfoMessage getPlayerInfoMessage)
+        {
+            if (_tokenToSocketId.TryGetValue(getPlayerInfoMessage.Token, out Guid socketId) == true)
+            {
+                if (socketId != e.SocketId)
                 {
-                    _logger.Error($"Player with token \"{performAbandonMessage.Token}\" does not exist.");
+                    _logger.Error(
+                        $"Token \"{getPlayerInfoMessage.Token}\" is already used by another client."
+                    );
                 }
                 else
                 {
+                    _logger.Warning(
+                        $"Token \"{getPlayerInfoMessage.Token}\" is already used by the same client."
+                    );
+                    _logger.Warning(
+                        $"The client can directly control player with token \"{getPlayerInfoMessage.Token}\"."
+                    );
+                }
+                return;
+            }
+            else
+            {
+                if (_tokenToSocketId.Any(kvp => kvp.Value == e.SocketId))
+                {
+                    _logger.Error(
+                        $"Client with socket id {e.SocketId} has already joined the game with token \"{getPlayerInfoMessage.Token}\"."
+                    );
+                    return;
+                }
+
+                _logger.Information(
+                    $"Adding player {_nextPlayerId} with token \"{getPlayerInfoMessage.Token}\" to the game."
+                );
+                try
+                {
+                    Game.AddPlayer(
+                        new Player(
+                            _nextPlayerId,
+                            Constant.PLAYER_MAXIMUM_HEALTH,
+                            Constant.PLAYER_SPEED_PER_TICK,
+                            new Position(0, 0)
+                        )
+                    );
+
+                    _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
+                    _tokenToSocketId[getPlayerInfoMessage.Token] = e.SocketId;
+
+                    AfterNewPlayerJoinEvent?.Invoke(this, new AfterNewPlayerJoinEventArgs(
+                        _nextPlayerId,
+                        getPlayerInfoMessage.Token,
+                        e.SocketId
+                    ));
+
+                    _nextPlayerId++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(
+                        $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game: {ex.Message}"
+                    );
+                }
+            }
+        }
+        else
+        {
+            if (!_tokenToPlayerId.ContainsKey((e.Message as PerformMessage)!.Token))
+            {
+                _logger.Error($"Player with token \"{(e.Message as PerformMessage)!.Token}\" does not exist.");
+                return;
+            }
+            if (_tokenToSocketId[(e.Message as PerformMessage)!.Token] != e.SocketId)
+            {
+                _logger.Error(
+                    $"Player with token \"{(e.Message as PerformMessage)!.Token}\" is controlled by another client."
+                );
+                return;
+            }
+
+            switch (e.Message)
+            {
+                case PerformAbandonMessage performAbandonMessage:
                     try
                     {
                         (IItem.ItemKind, string) abandonedSupplies = new(
@@ -42,16 +121,9 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"Abandon\" for player with token {performAbandonMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case PerformPickUpMessage performPickUpMessage:
-                if (!_tokenToPlayerId.ContainsKey(performPickUpMessage.Token))
-                {
-                    _logger.Error($"Player with token \"{performPickUpMessage.Token}\" does not exist.");
-                }
-                else
-                {
+                case PerformPickUpMessage performPickUpMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performPickUpMessage.Token])?
@@ -67,16 +139,9 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"PickUp\" for player with token {performPickUpMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case PerformSwitchArmMessage performSwitchArmMessage:
-                if (!_tokenToPlayerId.ContainsKey(performSwitchArmMessage.Token))
-                {
-                    _logger.Error($"Player with token {performSwitchArmMessage.Token} does not exist.");
-                }
-                else
-                {
+                case PerformSwitchArmMessage performSwitchArmMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performSwitchArmMessage.Token])?
@@ -88,16 +153,9 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"PickUp\" for player with token {performSwitchArmMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case PerformUseMedicineMessage performUseMedicineMessage:
-                if (!_tokenToPlayerId.ContainsKey(performUseMedicineMessage.Token))
-                {
-                    _logger.Error($"Player with token \"{performUseMedicineMessage.Token}\" does not exist.");
-                }
-                else
-                {
+                case PerformUseMedicineMessage performUseMedicineMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performUseMedicineMessage.Token])?
@@ -109,16 +167,9 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"UseMedicine\" for player with token {performUseMedicineMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case PerformUseGrenadeMessage performUseGrenadeMessage:
-                if (!_tokenToPlayerId.ContainsKey(performUseGrenadeMessage.Token))
-                {
-                    _logger.Error($"Player with token \"{performUseGrenadeMessage.Token}\" does not exist.");
-                }
-                else
-                {
+                case PerformUseGrenadeMessage performUseGrenadeMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performUseGrenadeMessage.Token])?
@@ -132,16 +183,9 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"UseGrenade\" for player with token {performUseGrenadeMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case PerformMoveMessage performMoveMessage:
-                if (!_tokenToPlayerId.ContainsKey(performMoveMessage.Token))
-                {
-                    _logger.Error($"Player with token \"{performMoveMessage.Token}\" does not exist.");
-                }
-                else
-                {
+                case PerformMoveMessage performMoveMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performMoveMessage.Token])?
@@ -155,16 +199,9 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"Move\" for player with token {performMoveMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case PerformStopMessage performStopMessage:
-                if (!_tokenToPlayerId.ContainsKey(performStopMessage.Token))
-                {
-                    _logger.Error($"Player with token \"{performStopMessage.Token}\" does not exist.");
-                }
-                else
-                {
+                case PerformStopMessage performStopMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performStopMessage.Token])?
@@ -176,16 +213,9 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"Stop\" for player with token {performStopMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case PerformAttackMessage performAttackMessage:
-                if (!_tokenToPlayerId.ContainsKey(performAttackMessage.Token))
-                {
-                    _logger.Error($"Player with token \"{performAttackMessage.Token}\" does not exist.");
-                }
-                else
-                {
+                case PerformAttackMessage performAttackMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performAttackMessage.Token])?
@@ -199,60 +229,15 @@ public partial class GameRunner : IGameRunner
                             $"Failed to perform action \"Attack\" for player with token {performAttackMessage.Token}: {ex.Message}"
                         );
                     }
-                }
-                break;
+                    break;
 
-            case GetPlayerInfoMessage getPlayerInfoMessage:
-                if (_tokenToPlayerId.ContainsKey(getPlayerInfoMessage.Token) == false)
-                {
-                    _logger.Information($"Adding player with token \"{getPlayerInfoMessage.Token}\" to the game.");
-                    try
-                    {
-                        Game.AddPlayer(
-                            new Player(
-                                _nextPlayerId,
-                                Constant.PLAYER_MAXIMUM_HEALTH,
-                                Constant.PLAYER_SPEED_PER_TICK,
-                                new Position(0, 0)
-                            )
-                        );
-                        _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
+                case GetMapMessage getMapMessage:
+                    _logger.Error(
+                        $"Message type {getMapMessage.MessageType} is no longer used. The server pulishes map information instead."
+                    );
+                    break;
 
-                        _logger.Information(
-                            $"Player with token \"{getPlayerInfoMessage.Token}\" joined the game (With id {_nextPlayerId})."
-                        );
-
-                        AfterNewPlayerJoinEvent?.Invoke(this, new AfterNewPlayerJoinEventArgs(
-                            _nextPlayerId,
-                            getPlayerInfoMessage.Token,
-                            e.SocketId
-                        ));
-
-                        _nextPlayerId++;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(
-                            $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game: {ex.Message}"
-                        );
-                    }
-                }
-                else
-                {
-                    _logger.Error($"Player with token \"{getPlayerInfoMessage.Token}\" already exists.");
-                }
-                break;
-
-            case GetMapMessage getMapMessage:
-                break;
-
-            case ChooseOriginMessage chooseOriginMessage:
-                if (!_tokenToPlayerId.ContainsKey(chooseOriginMessage.Token))
-                {
-                    _logger.Error($"Player with token \"{chooseOriginMessage.Token}\" does not exist.");
-                }
-                else
-                {
+                case ChooseOriginMessage chooseOriginMessage:
                     try
                     {
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[chooseOriginMessage.Token])?
@@ -265,14 +250,13 @@ public partial class GameRunner : IGameRunner
                         _logger.Error(
                             $"Failed to perform action \"ChooseOrigin\" for player with token {chooseOriginMessage.Token}: {ex.Message}"
                         );
-
                     }
-                }
-                break;
+                    break;
 
-            default:
-                _logger.Error($"Unknown message type: {e.Message.MessageType}");
-                break;
+                default:
+                    _logger.Error($"Unknown message type: {e.Message.MessageType}");
+                    break;
+            }
         }
     }
 }
