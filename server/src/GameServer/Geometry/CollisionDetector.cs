@@ -46,41 +46,23 @@ public class CollisionDetector
         Position b = segment.End;
         Position c = circle.Center;
 
-        Position vectorAB = b - a;
-        Position vectorAC = c - a;
-
-        double ac = Position.Distance(a, c);
-        double bc = Position.Distance(b, c);
-
-        if (a == b)
+        Position direction = new Position(b.x - a.x, b.y - a.y).Normalize();
+        double distance = Position.Distance(a, b);
+        double step = 0.02;
+        Position currentPosition = a;
+        while (distance > 0)
         {
-            return ac <= circle.Radius;
-        }
-        if (ac <= circle.Radius || bc <= circle.Radius)
-        {
-            return true;
-        }
-
-        // vectorAB is non-zero and vectorAC is non-zero
-        double cosTheta = Position.Dot(vectorAB, vectorAC) / (vectorAB.Length() * vectorAC.Length());
-        double sinTheta = Math.Sqrt(1 - cosTheta * cosTheta);
-        double distance = vectorAC.Length() * sinTheta;
-        Position vectorAConAB = vectorAB.Normalize() * (Position.Dot(vectorAC, vectorAB) / vectorAB.Length());
-
-        if (distance > circle.Radius)
-        {
-            return false;
-        }
-        else
-        {
-            if (vectorAConAB.Length() > vectorAB.Length() || Position.Dot(vectorAConAB, vectorAB) <= 0)
+            if (distance < step)
             {
-                return false;
+                return Position.Distance(currentPosition, c) < circle.Radius;
             }
-            else
+            currentPosition += direction * step;
+            distance -= step;
+            if (Position.Distance(currentPosition, c) < circle.Radius)
             {
                 return true;
             }
         }
+        return Position.Distance(currentPosition, c) < circle.Radius;
     }
 }
