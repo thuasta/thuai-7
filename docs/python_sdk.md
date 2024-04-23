@@ -12,7 +12,7 @@
 
 pip install -r requirements.txt
 
-你可以在 **main.py** 中编写你的代码。对于有经验的开发者，你也可以修改项目中的其他任何文件。运行以下命令来启动 agent：
+你可以在 **logic.py** 中编写你的代码。对于有经验的开发者，你也可以修改项目中的其他任何文件。运行以下命令来启动 agent：
 
 ```PowerShell
 python main.py --server <server> --token <token>
