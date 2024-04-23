@@ -68,7 +68,6 @@ jobs:
           dotnet publish src/GameServer -c Release -o bin \
           --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
           -p:PublishSingleFile=true
-          cp src/GameServer/config.json bin/
         working-directory: server
 
       - run: |
