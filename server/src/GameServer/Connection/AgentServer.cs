@@ -14,7 +14,6 @@ public partial class AgentServer
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
     public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
-    public double MppsUpperBound => 1.1 * MESSAGE_PUBLISHED_PER_SECOND;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
@@ -92,10 +91,6 @@ public partial class AgentServer
                         if (RealMpps < MppsLowerBound)
                         {
                             _logger.Warning($"Insufficient publish rate: {RealMpps:0.00} msg/s < {MppsLowerBound} msg/s");
-                        }
-                        if (RealMpps > MppsUpperBound)
-                        {
-                            _logger.Warning($"Excessive simulation rate: {RealMpps:0.00} msg/s > {MppsUpperBound} msg/s");
                         }
                     }
                 }
