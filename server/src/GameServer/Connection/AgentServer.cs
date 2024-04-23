@@ -10,7 +10,7 @@ public partial class AgentServer
 {
     // In milliseconds.
     public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
-    public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 100;
+    public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
     public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
