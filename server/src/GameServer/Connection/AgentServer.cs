@@ -10,10 +10,10 @@ public partial class AgentServer
 {
     // In milliseconds.
     public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
+    public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
     public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
-    public double MppsUpperBound => 1.1 * MESSAGE_PUBLISHED_PER_SECOND;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
@@ -57,6 +57,12 @@ public partial class AgentServer
 
                 while (_isRunning)
                 {
+                    if (_messageToPublish.Count > MAXIMUM_MESSAGE_QUEUE_SIZE)
+                    {
+                        _logger.Warning("Message queue is full. The messages in queue will be cleared.");
+                        _messageToPublish.Clear();
+                    }
+
                     if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
                     {
                         if (message is null)
@@ -85,10 +91,6 @@ public partial class AgentServer
                         if (RealMpps < MppsLowerBound)
                         {
                             _logger.Warning($"Insufficient publish rate: {RealMpps:0.00} msg/s < {MppsLowerBound} msg/s");
-                        }
-                        if (RealMpps > MppsUpperBound)
-                        {
-                            _logger.Warning($"Excessive simulation rate: {RealMpps:0.00} msg/s > {MppsUpperBound} msg/s");
                         }
                     }
                 }
