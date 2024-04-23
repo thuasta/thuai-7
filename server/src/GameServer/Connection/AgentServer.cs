@@ -10,6 +10,7 @@ public partial class AgentServer
 {
     // In milliseconds.
     public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
+    public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 100;
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
     public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
@@ -57,6 +58,12 @@ public partial class AgentServer
 
                 while (_isRunning)
                 {
+                    if (_messageToPublish.Count > MAXIMUM_MESSAGE_QUEUE_SIZE)
+                    {
+                        _logger.Warning("Message queue is full. The messages in queue will be cleared.");
+                        _messageToPublish.Clear();
+                    }
+
                     if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
                     {
                         if (message is null)
