@@ -50,12 +50,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - run: dotnet format --verify-no-changes src/GameServer
-        working-directory: server
-
-      - run: dotnet format --verify-no-changes src/GameServer.Tests
-        working-directory: server
-
       - run: |
           dotnet publish src/GameServer -c Release -o bin \
           --sc false -r ${{ matrix.runtime }} -p:DebugType=none \
@@ -78,6 +72,15 @@ jobs:
 
       - run: dotnet format --verify-no-changes src/GameServer
         working-directory: server
+
+  check-style-server-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
       - run: dotnet format --verify-no-changes src/GameServer.Tests
         working-directory: server
