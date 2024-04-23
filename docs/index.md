@@ -136,7 +136,7 @@
 - 视野：无人作战系统可以获取地图上的所有信息，包括其他选手的位置、状态和资源分布。
   > 不能获取已掷出的手雷位置，因此无人作战系统需要自主判断地图上可能存在的手雷。
 
-### 源码仓库
+### 2.3. 源码仓库
 
 更多细节请关注科协仓库：[https://github.com/thuasta/thuai-7/tree/main](https://github.com/thuasta/thuai-7/tree/main)
 
