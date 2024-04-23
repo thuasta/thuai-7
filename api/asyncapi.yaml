@@ -234,7 +234,7 @@ components:
                         - FIRST_AID
                         - BANDAGE
                         - GRENADE
-                    num:
+                    numb:
                       type: integer
               position:
                 $ref: '#/components/schemas/Position'
