@@ -34,7 +34,7 @@ python main.py --server ws://localhost:14514 --token 1919810
 
 欢迎使用我们为比赛编写的 Python SDK！本文档将详细介绍可供选手调用的接口和功能，包括参数、返回值类型以及用法示例，帮助您更好地理解如何使用该 SDK 来控制您的无人作战系统参与比赛。
 
-### 初始化
+### 2.1. 初始化
 
 ```python
 from sdk import Agent
@@ -44,7 +44,7 @@ agent = Agent("<TOKEN>")
 
 通过实例化 Agent 类并传入您的身份 token 字符串来初始化一个代理对象。该 token 是您在比赛中的唯一标识。
 
-### 连接比赛服务器
+### 2.2. 连接比赛服务器
 
 ```python
 await agent.connect("比赛服务器地址")
@@ -52,7 +52,7 @@ await agent.connect("比赛服务器地址")
 
 使用 `connect` 方法连接到比赛服务器。您需要提供比赛服务器的地址。若本地测试，可使用默认地址 `ws://localhost:14514`。
 
-### 断开连接
+### 2.3. 断开连接
 
 ```python
 await agent.disconnect()
@@ -60,9 +60,9 @@ await agent.disconnect()
 
 使用 `disconnect` 方法断开与比赛服务器的连接。
 
-### 获取游戏状态信息
+### 2.4. 获取游戏状态信息
 
-#### 获取所有玩家信息
+#### 2.4.1. 获取所有玩家信息
 
 ```python
 players_info = agent.all_player_info
@@ -72,7 +72,7 @@ players_info = agent.all_player_info
 
 `all_player_info` 属性将返回一个包含所有玩家信息的列表。每个玩家信息包括玩家的 ID、生命值、护甲、速度、当前武器、位置和背包物品等。
 
-#### 获取地图信息
+#### 2.4.2. 获取地图信息
 
 ```python
 game_map = agent.map
@@ -82,7 +82,7 @@ game_map = agent.map
 
 `map` 属性将返回地图信息，包括地图的长度和障碍物位置。
 
-#### 获取资源信息
+#### 2.4.3. 获取资源信息
 
 ```python
 supplies = agent.supplies
@@ -92,7 +92,7 @@ supplies = agent.supplies
 
 `supplies` 属性将返回一个包含所有资源信息的列表。每个资源信息包括资源的种类、位置和数量。
 
-#### 获取安全区信息
+#### 2.4.4. 获取安全区信息
 
 ```python
 safe_zone = agent.safe_zone
@@ -102,7 +102,7 @@ safe_zone = agent.safe_zone
 
 `safe_zone` 属性将返回安全区信息，包括安全区的中心位置和半径。
 
-#### 获取自身 ID
+#### 2.4.5. 获取自身 ID
 
 ```python
 self_id = agent.self_id
@@ -112,31 +112,31 @@ self_id = agent.self_id
 
 `self_id` 属性将返回自身玩家的 ID。
 
-### 操作无人作战系统
+### 2.5. 操作无人作战系统
 
-#### 选择出生地
+#### 2.5.1. 选择出生地
 
 ```python
 agent.choose_origin(position: Position[float])
 ```
 
-- 参数：position (Position[float]) - 出生地位置
+- 参数：position (Position[float]) 代表出生地位置
 - 返回类型：None
 
 使用 `choose_origin` 方法选择无人作战系统的出生地。
 
-#### 移动
+#### 2.5.2. 移动
 
 ```python
 agent.move(position: Position[float])
 ```
 
-- 参数：position (Position[float]) - 目标位置
+- 参数：position (Position[float]) 代表目标位置
 - 返回类型：None
 
 使用 `move` 方法使无人作战系统移动到指定位置。
 
-#### 停止移动
+#### 2.5.3. 停止移动
 
 ```python
 agent.stop()
@@ -146,7 +146,7 @@ agent.stop()
 
 使用 `stop` 方法停止无人作战系统的移动。
 
-#### 拾取资源
+#### 2.5.4. 拾取资源
 
 ```python
 agent.pick_up(item_kind: ItemKind, count: int, position: Position[float])
@@ -160,7 +160,7 @@ agent.pick_up(item_kind: ItemKind, count: int, position: Position[float])
 
 使用 `pick_up` 方法使无人作战系统拾取地图上的资源。
 
-#### 放弃资源
+#### 2.5.5. 放弃资源
 
 ```python
 agent.abandon(item_kind: ItemKind, count: int)
@@ -173,7 +173,7 @@ agent.abandon(item_kind: ItemKind, count: int)
 
 使用 `abandon` 方法使无人作战系统放弃背包中的指定数量的资源。
 
-#### 切换武器
+#### 2.5.6. 切换武器
 
 ```python
 agent.switch_firearm(item_kind: FirearmKind)
@@ -184,7 +184,7 @@ agent.switch_firearm(item_kind: FirearmKind)
 
 使用 `switch_firearm` 方法切换无人作战系统的当前武器。
 
-#### 使用药品
+#### 2.5.7. 使用药品
 
 ```python
 agent.use_medicine(medicine_kind: MedicineKind)
@@ -195,7 +195,7 @@ agent.use_medicine(medicine_kind: MedicineKind)
 
 使用 `use_medicine` 方法使用药品恢复无人作战系统的生命值。
 
-#### 使用手榴弹
+#### 2.5.8. 使用手榴弹
 
 ```python
 agent.use_grenade(position: Position[float])
@@ -206,7 +206,7 @@ agent.use_grenade(position: Position[float])
 
 使用 `use_grenade` 方法投掷手榴弹攻击敌人或破坏墙体。
 
-#### 攻击
+#### 2.5.9. 攻击
 
 ```python
 agent.attack(position: Position[float])
@@ -217,9 +217,9 @@ agent.attack(position: Position[float])
 
 使用 `attack` 方法使无人作战系统攻击指定位置的敌人。
 
-### 其他
+### 2.6. 其他
 
-#### 判断游戏是否准备就绪
+#### 2.6.1. 判断游戏是否准备就绪
 
 ```python
 ready = agent.is_game_ready()
