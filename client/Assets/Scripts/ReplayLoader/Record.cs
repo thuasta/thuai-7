@@ -457,7 +457,7 @@ public class Record : MonoBehaviour
             {
                 string name=item["name"].ToString();
                 if (Array.IndexOf(_allAvailableSupplies, item["name"].ToString())!=-1 ){
-                    inventory.Add(name, (int)item["count"]);
+                    inventory.Add(name, (int)item["numb"]);
                 }
             }
             int health = player["health"].ToObject<int>();
