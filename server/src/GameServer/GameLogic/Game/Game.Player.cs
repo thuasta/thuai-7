@@ -52,7 +52,7 @@ public partial class Game
                 }
                 else
                 {
-                    // Calculate the direction of the player (normalized vector
+                    // Calculate the direction of the player (normalized vector)
                     Position direction = (player.PlayerTargetPosition - player.PlayerPosition).Normalize();
                     if (direction.Length() == 0)
                     {

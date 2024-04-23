@@ -42,14 +42,14 @@ public class CollisionDetector
 
     public static bool IsCrossing(Segment segment, Circle circle)
     {
-        Position a = segment.Start;
-        Position b = segment.End;
-        Position c = circle.Center;
+        Position a = new(segment.Start.x, segment.Start.y);
+        Position b = new(segment.End.x, segment.End.y);
+        Position c = new(circle.Center.x, circle.Center.y);
 
         Position direction = new Position(b.x - a.x, b.y - a.y).Normalize();
         double distance = Position.Distance(a, b);
         double step = 0.02;
-        Position currentPosition = a;
+        Position currentPosition = new(a.x, a.y);
         while (distance > 0)
         {
             if (distance < step)
