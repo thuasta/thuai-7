@@ -10,7 +10,7 @@
 
 在读取完文件后，您可以在界面上看到所有的文件列表。点击您想要查看的文件，即可进入对应的回放场景。场景示例如下：
 
-![Viewer.jpg](images\Viewer.jpg)
+![Viewer.jpg](images/Viewer.jpg)
 
 ## 观察模式切换
 
