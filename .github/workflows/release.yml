@@ -103,6 +103,7 @@ jobs:
 
       - uses: docker/build-push-action@v5
         with:
+          context: server
           push: true
           tags: |
             ghcr.io/thuasta/thuai-7-server:${{ steps.get-version.outputs.replaced }}
