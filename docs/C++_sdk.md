@@ -45,9 +45,9 @@ xmake
 ./agent --server <server> --token <token>
 ```
 
-<server>：游戏服务器地址。（默认值：ws://localhost:14514）
+\<server\>：游戏服务器地址。（默认值：ws://localhost:14514）
 
-<token>：Agent 的令牌。（默认值：1919810）
+\<token\>：Agent 的令牌。（默认值：1919810）
 
 
 例如：
