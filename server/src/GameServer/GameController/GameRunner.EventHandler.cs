@@ -59,14 +59,22 @@ public partial class GameRunner : IGameRunner
                 );
                 try
                 {
-                    Game.AddPlayer(
-                        new Player(
-                            _nextPlayerId,
-                            Constant.PLAYER_MAXIMUM_HEALTH,
-                            Constant.PLAYER_SPEED_PER_TICK,
-                            new Position(0, 0)
-                        )
-                    );
+                    if (
+                        Game.AddPlayer(
+                            new Player(
+                                _nextPlayerId,
+                                Constant.PLAYER_MAXIMUM_HEALTH,
+                                Constant.PLAYER_SPEED_PER_TICK,
+                                new Position(0, 0)
+                            )
+                        ) == false
+                    )
+                    {
+                        _logger.Error(
+                            $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game."
+                        );
+                        return;
+                    }
 
                     _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
                     _tokenToSocketId[getPlayerInfoMessage.Token] = e.SocketId;
@@ -238,25 +246,18 @@ public partial class GameRunner : IGameRunner
                     break;
 
                 case ChooseOriginMessage chooseOriginMessage:
-                    if (!_tokenToPlayerId.ContainsKey(chooseOriginMessage.Token))
+                    try
                     {
-                        _logger.Error($"Player with token \"{chooseOriginMessage.Token}\" does not exist.");
+                        Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[chooseOriginMessage.Token])?
+                        .Teleport(
+                            new Position(chooseOriginMessage.OriginPos.X, chooseOriginMessage.OriginPos.Y)
+                        );
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[chooseOriginMessage.Token])?
-                            .Teleport(
-                                new Position(chooseOriginMessage.OriginPos.X, chooseOriginMessage.OriginPos.Y)
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error(
-                                $"Failed to perform action \"ChooseOrigin\" for player with token {chooseOriginMessage.Token}: {ex.Message}"
-                            );
-                        }
+                        _logger.Error(
+                            $"Failed to perform action \"ChooseOrigin\" for player with token {chooseOriginMessage.Token}: {ex.Message}"
+                        );
                     }
                     break;
 

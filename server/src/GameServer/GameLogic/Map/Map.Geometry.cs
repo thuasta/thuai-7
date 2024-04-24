@@ -17,7 +17,7 @@ public partial class Map
         double distance = Position.Distance(b, a);
 
         double step = 0.02;
-        Position currentPosition = a;
+        Position currentPosition = new(a.x, a.y);
         while (distance > 0)
         {
             if (distance < step)
@@ -45,7 +45,7 @@ public partial class Map
         double distance = Position.Distance(startPosition, expectedEndPosition);
 
         double step = 0.02;
-        Position currentPosition = startPosition;
+        Position currentPosition = new(startPosition.x, startPosition.y);
         while (distance > 0)
         {
             if (distance < step)

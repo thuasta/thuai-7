@@ -91,10 +91,6 @@ public partial class AgentServer
             );
         }
 
-        if (_messageToPublish.Count > 11)
-        {
-            _messageToPublish.Clear();
-        }
         // Append map message, supplies message, players info message, and safe zone message to _messageToPublish
         if (TickCount % 100 == 0)
         {
@@ -105,13 +101,13 @@ public partial class AgentServer
                     Walls = new(walls)
                 }
             );
-            _messageToPublish.Enqueue(
-                new SuppliesMessage
-                {
-                    Supplies = new(supplies)
-                }
-            );
         }
+        _messageToPublish.Enqueue(
+            new SuppliesMessage
+            {
+                Supplies = new(supplies)
+            }
+        );
         _messageToPublish.Enqueue(
             new PlayersInfoMessage
             {
