@@ -8,9 +8,9 @@
 
 选手可参考如下视频教程，了解如何使用 C++ SDK 开发自己的 Agent。
 
-[![Video thumbnail](https://tse1-mm.cn.bing.net/th/id/OIP-C.NHS7oguhldyFb363LEXEcAAAAA?w=146&h=158&c=7&r=0&o=5&dpr=1.3&pid=1.7)]([video_url](https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/))
-
-
+<video id="video" controls="" preload="none" poster="封面">
+      <source id="mp4" src="https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/" type="video/mp4">
+</videos>
 
 ### 1.1. 环境要求
 
