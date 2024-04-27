@@ -6,7 +6,7 @@
 
 - **前端**：提供图形化界面，展示回放中的比赛情况。
 - **后端**：作为服务器，控制比赛进行，并生成比赛回放。
-- **SDK**：提供编写比赛程序所需的接口。
+- **SDK**：是若干不同编程语言的程序文件，提供编写比赛程序所需的接口。选手可以选用 python SDK 或 C++ SDK 编写程序。
 
 请从以下链接下载最新版本的前端（client）和后端（server），务必根据您的操作系统版本选择适当的版本：
 
@@ -22,7 +22,7 @@
 git clone https://github.com/thuasta/thuai-7-agent-template-cpp.git
 ```
 
-克隆 Python SDK 仓库：
+或者克隆 Python SDK 仓库：
 
 ```bash
 git clone https://github.com/thuasta/thuai-7-agent-template-python.git
