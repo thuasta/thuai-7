@@ -44,6 +44,6 @@ public record Config
     public int DamageOutsideSafeZone { get; init; } = 1;
 
     [JsonPropertyName("expected_player_num")]
-    public int ExpectedPlayerNum { get; init; } = 1;
+    public int ExpectedPlayerNum { get; init; } = 2;
 
 }
