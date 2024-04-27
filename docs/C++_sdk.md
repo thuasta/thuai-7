@@ -37,6 +37,7 @@ xmake
 您可以在 logic.cc 文件中编写您的代码。对于有经验的开发者，您也可以修改项目中的其他任何文件。在 logic.cc 中，我们已经为您提供了一个示例寻路代码，您可以根据自己的需求进行修改。
 
 ### 1.4. 运行
+
 如果您修改了 main.cc 中的代码，则此部分可能无效。
 
 运行以下命令启动 Agent：
@@ -177,16 +178,15 @@ agent.Stop();
 #### 2.5.4. 拾取资源
 
 ```cpp
-agent.PickUp(SupplyKind target_supply, int count, Position<float> position);
+agent.PickUp(SupplyKind target_supply, int count);
 ```
 
 - **参数：**
   - `target_supply`：目标资源种类。
   - `count`：数量。
-  - `position`：资源位置。
 - **返回类型：** 无
 
-使用 `PickUp` 方法使无人作战系统拾取地图上的资源。
+使用 `PickUp` 方法使无人作战系统拾取当前脚下 1×1 方格上的资源。
 
 #### 2.5.5. 放弃资源
 
