@@ -137,7 +137,6 @@ public partial class GameRunner : IGameRunner
                         Game.AllPlayers.Find(p => p.PlayerId == _tokenToPlayerId[performPickUpMessage.Token])?
                         .PlayerPickUp(
                             performPickUpMessage.TargetSupply,
-                            new Position(performPickUpMessage.TargetPos.X, performPickUpMessage.TargetPos.Y),
                             performPickUpMessage.Num
                         );
                     }

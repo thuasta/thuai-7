@@ -166,7 +166,7 @@ public partial class Player
         PlayerSwitchArmEvent?.Invoke(this, new PlayerSwitchArmEventArgs(this, weaponItemId));
     }
 
-    public void PlayerPickUp(string targetSupply, Position targetPosition, int numb)
+    public void PlayerPickUp(string targetSupply, int numb)
     {
         if (IsAlive == false)
         {
@@ -174,6 +174,6 @@ public partial class Player
             return;
         }
 
-        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, targetPosition, numb));
+        PlayerPickUpEvent?.Invoke(this, new PlayerPickUpEventArgs(this, targetSupply, numb));
     }
 }
