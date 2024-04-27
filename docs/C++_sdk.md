@@ -6,6 +6,12 @@
 
 ## 1. 准备工作
 
+选手可参考如下视频教程，了解如何使用 C++ SDK 开发自己的 Agent。
+
+[![Video thumbnail](https://tse1-mm.cn.bing.net/th/id/OIP-C.NHS7oguhldyFb363LEXEcAAAAA?w=146&h=158&c=7&r=0&o=5&dpr=1.3&pid=1.7)]([video_url](https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/))
+
+
+
 ### 1.1. 环境要求
 
 要求 XMake >= 2.8.8，安装方法请参考 [XMake 官方文档](https://xmake.io/#/zh-cn/guide/installation)。
@@ -14,7 +20,13 @@
 
 ### 1.2. 构建项目
 
-运行以下代码以配置项目：
+若您没有开启代理，则需要更改 xmake 的 proxy，在命令行中输入：
+
+```bash
+xmake g --proxy_pac=github_mirror.pac
+```
+
+运行以下命令以配置项目：
 
 ```bash
 xmake f -m debug
