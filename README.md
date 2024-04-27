@@ -2,16 +2,13 @@
 
 Platform for the 7th Tsinghua University Artificial Intelligence Challenge
 
-## API
-[text](https://thuasta.github.io/thuai-7/api/)
-
-## Install
-
-_TODO_
-
 ## Usage
 
-_TODO_
+See `README.md` in each subdirectory.
+
+## API
+
+See <https://thuasta.github.io/thuai-7/api>.
 
 ## Contributing
 

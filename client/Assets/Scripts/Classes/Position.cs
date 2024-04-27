@@ -1,8 +1,15 @@
-namespace Thubg.Sdk
+using Newtonsoft.Json.Linq;
+using Thubg.Messages;
+using UnityEngine;
+
+public class Position
 {
-    public record Position
+
+    public Position(float xValue, float yValue)
     {
-        public float x { get; }
-        public float y { get; }
+        x = xValue; y = yValue;
     }
+
+    public float x { get; }
+    public float y { get; }
 }

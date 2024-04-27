@@ -1,4 +1,4 @@
-namespace Thubg.Sdk
+namespace Thubg.Messages
 {
     public record Supply
     {

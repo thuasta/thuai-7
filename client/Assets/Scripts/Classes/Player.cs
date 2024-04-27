@@ -1,24 +1,48 @@
 using System.Collections.Generic;
-using Thubg.Sdk;
+using Thubg.Messages;
+using UnityEngine;
 
 public class Player
 {
-    public string Id;
+    public int Id;
+    public string Name;
     public int Health;
     public ArmorTypes Armor;
     public float Speed;
     public FirearmTypes Firearm;
-    public Dictionary<Items, int> Inventory;
+    public Dictionary<string, int> Inventory;
     public Position PlayerPosition;
+    public PlayerAnimations playerAnimations;
+    public GameObject playerObj;
 
-    public Player(string id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Position position, Dictionary<Items, int> inventory)
+    public void TryGetPlayerAnimations()
     {
-        Id = id;
-        Health = health;
-        Armor = armor;
-        Speed = speed;
-        Firearm = firearm;
-        PlayerPosition = position;
-        Inventory = inventory;
+        if (playerAnimations == null)
+        {
+            playerAnimations = playerObj.GetComponent<PlayerAnimations>();
+        }
+    }
+
+    public void Attack()
+    {
+        playerAnimations.SetFiring();
+    }
+
+    public void UseMedicine()
+    {
+        playerAnimations.SetDrinking();
+    }
+
+    public void UpdatePosition(Position pos)
+    {
+        PlayerPosition =pos;
+        // Compute Delta
+        Vector3 newPos = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
+        TryGetPlayerAnimations();
+        if (playerAnimations is not null)
+        {
+            playerAnimations.WalkTo(playerObj.transform.position, newPos);
+        }
+        playerObj.transform.position = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
     }
 }

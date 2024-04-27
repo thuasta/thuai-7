@@ -2,7 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace GameServer.Connection;
 
-public record PerformAbandonMessage : Message
+public abstract record PerformMessage : Message
+{
+
+    [JsonPropertyName("token")]
+    public string Token { get; init; } = "";
+}
+
+public record PerformAbandonMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_ABANDON";
@@ -10,20 +17,14 @@ public record PerformAbandonMessage : Message
     [JsonPropertyName("numb")]
     public int Numb { get; init; }
 
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
-
     [JsonPropertyName("targetSupply")]
     public string TargetSupply { get; init; } = "";
 }
 
-public record PerformPickUpMessage : Message
+public record PerformPickUpMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_PICK_UP";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 
     [JsonPropertyName("num")]
     public int Num { get; init; }
@@ -37,44 +38,35 @@ public record PerformPickUpMessage : Message
     public record TargetPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
-public record PerformSwitchArmMessage : Message
+public record PerformSwitchArmMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_SWITCH_ARM";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 
     [JsonPropertyName("targetFirearm")]
     public string TargetFirearm { get; init; } = "";
 }
 
-public record PerformUseMedicineMessage : Message
+public record PerformUseMedicineMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_USE_MEDICINE";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 
     [JsonPropertyName("medicineName")]
     public string MedicineName { get; init; } = "";
 }
 
-public record PerformUseGrenadeMessage : Message
+public record PerformUseGrenadeMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_USE_GRENADE";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 
     [JsonPropertyName("targetPosition")]
     public TargetPosition TargetPos { get; init; } = new();
@@ -82,20 +74,17 @@ public record PerformUseGrenadeMessage : Message
     public record TargetPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
-public record PerformMoveMessage : Message
+public record PerformMoveMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_MOVE";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 
     [JsonPropertyName("destination")]
     public DestinationInfo Destination { get; init; } = new();
@@ -103,30 +92,24 @@ public record PerformMoveMessage : Message
     public record DestinationInfo
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
-public record PerformStopMessage : Message
+public record PerformStopMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_STOP";
 
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
-
 }
 
-public record PerformAttackMessage : Message
+public record PerformAttackMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "PERFORM_ATTACK";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 
     [JsonPropertyName("targetPosition")]
     public TargetPosition TargetPos { get; init; } = new();
@@ -134,38 +117,29 @@ public record PerformAttackMessage : Message
     public record TargetPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }
 
-public record GetPlayerInfoMessage : Message
+public record GetPlayerInfoMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "GET_PLAYER_INFO";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 }
 
-public record GetMapMessage : Message
+public record GetMapMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "GET_MAP";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 }
 
-public record ChooseOriginMessage : Message
+public record ChooseOriginMessage : PerformMessage
 {
     [JsonPropertyName("messageType")]
     public override string MessageType { get; init; } = "CHOOSE_ORIGIN";
-
-    [JsonPropertyName("token")]
-    public string Token { get; init; } = "";
 
     [JsonPropertyName("originPosition")]
     public OriginPosition OriginPos { get; init; } = new();
@@ -173,9 +147,9 @@ public record ChooseOriginMessage : Message
     public record OriginPosition
     {
         [JsonPropertyName("x")]
-        public int X { get; init; }
+        public double X { get; init; }
 
         [JsonPropertyName("y")]
-        public int Y { get; init; }
+        public double Y { get; init; }
     }
 }

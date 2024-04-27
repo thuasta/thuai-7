@@ -3,17 +3,14 @@ using System.IO.Compression;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Thubg.Sdk;
+using Thubg.Messages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Runtime.CompilerServices;
-using Mono.Data.Sqlite;
-using Unity.IO.LowLevel.Unsafe;
 using System;
-
 
 public class Record : MonoBehaviour
 {
+    public const float ObjPrefabScaling=0.4f;
     public enum PlayState
     {
         Prepare,
@@ -22,7 +19,7 @@ public class Record : MonoBehaviour
         End,
         Jump
     }
-
+    public static float MapLength = 256;
     public class RecordInfo
     {
         // 20 frame per second
@@ -54,7 +51,7 @@ public class Record : MonoBehaviour
         /// If NowDeltaTime is larger than NowFrameTime, then play the next frame
         /// </summary>
         public float NowDeltaTime = 0;
-
+        public long NowTime = 0;
         /// <summary>
         /// The target tick to jump
         /// </summary>
@@ -86,20 +83,50 @@ public class Record : MonoBehaviour
     private readonly Slider _processSlider;
     private readonly TMP_Text _jumpTargetTickText;
     private readonly TMP_Text _maxTickText;
+    private  TMP_Text _currentTickText;
     private GameObject _groundPrefab;
     private GameObject _playerPrefab;
     private bool[,] _isWalls;
+    private ParticleSystem _poisonousCircle;
+    private TMP_Text _infoText;
+    private GameObject _spotLight;
 
-    private List<GameObject> _obstaclePrefabs = new List<GameObject>();
+    private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
 
     // record data
     private readonly string _recordFilePath = null;
     private JArray _recordArray;
     private string _recordFile;
     private Observe _observe;
+
+    private GameObject _supplyParent;
+
+    private Dictionary<string, GameObject> _propDict;
+    private readonly string[] _allAvailableSupplies = new string[]
+    {
+            // Weapons
+            "S686", "M16", "VECTOR", "AWM",
+            // Medicines
+            "BANDAGE", "FIRST_AID",
+            // Armors
+            "PRIMARY_ARMOR", "PREMIUM_ARMOR",
+            // Bullets
+            "BULLET",
+            // Grenades
+            "GRENADE"
+    };
+    private Camera _camera;
     // viewer
     private void Start()
     {
+        if (Debug.isDebugBuild)
+        {
+            Debug.unityLogger.logEnabled = true;
+        }
+        else
+        {
+            Debug.unityLogger.logEnabled = false;
+        }
         // Initialize the _recordInfo
         _recordInfo = new();
         //// Initialize the ItemCreator
@@ -109,7 +136,9 @@ public class Record : MonoBehaviour
         // Check if the file is Level json
         _recordFile = fileLoaded.File;
         _observe = GameObject.Find("Camera").GetComponent<Observe>();
+        _recordInfo.NowPlayState = PlayState.Pause;
 
+        _infoText = GameObject.Find("Canvas/Info").GetComponent<TMP_Text>();
         // Prefab
         _groundPrefab = Resources.Load<GameObject>("Prefabs/Ground_01");
         _playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
@@ -127,6 +156,19 @@ public class Record : MonoBehaviour
         _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_01"));
         _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_02"));
 
+        _currentTickText = GameObject.Find("Canvas/Tick").GetComponent<TMP_Text>();
+
+        _poisonousCircle = GameObject.Find("PoisonousCircle").GetComponent<ParticleSystem>();
+        _propDict = new()
+        {
+            { "BANDAGE", Resources.Load<GameObject>("Prefabs/Bandage") },
+            { "FIRST_AID", Resources.Load<GameObject>("Prefabs/FirstAid") },
+            { "AWM", Resources.Load<GameObject>("Prefabs/AWM") },
+            { "VECTOR", Resources.Load<GameObject>("Prefabs/Vector") },
+            { "S686", Resources.Load<GameObject>("Prefabs/S686") },
+            { "GRENADE", Resources.Load<GameObject>("Prefabs/Grenade") }
+        };
+        _supplyParent = GameObject.Find("Supplies");
 
 
         // GUI //
@@ -140,7 +182,7 @@ public class Record : MonoBehaviour
         _stopButton.GetComponent<Image>().sprite = _continueButtonSprite;
         // Add listener to stop button
         _stopButton.onClick.AddListener(() =>
-       {
+        {
            if (_recordInfo.NowPlayState == PlayState.Play)
            {
                _stopButton.GetComponent<Image>().sprite = _continueButtonSprite;
@@ -151,8 +193,12 @@ public class Record : MonoBehaviour
                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
                _recordInfo.NowPlayState = PlayState.Play;
            }
-       });
+        });
 
+
+        _spotLight = GameObject.Find("Light");
+
+        _camera = GameObject.Find("Camera").GetComponent<Camera>();
         // Get Replay button
         // _replayButton = GameObject.Find("Canvas/ReplayButton").GetComponent<Button>();
         // _replayButton.onClick.AddListener(() =>
@@ -195,10 +241,10 @@ public class Record : MonoBehaviour
             return;
         }
         _recordArray = LoadRecordData();
-        _recordInfo.MaxTick = (int)_recordArray.Last["tick"];
-        GenerateMap();
+        _recordInfo.MaxTick = (int)_recordArray.Last["currentTicks"];
         // Generate Map and Supplies
-
+        GenerateMap();
+        GenerateSupplies();
         // Generate record Dict according to record array
         //foreach (JToken eventJson in  _recordArray)
         //{
@@ -257,7 +303,6 @@ public class Record : MonoBehaviour
             Debug.Log("Record file is empty!");
             return null;
         }
-        Debug.Log(recordArray.ToString());
         return recordArray;
     }
 
@@ -272,7 +317,7 @@ public class Record : MonoBehaviour
         {
             if (eventJson["messageType"].ToString() == "MAP")
             {
-                mapJson = (JObject)eventJson;
+                mapJson = (JObject)eventJson["data"];
                 break;
             }
         }
@@ -284,20 +329,23 @@ public class Record : MonoBehaviour
         // Generate map according to the mapJson, and store the map in the _blocks
         int width = (int)mapJson["width"];
         int height = (int)mapJson["height"];
+        MapLength = width;
         JArray mapArray = (JArray)mapJson["walls"];
-        // Initialize the ground
-        Transform groundParent = GameObject.Find("Map/Ground").transform;
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                GameObject ground = Instantiate(_groundPrefab, new Vector3(i, 0, j), Quaternion.identity);
+        //// Initialize the ground
+        //Transform groundParent = GameObject.Find("Map/Ground").transform;
+        //for (int i = 0; i < width; i++)
+        //{
+        //    for (int j = 0; j < height; j++)
+        //    {
+        //        // offset 0.5
+        //        GameObject ground = Instantiate(_groundPrefab, new Vector3(i+0.5f, 0, j+0.5f), Quaternion.identity);
 
-                ground.transform.SetParent(groundParent);
-                // The direction of ground is random
-                ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
-            }
-        }
+        //        ground.transform.SetParent(groundParent);
+        //        // The direction of ground is random
+        //        ground.transform.Rotate(0, UnityEngine.Random.Range(0, 4) * 90, 0);
+        //        ground.transform.localScale *= ObjPrefabScaling;
+        //    }
+        //}
 
         _isWalls = new bool[width, height];
         // Initialize the walls
@@ -315,79 +363,177 @@ public class Record : MonoBehaviour
             {
                 if (_isWalls[i, j])
                 {
-                    GameObject obstacle = Instantiate(_obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i, 0, j), Quaternion.identity);
+                    GameObject obstacle = Instantiate(
+                        _obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i + 0.5f, 0, j + 0.5f), Quaternion.identity
+                    );
                     obstacle.transform.SetParent(obstacleParent);
-                    // The direction of ground is random
+                    // The scale and direction of ground is random
                     obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360) , 0);
+
+                    obstacle.transform.localScale = ObjPrefabScaling * new Vector3(
+                        obstacle.transform.localScale.x*UnityEngine.Random.Range(0.7f,1.4f),
+                        obstacle.transform.localScale.y* UnityEngine.Random.Range(1.0f,1.8f),
+                        obstacle.transform.localScale.z* UnityEngine.Random.Range(0.7f,1.4f)
+                    );
                 }
             }
         }
-    }
-
-    private void UpdatePlayers(CompetitionUpdate update)
-    {
-        foreach (CompetitionUpdate.Player player in update.players)
+        for (int i = -width; i < width * 2; i++)
         {
-            Dictionary<Items, int> inventory = new();
-            foreach (CompetitionUpdate.Player.Inventory item in player.inventory)
+            for (int j = -height; j < height * 2; j++)
             {
-                switch (item.name)
-                {
-                    default:
-                        break;
-                }
-            }
+                if (i >= -5 && i < width + 5 && j >= -5 && j < height + 5)
+                { continue; }
 
-            PlayerSource.UpdatePlayer(
-                new Player(
-                    player.playerId,
-                    player.health,
-                    player.armor switch
-                    {
-                        "NO_ARMOR" => ArmorTypes.NoArmor,
-                        "PRIMARY_ARMOR" => ArmorTypes.PrimaryArmor,
-                        "PREMIUM_ARMOR" => ArmorTypes.PremiumArmor,
-                        _ => ArmorTypes.NoArmor
-                    },
-                    player.speed,
-                    player.firearm.name switch
-                    {
-                        _ => FirearmTypes.Fists,
-                    },
-                    player.position,
-                    inventory
-                )
-            );
+                // Random rate: 0.1
+                if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.0075)
+                {
+                    continue;
+                }
+
+                GameObject obstacle = Instantiate(
+                    _obstaclePrefabs[UnityEngine.Random.Range(0, _obstaclePrefabs.Count)], new Vector3(i + 0.5f, 0, j + 0.5f), Quaternion.identity
+                );
+                obstacle.transform.SetParent(obstacleParent);
+                // The scale and direction of ground is random
+                obstacle.transform.Rotate(0, UnityEngine.Random.Range(0, 360), 0);
+
+                obstacle.transform.localScale = ObjPrefabScaling * new Vector3(
+                    obstacle.transform.localScale.x * UnityEngine.Random.Range(4.0f, 8.0f),
+                    obstacle.transform.localScale.y * UnityEngine.Random.Range(4.0f, 8.0f),
+                    obstacle.transform.localScale.z * UnityEngine.Random.Range(4.0f, 8.0f)
+                );
+            }
         }
     }
-
-    private void AfterPlayerPickUpEvent()
+    void GenerateSupplies()
     {
+        // TODO:
+        // Generate supplies according to the _recordArray
+        // Find the JObject with "messageType": "MAP"
+        JObject suppliesJson = null;
+        foreach (JToken eventJson in _recordArray)
+        {
+            if (eventJson["messageType"].ToString() == "SUPPLIES")
+            {
+                suppliesJson = (JObject)eventJson["data"];
+                break;
+            }
+        }
+        if (suppliesJson == null)
+        {
+            Debug.Log("Supplies not found!");
+            return;
+        }
+        JArray suppliesArray = (JArray)suppliesJson["supplies"];
+        foreach (JToken supplyJson in suppliesArray)
+        {
+            string name = supplyJson["name"].ToString();
+            if (_propDict.ContainsKey(name))
+            {
+                Vector3 supplyPosition = new Vector3((float)supplyJson["position"]["x"], 0.1f, (float)supplyJson["position"]["y"]);
+                GameObject newSupply= Instantiate(_propDict[name],_supplyParent.transform);
+                newSupply.transform.position = supplyPosition;
+                newSupply.transform.Rotate(0,0, UnityEngine.Random.Range(0, 360));
+            }
+        }
+    }
+    private void UpdatePlayers(JArray players)
+    {
+        if (players is null)
+            return;
 
+        string infoString = $"Camera Position: ({_camera.transform.position.x:F2}, {_camera.transform.position.z:F2})\n";
+        foreach (JObject player in players)
+        {
+            int playerId = player["playerId"].ToObject<int>();
+            Position playerPosition = new Position((float)player["position"]["x"], (float)player["position"]["y"]);
+
+            // Check if the player is in dict
+            PlayerSource.AddPlayer(playerId, "");
+
+            Dictionary<string, int> inventory = new();
+            foreach (JObject item in (JArray)player["inventory"])
+            {
+                string name=item["name"].ToString();
+                if (Array.IndexOf(_allAvailableSupplies, item["name"].ToString())!=-1 ){
+                    inventory.Add(name, (int)item["numb"]);
+                }
+            }
+            int health = player["health"].ToObject<int>();
+            PlayerSource.UpdatePlayer(
+                playerId,
+                health,
+                player["armor"].ToString() switch
+                {
+                    "NO_ARMOR" => ArmorTypes.NoArmor,
+                    "PRIMARY_ARMOR" => ArmorTypes.PrimaryArmor,
+                    "PREMIUM_ARMOR" => ArmorTypes.PremiumArmor,
+                    _ => ArmorTypes.NoArmor
+                },
+                player["speed"].ToObject<float>(),
+                player["firearm"].ToString() switch
+                {
+                    "S686" => FirearmTypes.S686,
+                    "AWM" => FirearmTypes.Awm,
+                    "VECTOR" => FirearmTypes.Vector,
+                    "FISTS" => FirearmTypes.Fists,
+                    _ => FirearmTypes.Fists,
+                },
+                inventory,
+                playerPosition
+            );
+            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\n";
+            foreach(KeyValuePair<string, int> keyValue in inventory)
+            {
+                infoString += $"{keyValue.Key}-{keyValue.Value} ";
+            }
+            if (inventory.Count != 0)
+            {
+                infoString += "\n";
+            }
+        }
+        _infoText.text = infoString;
+    }
+    private void UpdateCircle(Vector2 newPos, float newRadius)
+    {
+        _poisonousCircle.transform.position = new Vector3(newPos.x, _poisonousCircle.transform.position.y, newPos.y);
+        ParticleSystem.ShapeModule shape = _poisonousCircle.shape;
+        shape.radius = newRadius;
+
+        Light spotLight = _spotLight.GetComponent<Light>();
+        spotLight.spotAngle = spotLight.innerSpotAngle = Mathf.Rad2Deg*(2 * Mathf.Atan2(newRadius, _spotLight.transform.position.y));
+        _spotLight.transform.position = new Vector3(newPos.x, _spotLight.transform.position.y, newPos.y);
+    }
+    private void AfterPlayerPickUpEvent(JObject eventJson)
+    {
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerAbandonEvent()
+    private void AfterPlayerAbandonEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerAttackEvent()
+    private void AfterPlayerAttackEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
+        Position targetPosition = eventJson["targetPosition"].ToObject<Position>();
     }
 
-    private void AfterPlayerUseMedicineEvent()
+    private void AfterPlayerUseMedicineEvent(JObject eventJson)
     {
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerSwitchArmEvent()
+    private void AfterPlayerSwitchArmEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
-    private void AfterPlayerUseGrenadeEvent()
+    private void AfterPlayerUseGrenadeEvent(JObject eventJson)
     {
-
+        int playerId = eventJson["playerId"].ToObject<int>();
     }
 
     #endregion
@@ -396,29 +542,42 @@ public class Record : MonoBehaviour
 
     private void UpdateTick()
     {
-        try
-        {
+        //try
+        //{
             if (_recordInfo.RecordSpeed > 0)
             {
-
+                if (_recordArray[_recordInfo.NowRecordNum].Value<string>("currentTicks") != null &&
+                    _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "COMPETITION_UPDATE")
+                {
+                    //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
+                    UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
+                    _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
+                    _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
+                }
+                if (_recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "SAFE_ZONE")
+                {
+                    UpdateCircle(new Vector2((float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["x"], (float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["y"]),
+                        (float)_recordArray[_recordInfo.NowRecordNum]["data"]["radius"]);
+                }
+                _recordInfo.NowRecordNum++;
             }
-        }
-        catch
-        {
+        //}
+        //catch
+        //{
 
-        }
+        //}
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        if ((_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowRecordNum < _recordInfo.MaxTick) || (_recordInfo.NowPlayState == PlayState.Jump))
+        if ((_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowTick < _recordInfo.MaxTick) || (_recordInfo.NowPlayState == PlayState.Jump))
         {
-            if (_recordInfo.NowDeltaTime > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
+            if ((float)(System.DateTime.Now.Ticks - _recordInfo.NowTime)/1e7 > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
             {
+                _recordInfo.NowTime = System.DateTime.Now.Ticks;
                 UpdateTick();
                 _recordInfo.NowDeltaTime = 0;
             }
-            _recordInfo.NowDeltaTime += Time.deltaTime;
         }
     }
 }

@@ -77,3 +77,6 @@ crashlytics-build.properties
 
 # Logs
 *.log
+
+# Records
+/Records/*

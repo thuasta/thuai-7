@@ -13,16 +13,22 @@ public partial class Map
             return false;
         }
 
-        int stx = (int)a.x, sty = (int)a.y, edx = (int)b.x, edy = (int)b.y;
-        for (int i = Math.Min(stx, edx); i <= Math.Max(stx, edx); i++)
+        Position direction = (b - a).Normalize();
+        double distance = Position.Distance(b, a);
+
+        double step = 0.02;
+        Position currentPosition = new(a.x, a.y);
+        while (distance > 0)
         {
-            for (int j = Math.Min(sty, edy); j <= Math.Max(sty, edy); j++)
+            if (distance < step)
             {
-                if (MapChunk[i, j].IsWall == true
-                && CollisionDetector.CheckCross(a, b, i, j))
-                {
-                    return false;
-                }
+                return true;
+            }
+            currentPosition += direction * step;
+            distance -= step;
+            if (GetBlock(currentPosition) is null || GetBlock(currentPosition)?.IsWall == true)
+            {
+                return false;
             }
         }
         return true;
@@ -35,27 +41,24 @@ public partial class Map
             return startPosition;
         }
 
-        Position direction = expectedEndPosition - startPosition;
-        double ratio = 0.5;
-        double delta = 0.25;
+        Position direction = (expectedEndPosition - startPosition).Normalize();
+        double distance = Position.Distance(startPosition, expectedEndPosition);
 
-        // Binary search to find the real end position
-        while (delta > 1e-6)
+        double step = 0.02;
+        Position currentPosition = new(startPosition.x, startPosition.y);
+        while (distance > 0)
         {
-            Position midPosition = startPosition + direction * ratio;
-            if (IsConnected(startPosition, midPosition) == false)
+            if (distance < step)
             {
-                ratio -= delta;
+                return currentPosition;
             }
-            else
+            currentPosition += direction * step;
+            distance -= step;
+            if (GetBlock(currentPosition) is null || GetBlock(currentPosition)?.IsWall == true)
             {
-                ratio += delta;
+                return currentPosition - direction * step;
             }
-            delta *= 0.5;
         }
-
-        // Adjust the ratio slightly to avoid the edge case
-        ratio *= 0.99;
-        return startPosition + direction * ratio;
+        return currentPosition;
     }
 }

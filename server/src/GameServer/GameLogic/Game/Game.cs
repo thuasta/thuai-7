@@ -36,7 +36,9 @@ public partial class Game
 
     private readonly object _lock = new();
 
-    private readonly Recorder.Recorder? _recorder = new(Path.Combine("Thuai", "records"));
+    private readonly Recorder.Recorder? _recorder = new(
+        Path.Combine("Records", $"{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid()}")
+    );
 
     #endregion
 
@@ -78,7 +80,7 @@ public partial class Game
                 // Randomly choose the position of each player
                 foreach (Player player in AllPlayers)
                 {
-                    player.PlayerPosition = GameMap.GenerateValidPosition();
+                    player.PlayerPosition = GameMap.GenerateValidPosition() + new Position(0.5, 0.5);
                 }
 
                 List<Position> walls = new();
@@ -240,7 +242,7 @@ public partial class Game
                 // Dereference of a possibly null reference.
                 // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
 
-                AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
+                AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(AllPlayers, GameMap, CurrentTick));
             }
         }
         catch (Exception e)

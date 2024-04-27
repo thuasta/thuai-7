@@ -11,6 +11,6 @@ public partial class Constant
     //手雷爆炸的伤害的最大半径
     public const double GRENADE_MAX_RADIUS = 6;
 
-    public const double GRENADE_THROW_RADIUS = 9;
+    public const double GRENADE_THROW_RADIUS = 20;
 
 }

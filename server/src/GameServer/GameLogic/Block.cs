@@ -100,7 +100,7 @@ public class Block : IBlock
                     for (int i = 0; i < Items.Count; i++)
                     {
                         if (Items[i].AdditionalProperties is null
-                            || Items[i].AdditionalProperties is not ArmorProperties)
+                            || Items[i].AdditionalProperties is not WeaponProperties)
                         {
                             continue;
                         }

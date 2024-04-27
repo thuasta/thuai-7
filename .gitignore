@@ -1,0 +1,12 @@
+/*
+!/.github/
+!/api
+!/client
+!/docs
+!/server
+!/.gitattributes
+!/.gitignore
+!/CHANGELOG.md
+!/COPYING
+!/mkdocs.yml
+!/README.md

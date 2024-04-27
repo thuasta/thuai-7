@@ -8,7 +8,7 @@ public record Config
     public int ServerPort { get; init; } = 14514;
 
     [JsonPropertyName("level_name")]
-    public string LevelName { get; init; } = "NovelCraft level";
+    public string LevelName { get; init; } = "DefaultLevel";
 
     [JsonPropertyName("ticks_per_second")]
     public int TicksPerSecond { get; init; } = 20;
@@ -41,7 +41,7 @@ public record Config
     public int SafeZoneTicksUntilDisappear { get; init; } = 6000;
 
     [JsonPropertyName("damage_outside_safe_zone")]
-    public int DamageOutsideSafeZone { get; init; }
+    public int DamageOutsideSafeZone { get; init; } = 1;
 
     [JsonPropertyName("expected_player_num")]
     public int ExpectedPlayerNum { get; init; } = 1;

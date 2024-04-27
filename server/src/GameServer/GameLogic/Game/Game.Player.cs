@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using GameServer.Geometry;
 
 namespace GameServer.GameLogic;
@@ -9,16 +10,17 @@ public partial class Game
 
     public List<Recorder.IRecord> _events = new();
 
-    public void AddPlayer(Player player)
+    public bool AddPlayer(Player player)
     {
         if (Stage != GameStage.Waiting)
         {
             _logger.Error("Cannot add player: The game is already started.");
-            return;
+            return false;
         }
 
         AllPlayers.Add(player);
         SubscribePlayerEvents(player);
+        return true;
     }
 
     public void RemovePlayer(Player player)
@@ -50,7 +52,7 @@ public partial class Game
                 }
                 else
                 {
-                    // Calculate the direction of the player (normalized vector
+                    // Calculate the direction of the player (normalized vector)
                     Position direction = (player.PlayerTargetPosition - player.PlayerPosition).Normalize();
                     if (direction.Length() == 0)
                     {

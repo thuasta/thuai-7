@@ -1,27 +1,49 @@
 using System.Collections.Generic;
+using UnityEngine;
 
-public class PlayerSource
+public class PlayerSource: MonoBehaviour
 {
-    private static readonly Dictionary<string, Player> _playerDict = new();
-    public static bool AddPlayer(Player player)
+    private static readonly Dictionary<int, Player> _playerDict = new();
+    private static readonly GameObject playerPrefab = Resources.Load<GameObject>("Player/models/Soldier");
+    private void Start()
     {
-        if (_playerDict.ContainsKey(player.Id))
+    }
+    public static Dictionary<int ,Player> GetPlayers()
+    {
+        return _playerDict;
+    }
+    public static bool AddPlayer(int id, string name)
+    {
+        if (_playerDict.ContainsKey(id))
         {
             return false;
         }
-        _playerDict.Add(player.Id, player);
+        // Create Player obj
+        GameObject newPlayerObj = Instantiate(playerPrefab);
+        newPlayerObj.transform.position = Vector3.zero;
+
+        _playerDict.Add(id, new Player {
+                                    Id = id,
+                                    Name = name,
+                                    playerAnimations = newPlayerObj.GetComponent<PlayerAnimations>(),
+                                    playerObj=newPlayerObj
+        });
+
         return true;
     }
 
-    public static void UpdatePlayer(Player player)
+    public static void UpdatePlayer(int id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Dictionary<string, int> inventory, Position position)
     {
-        if (_playerDict.ContainsKey(player.Id))
+        if (_playerDict.ContainsKey(id))
         {
-            _playerDict[player.Id] = player;
-        }
-        else
-        {
-            _playerDict.Add(player.Id, player);
+            Player player = _playerDict[id];
+            player.Health = health;
+            player.Armor = armor;
+            player.Speed = speed;
+            player.Firearm = firearm;
+            player.Inventory = inventory;
+            player.UpdatePosition(position);
+            player.TryGetPlayerAnimations();
         }
     }
 

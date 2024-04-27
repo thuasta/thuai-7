@@ -2,12 +2,14 @@ namespace GameServer.GameLogic;
 
 public class AfterGameTickEventArgs : EventArgs
 {
-    public Game Game { get; }
+    public List<Player> AllPlayers { get; }
+    public Map GameMap { get; }
     public int CurrentTick { get; }
 
-    public AfterGameTickEventArgs(Game game, int currentTick)
+    public AfterGameTickEventArgs(List<Player> allPlayers, Map gameMap, int currentTick)
     {
-        Game = game;
+        AllPlayers = new(allPlayers);
+        GameMap = gameMap;
         CurrentTick = currentTick;
     }
 }

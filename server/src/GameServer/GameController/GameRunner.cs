@@ -6,15 +6,13 @@ namespace GameServer.GameController;
 
 public partial class GameRunner : IGameRunner
 {
+    public event EventHandler<AfterPlayerConnect>? AfterPlayerConnectEvent = delegate { };
     public Game Game { get; }
     public int ExpectedTicksPerSecond => Constant.TICKS_PER_SECOND;
     public TimeSpan TpsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealTicksPerSecond { get; private set; }
     public double TpsLowerBound => 0.9 * ExpectedTicksPerSecond;
     public double TpsUpperBound => 1.1 * ExpectedTicksPerSecond;
-
-    private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
-    private int _nextPlayerId = 0;
 
     private DateTime _lastTpsCheckTime = DateTime.Now;
 

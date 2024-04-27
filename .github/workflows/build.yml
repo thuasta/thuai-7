@@ -1,35 +1,10 @@
 on:
   push:
-  pull_request:
+  pull_request_target:
   workflow_dispatch:
 
 jobs:
-  build-documents:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: |
-          mkdir -p site/api/
-
-      - uses: asyncapi/github-action-for-cli@v3.1.1
-        with:
-          command: generate
-          filepath: docs/api/asyncapi.yaml
-          template: '@asyncapi/html-template@2.1.7'
-          output: site/api/
-
-      - run: |
-          sudo apt-get install -y pandoc
-          sudo pandoc -s -o site/index.html docs/THUAI_Handbook.md
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
-          path: site/
-
   build-client:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -38,7 +13,6 @@ jobs:
           - StandaloneLinux64
           - StandaloneOSX
           - StandaloneWindows64
-          - WebGL
     steps:
       - uses: actions/checkout@v4
 
@@ -58,29 +32,34 @@ jobs:
           path: build
 
   build-server:
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
         runtime:
           - linux-arm
           - linux-arm64
-          - ubuntu-x64
+          - linux-x64
+          - linux-musl-arm
+          - linux-musl-arm64
+          - linux-musl-x64
+          - osx-arm64
+          - osx-x64
           - win-arm64
           - win-x64
           - win-x86
-    runs-on: ubuntu-latest
+        include:
+          - runs-on: ubuntu-latest
+          - runs-on: macos-latest
+            runtime: osx-x64
+          - runs-on: macos-latest
+            runtime: osx-arm64
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
-
-      - run: dotnet format --verify-no-changes src/GameServer
-        working-directory: server
-
-      - run: dotnet format --verify-no-changes src/GameServer.Tests
-        working-directory: server
+          dotnet-version: 8.0.x
 
       - run: |
           dotnet publish src/GameServer -c Release -o bin \
@@ -93,46 +72,40 @@ jobs:
           name: ${{ github.event.repository.name }}-server-${{ matrix.runtime }}-${{ github.sha }}
           path: server/bin
 
-  deploy-pages:
-    concurrency:
-      group: github-pages
-      cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs:
-      - build-documents
-      - build-client
-    permissions:
-      id-token: write
-      pages: write
+  build-server-docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - uses: docker/build-push-action@v5
         with:
-          name: ${{ github.event.repository.name }}-documents-${{ github.sha }}
-          path: site
+          context: server
 
-      - uses: actions/download-artifact@v4
+  check-style-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
         with:
-          name: ${{ github.event.repository.name }}-client-WebGL-${{ github.sha }}
-          path: build
+          dotnet-version: 8.0.x
 
-      - run: |
-          cp -r build/WebGL/* site/client
+      - run: dotnet format --verify-no-changes src/GameServer
+        working-directory: server
 
-      - uses: actions/upload-pages-artifact@v3
+  check-style-server-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
         with:
-          path: site
+          dotnet-version: 8.0.x
 
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - run: dotnet format --verify-no-changes src/GameServer.Tests
+        working-directory: server
 
   test-client:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -160,7 +133,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.0.x
 
       - run: |
           dotnet test src/GameServer.Tests

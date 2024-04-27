@@ -14,11 +14,20 @@ class Program
 
     static void Main(string[] args)
     {
-        // Load config
-        // Read the config file and deserialize it into a Config object.
-        // string configJsonStr = File.ReadAllText("config.json");
-        string configJsonStr = "{\"log_level\": \"INFORMATION\"}";
-
+        if (File.Exists("config.json") == false)
+        {
+            File.WriteAllText(
+                "config.json",
+                JsonSerializer.Serialize(
+                    new Config(),
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    }
+                )
+            );
+        }
+        string configJsonStr = File.ReadAllText("config.json");
         Config config = JsonSerializer.Deserialize<Config>(configJsonStr) ?? new();
 
         SetLogLevel(config.LogLevel);
@@ -28,8 +37,38 @@ class Program
         Version version = typeof(Program).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
 
         _logger.Information(
-            "--------------------------------------------------------------------------------------------"
-            );
+            @"
+ .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
+| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
+| |  _________   | || |  ____  ____  | || | _____  _____ | || |   ______     | || |    ______    | |
+| | |  _   _  |  | || | |_   ||   _| | || ||_   _||_   _|| || |  |_   _ \    | || |  .' ___  |   | |
+| | |_/ | | \_|  | || |   | |__| |   | || |  | |    | |  | || |    | |_) |   | || | / .'   \_|   | |
+| |     | |      | || |   |  __  |   | || |  | '    ' |  | || |    |  __'.   | || | | |    ____  | |
+| |    _| |_     | || |  _| |  | |_  | || |   \ `--' /   | || |   _| |__) |  | || | \ `.___]  _| | |
+| |   |_____|    | || | |____||____| | || |    `.__.'    | || |  |_______/   | || |  `._____.'   | |
+| |              | || |              | || |              | || |              | || |              | |
+| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
+ '----------------'  '----------------'  '----------------'  '----------------'  '----------------' "
+        );
+        _logger.Information(
+            "\n" + @"
+        #                #            #     #  #       #         #   
+       ##               ##           ##    ## ##      ##   #######  
+       ##  #            ##   #       ## #  ##  ##     ##       ##   
+   ##########      ############      ##### ##  #      ##      ##    
+       ##           #   ##  #        ##    ######   ######   ##     
+       ##    #       ## ##  ##       ##  ####         ##    ##    # 
+  #############       #### ##      # ## #  ##  #      ##  ######### 
+      ###             # ####  #    ####### ##  ##     ##   #  #  ## 
+     #####        ##############   ##  ##  ## ##      ##   ## ## ## 
+     #### #            ####        ##  ##   ####      ## # ## ## ## 
+    ## ## ##          ######       ##  ##   ###       ### ## ##  ## 
+    ## ##  ##        ## ## ##      ##  ##   ##      ####  #  ##  ## 
+   ##  ##  ###      ##  ##  ###    ##  ##  ####  #   #   #  ##   ## 
+  ##   ##   ####   ##   ##   ####  ###### ##  ## #      #  ##   ##  
+ #     ##     #   #     ##    ##   #   # ##    ###        ##  ####  
+       #                #               #       ##      ##      #   "
+        );
         _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
         _logger.Information("Copyright (c) 2024");
         _logger.Information(
@@ -72,6 +111,7 @@ class Program
             void SubscribeEvents()
             {
                 gameRunner.Game.AfterGameTickEvent += agentServer.HandleAfterGameTickEvent;
+                gameRunner.AfterPlayerConnectEvent += agentServer.HandleAfterPlayerConnectEvent;
                 agentServer.AfterMessageReceiveEvent += gameRunner.HandleAfterMessageReceiveEvent;
             }
 
