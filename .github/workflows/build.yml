@@ -32,6 +32,7 @@ jobs:
           path: build
 
   build-server:
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
@@ -39,10 +40,20 @@ jobs:
           - linux-arm
           - linux-arm64
           - linux-x64
+          - linux-musl-arm
+          - linux-musl-arm64
+          - linux-musl-x64
+          - osx-arm64
+          - osx-x64
           - win-arm64
           - win-x64
           - win-x86
-    runs-on: ubuntu-latest
+        include:
+          - runs-on: ubuntu-latest
+          - runs-on: macos-latest
+            runtime: osx-x64
+          - runs-on: macos-latest
+            runtime: osx-arm64
     steps:
       - uses: actions/checkout@v4
 
