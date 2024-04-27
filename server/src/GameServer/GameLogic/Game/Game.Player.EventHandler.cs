@@ -240,11 +240,6 @@ public partial class Game : IGame
             _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies with non-positive number.");
             return;
         }
-        if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
-        {
-            _logger.Error($"[Player {e.Player.PlayerId}] Not close enough to the supply.");
-            return;
-        }
         if (GameMap.GetBlock(e.TargetPosition) is null || GameMap.GetBlock(e.TargetPosition)?.IsWall == true)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies at an invalid position.");
@@ -267,7 +262,7 @@ public partial class Game : IGame
                         return;
                     }
 
-                    IItem? armorItem = GameMap.GetBlock(e.TargetPosition)?.Items.Find(
+                    IItem? armorItem = GameMap.GetBlock(e.Player.PlayerPosition)?.Items.Find(
                                     i => i.ItemSpecificName == e.TargetSupply
                                 );
 
