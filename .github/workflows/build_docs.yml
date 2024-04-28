@@ -2,6 +2,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/build_docs.yml
+      - api/**
+      - docs/**
+      - mkdocs.yml
 
 jobs:
   build:

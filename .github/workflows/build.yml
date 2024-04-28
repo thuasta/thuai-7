@@ -1,5 +1,9 @@
 on:
   push:
+    paths:
+      - .github/workflows/build.yml
+      - client/**
+      - server/**
   pull_request_target:
   workflow_dispatch:
 

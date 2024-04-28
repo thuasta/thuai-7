@@ -20,3 +20,9 @@
 ## Q：在提交的代码中哪些库是可用的？是否会进行代码查重之类的工作？
 
 理论上不需要系统权限的库都能用，需要注意不能使用windows或darwin平台限定的库。会进行选手间的代码查重。
+
+## Q：运行后端可执行文件时为什么出现闪退无法运行的情况？
+
+可能是因为您没有安装 .NET Core 运行时环境。请根据您的操作系统版本下载并安装 .NET Core 运行时环境，版本至少为 8.0，下载地址为：[https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-8.0.4-windows-x64-installer?cid=getdotnetcore](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-8.0.4-windows-x64-installer?cid=getdotnetcore)。
+
+您可以用 PowerShell 或 cmd 命令行运行GameServer.exe，以查看具体的错误信息。

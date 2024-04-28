@@ -6,15 +6,29 @@
 
 ## 1. 准备工作
 
+使用 Windows 操作系统的选手可参考如下视频教程 [https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/](https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/) ，了解如何使用 C++ SDK 开发自己的 Agent。
+<!-- 
+<video controls>
+      <source src="https://cloud.tsinghua.edu.cn/seafhttp/files/f1d479b0-d8ef-4125-8ec1-f11d34b49ce8/THUAI7-Cpp.mp4">
+</video> -->
+
 ### 1.1. 环境要求
 
-要求 XMake >= 2.8.8，安装方法请参考 [XMake 官方文档](https://xmake.io/#/zh-cn/guide/installation)。
+要求 XMake >= 2.8.8，安装方法请参考 [XMake 官方文档](https://xmake.io/#/zh-cn/guide/installation)。若您没有开启代理，可以使用如下链接下载 Windows 版本：[ XMake 直链下载](https://hub.nuaa.cf/xmake-io/xmake/releases/download/v2.9.1/xmake-v2.9.1.win64.exe)
 
-具备 C++20 支持的 C++ 编译器工具链。
+具备 C++20 支持的 C++ 编译器工具链。推荐使用 MSVC，VS Build Tools 下载地址：[Visual Studio Build Tools](https://aka.ms/vs/17/release/vs_BuildTools.exe)。若您使用的是其他编译器，请确保其支持 C++20 标准。
+
+合适的代码编辑器。推荐使用 Visual Studio Code。可使用如下 Windows 下载地址：[Visual Studio Code](https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user)
 
 ### 1.2. 构建项目
 
-运行以下代码以配置项目：
+若您没有开启代理，则需要更改 xmake 的 proxy，在命令行中输入：
+
+```bash
+xmake g --proxy_pac=github_mirror.pac
+```
+
+运行以下命令以配置项目：
 
 ```bash
 xmake f -m debug
