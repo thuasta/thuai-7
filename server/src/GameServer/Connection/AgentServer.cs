@@ -151,7 +151,12 @@ public partial class AgentServer
                 {
                     Task sendTask = _sockets[connectionId].Send(jsonString);
 
-                    Task.Delay(TIMEOUT_MILLISEC).Wait();
+                    TimeSpan timeout = TimeSpan.FromMilliseconds(TIMEOUT_MILLISEC);
+                    DateTime startTime = DateTime.Now;
+                    while (DateTime.Now - startTime < timeout && sendTask.IsCompleted == false)
+                    {
+                        // Wait until the task is completed or the timeout is reached.
+                    }
 
                     if (sendTask.IsCompletedSuccessfully == false)
                     {
