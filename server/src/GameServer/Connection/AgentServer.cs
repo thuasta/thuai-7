@@ -11,6 +11,7 @@ public partial class AgentServer
     // In milliseconds.
     public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
     public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
+    public const int TIMEOUT_MILLISEC = 10;
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
     public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
@@ -148,7 +149,17 @@ public partial class AgentServer
             {
                 if (token is null || _socketTokens[connectionId] == token)
                 {
-                    _sockets[connectionId].Send(jsonString).Wait();
+                    Task sendTask = _sockets[connectionId].Send(jsonString);
+
+                    Task.Delay(TIMEOUT_MILLISEC).Wait();
+
+                    if (sendTask.IsCompletedSuccessfully == false)
+                    {
+                        _logger.Error(
+                            $"Failed to send message to \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\"."
+                            );
+                        continue;
+                    }
 
                     _logger.Debug($"Message published");
                     _logger.Debug(
