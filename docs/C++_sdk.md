@@ -6,11 +6,11 @@
 
 ## 1. 准备工作
 
-使用 Windows 操作系统的选手可参考如下视频教程，了解如何使用 C++ SDK 开发自己的 Agent。
-
+使用 Windows 操作系统的选手可参考如下视频教程 [https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/](https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/) ，了解如何使用 C++ SDK 开发自己的 Agent。
+<!-- 
 <video controls>
       <source src="https://cloud.tsinghua.edu.cn/seafhttp/files/f1d479b0-d8ef-4125-8ec1-f11d34b49ce8/THUAI7-Cpp.mp4">
-</video>
+</video> -->
 
 ### 1.1. 环境要求
 
