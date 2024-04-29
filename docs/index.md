@@ -102,8 +102,25 @@
 | 急救箱 | 恢复75点血量                                                                   | 10     |
 | 激光枪 | 瞬间发射，可对其他选手造成伤害；无法穿透墙体；需要消耗弹药。具体数值请参见[武器](#武器)                                       | 0      |
 | 弹药  | 所有种类激光枪发射消耗同一种弹药                                                                     | 1      |
-| 手榴弹 | 可在半径20m距离内投掷，能够越过墙体。投掷后5s爆炸，爆炸半径6m，且对范围内所有选手均造成伤害，距离投掷中心越近伤害越高。伤害不会穿过墙体                       | 15     |
+| 手榴弹 | 可在半径20m距离内投掷，能够越过墙体。投掷后5s爆炸，爆炸半径6m，且对范围内所有选手均造成伤害，距离投掷中心越近伤害越高。伤害不会穿过墙体。伤害计算：手榴弹会发出若干射线，射线伤害值随着距离线性递减，并且玩家距离爆炸点越近，被击中的射线数量也越多。                       | 15     |
 
+> 具体而言，设 x 为玩家与爆炸中心距离，手雷伤害计算公式大致如下。代码细节见 [thuai-7/server/src/GameServer/GameLogic/Grenade.cs at main · thuasta/thuai-7 · GitHub](https://github.com/thuasta/thuai-7/blob/9fbe355bf2ddfd58954d26a81ddeca1a57e68fce/server/src/GameServer/GameLogic/Grenade.cs#L39)
+
+$$
+\begin{equation}
+Damage(x)=\left\{
+	\begin{aligned}
+	108.07-13.83x \quad 0<x<0.5\\
+	\frac{2}{\pi}\cdot (108.07-13.83x)\arcsin (\frac{1}{2x}) \quad 0.5<x<6 \\
+ 	0 \quad x>6
+	\end{aligned}
+	\right
+	.
+\end{equation}
+$$
+
+伤害范围：手榴弹爆炸半径为6米，伤害和目标所在位置的接触面积有关。
+手榴弹的使用需要谨慎，合理的投掷位置和时机能够最大化其威力，为战局带来重要影响。
 <a id="武器"></a>
 
 #### 2.2.4. 武器
