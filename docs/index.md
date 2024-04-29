@@ -111,7 +111,7 @@ $$
 Damage(x)=\left\{
 	\begin{aligned}
 	108.07-13.83x \quad 0<x<0.5\\
-	\frac{2}{\pi}\cdot (108.07-13.83x)\arcsin (\frac{1}{2x}) \quad 0.5<x<6
+	\frac{2}{\pi}\cdot (108.07-13.83x)\arcsin (\frac{1}{2x}) \quad 0.5<x<6 \\
  	0 \quad x>6
 	\end{aligned}
 	\right
