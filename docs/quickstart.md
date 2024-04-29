@@ -8,9 +8,11 @@
 - **后端**：作为服务器，控制比赛进行，并生成比赛回放。
 - **SDK**：是若干不同编程语言的程序文件，提供编写比赛程序所需的接口。选手可以选用 python SDK 或 C++ SDK 编写程序。
 
-请从以下链接下载最新版本的前端（client）和后端（server），务必根据您的操作系统版本选择适当的版本：
+请从以下链接下载**最新版本**(Latest)的前端（client）和后端（server），务必根据您的操作系统版本选择适当的版本：
 
-[https://github.com/thuasta/thuai-7/releases](https://github.com/thuasta/thuai-7/releases)
+[https://github.com/thuasta/thuai-7/releases](https://github.com/thuasta/thuai-7/releases) 或 [https://hub.nuaa.cf/thuasta/thuai-7/releases](https://hub.nuaa.cf/thuasta/thuai-7/releases) (注：github 中的 releases 会折叠一部分 Assets, 若您没有找到对应的版本，请点击 `show all assets` )
+
+例如，您的操作系统为 Windows 11，您应该下载 `thuai-7-client-StandaloneWindows64.zip` 和 `thuai-7-server-windows-arm64.zip`。
 
 下载完成后，解压文件至您的工作目录。若您在运行后端的可执行文件出现了闪退或报错等情况，可能是因为您没有安装 .NET Core 运行时环境。请根据您的操作系统版本下载并安装 .NET Core 运行时环境，版本至少为 8.0，下载地址为：[https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-8.0.4-windows-x64-installer?cid=getdotnetcore](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-8.0.4-windows-x64-installer?cid=getdotnetcore)。
 
@@ -22,7 +24,7 @@
 git clone https://github.com/thuasta/thuai-7-agent-template-cpp.git
 ```
 
-若您没有开启代理，也可以使用如下链接下载 [C++ SDK 源码压缩包](https://hub.nuaa.cf/thuasta/thuai-7-agent-template-cpp/archive/main.zip)
+若您没有开启代理或安装 git，也可以使用如下链接下载 [C++ SDK 源码压缩包](https://hub.nuaa.cf/thuasta/thuai-7-agent-template-cpp/archive/main.zip)
 
 或者克隆 Python SDK 仓库：
 
@@ -30,7 +32,7 @@ git clone https://github.com/thuasta/thuai-7-agent-template-cpp.git
 git clone https://github.com/thuasta/thuai-7-agent-template-python.git
 ```
 
-若您没有开启代理，也可以使用如下链接下载 [Python SDK 源码压缩包](https://hub.nuaa.cf/thuasta/thuai-7-agent-template-python/archive/main.zip)
+若您没有开启代理或安装 git，也可以使用如下链接下载 [Python SDK 源码压缩包](https://hub.nuaa.cf/thuasta/thuai-7-agent-template-python/archive/main.zip)
 
 请持续关注我们的发布版本和群聊通知，以获取最新版本信息。
 
