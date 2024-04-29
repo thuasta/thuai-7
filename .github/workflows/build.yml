@@ -33,7 +33,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-client-${{ matrix.targetPlatform }}-${{ github.sha }}
-          path: build
+          path: build/${{ matrix.targetPlatform }}
 
   build-server:
     runs-on: ${{ matrix.runs-on }}
