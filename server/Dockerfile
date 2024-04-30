@@ -13,7 +13,6 @@ RUN dotnet publish src/GameServer/GameServer.csproj \
 FROM mcr.microsoft.com/dotnet/runtime:8.0.4-alpine3.19
 WORKDIR /app
 COPY --from=build-env /app/bin/GameServer .
-RUN mkdir Records \
- && ln -s /records Records
+RUN ln -s /records Records
 ENTRYPOINT ["./GameServer"]
 EXPOSE 14514
