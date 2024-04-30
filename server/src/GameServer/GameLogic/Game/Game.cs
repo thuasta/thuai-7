@@ -37,7 +37,9 @@ public partial class Game
     private readonly object _lock = new();
 
     private readonly Recorder.Recorder? _recorder = new(
-        Path.Combine("Records", $"{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid()}")
+        "Records",
+        "record.dat",
+        "result.json"
     );
 
     #endregion
