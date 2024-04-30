@@ -164,8 +164,8 @@ public partial class AgentServer
 
                     if (sendTask.IsCompletedSuccessfully == false)
                     {
-                        _logger.Error(
-                            $"Failed to send message to \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\"."
+                        _logger.Debug(
+                            $"Timeout (\"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\")."
                             );
                         continue;
                     }
