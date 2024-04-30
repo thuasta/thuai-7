@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO.Compression;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Serilog;
 
@@ -139,6 +140,21 @@ public class Recorder : IRecorder, IDisposable
             // In this case, we just return.
             return;
         }
+    }
+
+    public void SaveResults(Result result)
+    {
+        string resultFilePath = Path.Combine(_recordsDir, _targetResultFileName);
+        File.WriteAllText(
+            resultFilePath,
+            JsonSerializer.Serialize(
+                result,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                }
+            )
+        );
     }
     #endregion
 }

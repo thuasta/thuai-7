@@ -93,6 +93,16 @@ public partial class GameRunner
         // Save records.
         _logger.Information("Saving records...");
         Game.SaveRecord();
+
+        if (forceStop == false)
+        {
+            int winnerId = Game.Judge();
+            Result result = new()
+            {
+                Winner = _tokenToPlayerId.First(kvp => kvp.Value == winnerId).Key
+            };
+            Game.SaveResults(result);
+        }
     }
 
     public void Reset()
