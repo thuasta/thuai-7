@@ -107,7 +107,6 @@
 > 具体而言，设 x 为玩家与爆炸中心距离，手雷伤害计算公式大致如下。代码细节见 [thuai-7/server/src/GameServer/GameLogic/Grenade.cs at main · thuasta/thuai-7 · GitHub](https://github.com/thuasta/thuai-7/blob/9fbe355bf2ddfd58954d26a81ddeca1a57e68fce/server/src/GameServer/GameLogic/Grenade.cs#L39)
 
 $$
-\begin{fleqn}
 \begin{equation}
 \begin{aligned}
 Damage(x)=\left\{
@@ -119,7 +118,6 @@ Damage(x)=\left\{
 	\right.
 \end{aligned}
 \end{equation}
-\end{fleqn}
 $$
 
 <a id="武器"></a>
