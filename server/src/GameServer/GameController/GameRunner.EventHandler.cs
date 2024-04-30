@@ -10,7 +10,6 @@ public partial class GameRunner
 {
 
     private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
-    private readonly ConcurrentDictionary<string, Guid> _tokenToSocketId = new();
     private int _nextPlayerId = 0;
 
     public void HandleAfterMessageReceiveEvent(object? sender, AfterMessageReceiveEventArgs e)
@@ -31,35 +30,22 @@ public partial class GameRunner
 
         if (e.Message is GetPlayerInfoMessage getPlayerInfoMessage)
         {
-            if (_tokenToSocketId.TryGetValue(getPlayerInfoMessage.Token, out Guid socketId) == true)
+            if (_tokenToPlayerId.Any(kvp => kvp.Key == getPlayerInfoMessage.Token) == true)
             {
-                if (socketId != e.SocketId)
-                {
-                    _logger.Error(
-                        $"Token \"{getPlayerInfoMessage.Token}\" is already used by another client."
-                    );
-                }
-                else
-                {
-                    _logger.Debug(
-                        $"Token \"{getPlayerInfoMessage.Token}\" is already used by the same client."
-                    );
-                    _logger.Debug(
-                        $"The client can directly control player with token \"{getPlayerInfoMessage.Token}\"."
-                    );
-                }
-                return;
+                _logger.Debug(
+                    $"Client with Id {e.SocketId} wants to join with token \"{getPlayerInfoMessage.Token}\" again."
+                );
+                AfterPlayerConnectEvent?.Invoke(
+                    this,
+                    new AfterPlayerConnect(
+                        _tokenToPlayerId[getPlayerInfoMessage.Token],
+                        getPlayerInfoMessage.Token,
+                        e.SocketId
+                    )
+                );
             }
             else
             {
-                if (_tokenToSocketId.Any(kvp => kvp.Value == e.SocketId))
-                {
-                    _logger.Error(
-                        $"Client with socket id {e.SocketId} has already joined the game with token \"{getPlayerInfoMessage.Token}\"."
-                    );
-                    return;
-                }
-
                 _logger.Information(
                     $"Adding player {_nextPlayerId} with token \"{getPlayerInfoMessage.Token}\" to the game."
                 );
@@ -84,7 +70,6 @@ public partial class GameRunner
                     }
 
                     _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
-                    _tokenToSocketId[getPlayerInfoMessage.Token] = e.SocketId;
 
                     AfterPlayerConnectEvent?.Invoke(this, new AfterPlayerConnect(
                         _nextPlayerId,
@@ -107,13 +92,6 @@ public partial class GameRunner
             if (!_tokenToPlayerId.ContainsKey((e.Message as PerformMessage)!.Token))
             {
                 _logger.Error($"Player with token \"{(e.Message as PerformMessage)!.Token}\" does not exist.");
-                return;
-            }
-            if (_tokenToSocketId[(e.Message as PerformMessage)!.Token] != e.SocketId)
-            {
-                _logger.Error(
-                    $"Player with token \"{(e.Message as PerformMessage)!.Token}\" is controlled by another client."
-                );
                 return;
             }
 
