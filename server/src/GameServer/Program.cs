@@ -84,7 +84,10 @@ class Program
 
         try
         {
-            GameRunner gameRunner = new(config);
+            GameRunner gameRunner = new(config)
+            {
+                WhiteList = new(allTokens)
+            };
 
             AgentServer agentServer = new()
             {

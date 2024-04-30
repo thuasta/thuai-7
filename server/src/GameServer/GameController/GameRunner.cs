@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using GameServer.GameLogic;
 using Serilog;
 
@@ -7,7 +6,11 @@ namespace GameServer.GameController;
 public partial class GameRunner
 {
     public event EventHandler<AfterPlayerConnect>? AfterPlayerConnectEvent = delegate { };
+
     public Game Game { get; }
+
+    public List<string> WhiteList { get; init; } = new();
+
     public int ExpectedTicksPerSecond => Constant.TICKS_PER_SECOND;
     public TimeSpan TpsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealTicksPerSecond { get; private set; }

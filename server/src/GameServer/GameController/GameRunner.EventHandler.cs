@@ -23,6 +23,12 @@ public partial class GameRunner
             return;
         }
 
+        if (WhiteList.Any(token => token == (e.Message as PerformMessage)!.Token) == false)
+        {
+            _logger.Error($"Token {(e.Message as PerformMessage)!.Token} is not in the whitelist.");
+            return;
+        }
+
         if (e.Message is GetPlayerInfoMessage getPlayerInfoMessage)
         {
             if (_tokenToSocketId.TryGetValue(getPlayerInfoMessage.Token, out Guid socketId) == true)
