@@ -77,7 +77,7 @@ public partial class Player
         {
             Health -= damage;
         }
-        
+
         Health = Math.Max(0, Health);
 
         if (Health == 0)
