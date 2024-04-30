@@ -114,10 +114,12 @@ class Program
                     _logger.Information("Game finished.");
                     List<Player> players = gameRunner.Game.GetPlayers();
                     Player lastSurvivor = players[0];
-                    if (lastSurvivor.DieTime is not null) {
+                    if (lastSurvivor.DieTime is not null)
+                    {
                         foreach (Player player in players)
                         {
-                            if (player.DieTime is null) {
+                            if (player.DieTime is null)
+                            {
                                 lastSurvivor = player;
                                 break;
                             }
