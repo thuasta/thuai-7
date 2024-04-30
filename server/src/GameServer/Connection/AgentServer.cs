@@ -12,15 +12,19 @@ public partial class AgentServer
     public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
     public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
     public const int TIMEOUT_MILLISEC = 10;
-    public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
-    public double RealMpps { get; private set; }
-    public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
     public string IpAddress { get; init; } = "0.0.0.0";
     public int Port { get; init; } = 8080;
+
+    public List<string> WhiteList { get; init; } = new();
+
     public Task? TaskForPublishingMessage { get; private set; } = null;
+
+    public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
+    public double RealMpps { get; private set; }
+    public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
 
     private DateTime _lastMppsCheckTime = DateTime.Now;
 
@@ -160,8 +164,8 @@ public partial class AgentServer
 
                     if (sendTask.IsCompletedSuccessfully == false)
                     {
-                        _logger.Error(
-                            $"Failed to send message to \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\"."
+                        _logger.Debug(
+                            $"Timeout (\"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\")."
                             );
                         continue;
                     }

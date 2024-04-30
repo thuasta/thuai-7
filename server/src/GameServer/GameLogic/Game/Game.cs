@@ -37,7 +37,9 @@ public partial class Game
     private readonly object _lock = new();
 
     private readonly Recorder.Recorder? _recorder = new(
-        Path.Combine("Records", $"{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid()}")
+        "Records",
+        "record.dat",
+        "result.json"
     );
 
     #endregion
@@ -64,6 +66,11 @@ public partial class Game
         _recorder?.Save();
     }
 
+    public void SaveResults(Result result)
+    {
+        _recorder?.SaveResults(result);
+    }
+
     /// <summary>
     /// Initializes the game.
     /// </summary>
@@ -71,6 +78,11 @@ public partial class Game
     {
         try
         {
+            if (AllPlayers.Count <= 0)
+            {
+                _logger.Warning("No player is in the game.");
+            }
+
             lock (_lock)
             {
                 GameMap.GenerateMap();
@@ -187,7 +199,7 @@ public partial class Game
                         alivePlayers++;
                     }
                 }
-                if (alivePlayers == 0)
+                if (alivePlayers <= 1)
                 {
                     Stage = GameStage.Finished;
                     AfterGameFinishEvent?.Invoke(this, new AfterGameFinishEventArgs());
@@ -249,6 +261,38 @@ public partial class Game
         {
             _logger.Error($"An exception occurred while ticking the game: {e}");
         }
+    }
+
+    /// <summary>
+    /// Judges the game.
+    /// </summary>
+    /// <returns>Winner's player id.</returns>
+    public int Judge()
+    {
+        if (Stage != GameStage.Finished)
+        {
+            throw new InvalidOperationException("The game should be finished before judging.");
+        }
+
+        Player lastSurvivor = AllPlayers[0];
+        if (lastSurvivor.DieTime is not null)
+        {
+            foreach (Player player in AllPlayers)
+            {
+                if (player.DieTime is null)
+                {
+                    lastSurvivor = player;
+                    break;
+                }
+
+                if (player.DieTime is not null && player.DieTime > lastSurvivor.DieTime)
+                {
+                    lastSurvivor = player;
+                }
+            }
+        }
+
+        return lastSurvivor.PlayerId;
     }
     #endregion
 }

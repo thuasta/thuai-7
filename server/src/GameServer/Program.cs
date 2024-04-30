@@ -37,9 +37,12 @@ class Program
 
         Version version = typeof(Program).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
 
+        string? allTokensStr = Environment.GetEnvironmentVariable(config.TokenListEnv);
+        List<string> allTokens = allTokensStr?.Split(';').ToList() ?? new();
+
         _logger.Information(
             @"
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
+ .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
 | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
 | |  _________   | || |  ____  ____  | || | _____  _____ | || |   ______     | || |    ______    | |
 | | |  _   _  |  | || | |_   ||   _| | || ||_   _||_   _|| || |  |_   _ \    | || |  .' ___  |   | |
@@ -53,21 +56,21 @@ class Program
         );
         _logger.Information(
             "\n" + @"
-        #                #            #     #  #       #         #   
-       ##               ##           ##    ## ##      ##   #######  
-       ##  #            ##   #       ## #  ##  ##     ##       ##   
-   ##########      ############      ##### ##  #      ##      ##    
-       ##           #   ##  #        ##    ######   ######   ##     
-       ##    #       ## ##  ##       ##  ####         ##    ##    # 
-  #############       #### ##      # ## #  ##  #      ##  ######### 
-      ###             # ####  #    ####### ##  ##     ##   #  #  ## 
-     #####        ##############   ##  ##  ## ##      ##   ## ## ## 
-     #### #            ####        ##  ##   ####      ## # ## ## ## 
-    ## ## ##          ######       ##  ##   ###       ### ## ##  ## 
-    ## ##  ##        ## ## ##      ##  ##   ##      ####  #  ##  ## 
-   ##  ##  ###      ##  ##  ###    ##  ##  ####  #   #   #  ##   ## 
-  ##   ##   ####   ##   ##   ####  ###### ##  ## #      #  ##   ##  
- #     ##     #   #     ##    ##   #   # ##    ###        ##  ####  
+        #                #            #     #  #       #         #
+       ##               ##           ##    ## ##      ##   #######
+       ##  #            ##   #       ## #  ##  ##     ##       ##
+   ##########      ############      ##### ##  #      ##      ##
+       ##           #   ##  #        ##    ######   ######   ##
+       ##    #       ## ##  ##       ##  ####         ##    ##    #
+  #############       #### ##      # ## #  ##  #      ##  #########
+      ###             # ####  #    ####### ##  ##     ##   #  #  ##
+     #####        ##############   ##  ##  ## ##      ##   ## ## ##
+     #### #            ####        ##  ##   ####      ## # ## ## ##
+    ## ## ##          ######       ##  ##   ###       ### ## ##  ##
+    ## ##  ##        ## ## ##      ##  ##   ##      ####  #  ##  ##
+   ##  ##  ###      ##  ##  ###    ##  ##  ####  #   #   #  ##   ##
+  ##   ##   ####   ##   ##   ####  ###### ##  ## #      #  ##   ##
+ #     ##     #   #     ##    ##   #   # ##    ###        ##  ####
        #                #               #       ##      ##      #   "
         );
         _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
@@ -81,11 +84,15 @@ class Program
 
         try
         {
-            IGameRunner gameRunner = new GameRunner(config);
+            GameRunner gameRunner = new(config)
+            {
+                WhiteList = new(allTokens)
+            };
 
             AgentServer agentServer = new()
             {
-                Port = config.ServerPort
+                Port = config.ServerPort,
+                WhiteList = new(allTokens)
             };
 
             SubscribeEvents();
@@ -111,33 +118,7 @@ class Program
                 Task.Delay(0).Wait();
                 if (gameRunner.Game.Stage == Game.GameStage.Finished)
                 {
-                    _logger.Information("Game finished.");
-                    List<Player> players = gameRunner.Game.GetPlayers();
-                    Player lastSurvivor = players[0];
-                    if (lastSurvivor.DieTime is not null)
-                    {
-                        foreach (Player player in players)
-                        {
-                            if (player.DieTime is null)
-                            {
-                                lastSurvivor = player;
-                                break;
-                            }
-
-                            if (player.DieTime is not null && player.DieTime > lastSurvivor.DieTime)
-                            {
-                                lastSurvivor = player;
-                            }
-                        }
-                    }
-
-                    Result result = new()
-                    {
-                        Winner = lastSurvivor.PlayerId.ToString()
-                    };
-
-                    // TODO: Save result to file.
-
+                    gameRunner.Stop(forceStop: false);
                     break;
                 }
             }
@@ -161,7 +142,7 @@ class Program
                         string? input = Console.ReadLine();
                         if (input == "stop")
                         {
-                            gameRunner.Stop();
+                            gameRunner.Stop(forceStop: true);
                             Environment.Exit(0);
                         }
                         else
