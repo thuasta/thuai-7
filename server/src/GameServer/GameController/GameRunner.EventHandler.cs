@@ -6,7 +6,7 @@ using GameServer.Geometry;
 
 namespace GameServer.GameController;
 
-public partial class GameRunner : IGameRunner
+public partial class GameRunner
 {
 
     private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();

@@ -37,6 +37,9 @@ class Program
 
         Version version = typeof(Program).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
 
+        string? allTokensStr = Environment.GetEnvironmentVariable(config.TokenListEnv);
+        List<string> allTokens = allTokensStr?.Split(';').ToList() ?? new();
+
         _logger.Information(
             @"
  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
@@ -81,11 +84,12 @@ class Program
 
         try
         {
-            IGameRunner gameRunner = new GameRunner(config);
+            GameRunner gameRunner = new(config);
 
             AgentServer agentServer = new()
             {
-                Port = config.ServerPort
+                Port = config.ServerPort,
+                WhiteList = new(allTokens)
             };
 
             SubscribeEvents();

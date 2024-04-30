@@ -28,6 +28,6 @@ public record Config
     [JsonPropertyName("serverPort")]
     public int ServerPort { get; init; } = 14514;
 
-    [JsonPropertyName("tokenList")]
-    public string[] TokenList { get; init; } = [];
+    [JsonPropertyName("tokenListEnv")]
+    public string TokenListEnv { get; init; } = "TOKEN_LIST";
 }

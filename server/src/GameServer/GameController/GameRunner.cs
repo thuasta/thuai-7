@@ -4,7 +4,7 @@ using Serilog;
 
 namespace GameServer.GameController;
 
-public partial class GameRunner : IGameRunner
+public partial class GameRunner
 {
     public event EventHandler<AfterPlayerConnect>? AfterPlayerConnectEvent = delegate { };
     public Game Game { get; }
