@@ -189,7 +189,7 @@ public partial class Game
                         alivePlayers++;
                     }
                 }
-                if (alivePlayers == 0)
+                if (alivePlayers <= 1)
                 {
                     Stage = GameStage.Finished;
                     AfterGameFinishEvent?.Invoke(this, new AfterGameFinishEventArgs());

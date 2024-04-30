@@ -79,7 +79,7 @@ public partial class GameRunner
 
     }
 
-    public void Stop()
+    public void Stop(bool forceStop = false)
     {
         _isRunning = false;
         _logger.Information("Server stop requested.");
