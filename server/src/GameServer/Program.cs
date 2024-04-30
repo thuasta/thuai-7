@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using GameServer.Connection;
 using GameServer.GameController;
+using GameServer.GameLogic;
 using Serilog;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
@@ -91,12 +92,12 @@ class Program
             agentServer.Start();
 
             // Wait for players to connect
-            Task.Delay((int)(config.WaitingTime * 1000)).Wait();
+            Task.Delay(config.QueueTime * 1000).Wait();
 
-            while (gameRunner.Game.PlayerCount < config.ExpectedPlayerNum)
+            while (gameRunner.Game.PlayerCount < config.PlayerCount)
             {
                 _logger.Information(
-                    $"Waiting for {config.ExpectedPlayerNum - gameRunner.Game.PlayerCount} more players to join..."
+                    $"Waiting for {config.PlayerCount - gameRunner.Game.PlayerCount} more players to join..."
                 );
                 Task.Delay(1000).Wait();
             }
@@ -105,7 +106,39 @@ class Program
 
             HandleCommand();
 
-            Task.Delay(-1).Wait();
+            while (true)
+            {
+                Task.Delay(0).Wait();
+                if (gameRunner.Game.Stage == Game.GameStage.Finished)
+                {
+                    _logger.Information("Game finished.");
+                    List<Player> players = gameRunner.Game.GetPlayers();
+                    Player lastSurvivor = players[0];
+                    if (lastSurvivor.DieTime is not null) {
+                        foreach (Player player in players)
+                        {
+                            if (player.DieTime is null) {
+                                lastSurvivor = player;
+                                break;
+                            }
+
+                            if (player.DieTime is not null && player.DieTime > lastSurvivor.DieTime)
+                            {
+                                lastSurvivor = player;
+                            }
+                        }
+                    }
+
+                    Result result = new()
+                    {
+                        Winner = lastSurvivor.PlayerId.ToString()
+                    };
+
+                    // TODO: Save result to file.
+
+                    break;
+                }
+            }
 
             #region Local Functions
             void SubscribeEvents()

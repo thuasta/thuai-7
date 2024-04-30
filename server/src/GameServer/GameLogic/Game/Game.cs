@@ -51,7 +51,7 @@ public partial class Game
         _logger = Log.ForContext("Component", "Game");
         Config = config;
 
-        GameMap = new Map(config.MapWidth, config.MapHeight, config.SafeZoneMaxRadius, config.SafeZoneTicksUntilDisappear, config.DamageOutsideSafeZone);
+        GameMap = new Map(config.MapLength, config.MapLength, config.SafeZoneInitialRadius, config.SafeZoneShrinkTime, config.DamagePerTickOutsideSafeZone);
         AllPlayers = new List<Player>();
 
     }

@@ -6,6 +6,7 @@ namespace GameServer.GameLogic;
 
 public partial class Player
 {
+    public string Token { get; }
     public int PlayerId { get; set; }
 
     public double PlayerRadius { get; set; }
@@ -14,6 +15,7 @@ public partial class Player
     public int Health { get; set; }
     public bool IsAlive => Health > 0;
 
+    public DateTime? DieTime { get; set; } = null;
     public double Speed { get; set; }
 
     public Armor PlayerArmor { get; set; }
@@ -31,8 +33,9 @@ public partial class Player
     private readonly ILogger _logger;
 
     //生成构造函数
-    public Player(int playerId, int maxHealth, double speed, Position position)
+    public Player(string token, int playerId, int maxHealth, double speed, Position position)
     {
+        Token = token;
         PlayerId = playerId;
         Health = maxHealth;
         MaxHealth = maxHealth;
@@ -58,13 +61,12 @@ public partial class Player
     {
         if (IsAlive == false)
         {
-            _logger.Error($"Failed to take damage: Player {PlayerId} is already dead.");
             return;
         }
+
         if (damage < 0)
         {
-            _logger.Error($"Damage should be non-negative, but actually {damage}.");
-            return;
+            throw new ArgumentException("damage should be non-negative.");
         }
 
         if (PlayerArmor != null && ignoreArmor == false)
@@ -74,6 +76,13 @@ public partial class Player
         else
         {
             Health -= damage;
+        }
+        
+        Health = Math.Max(0, Health);
+
+        if (Health == 0)
+        {
+            DieTime = DateTime.Now;
         }
     }
 

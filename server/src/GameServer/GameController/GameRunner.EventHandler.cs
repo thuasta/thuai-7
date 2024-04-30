@@ -62,6 +62,7 @@ public partial class GameRunner : IGameRunner
                     if (
                         Game.AddPlayer(
                             new Player(
+                                getPlayerInfoMessage.Token,
                                 _nextPlayerId,
                                 Constant.PLAYER_MAXIMUM_HEALTH,
                                 Constant.PLAYER_SPEED_PER_TICK,
