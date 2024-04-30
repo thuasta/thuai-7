@@ -1,9 +1,10 @@
 /*
 !/.github/
-!/api
-!/client
-!/docs
-!/server
+!/api/
+!/client/
+!/docs/
+!/judger/
+!/server/
 !/.gitattributes
 !/.gitignore
 !/CHANGELOG.md
