@@ -8,9 +8,7 @@ namespace GameServer.Connection;
 
 public partial class AgentServer
 {
-    // In milliseconds.
-    public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
-    public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
+    public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 10;
     public const int TIMEOUT_MILLISEC = 10;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
@@ -25,7 +23,6 @@ public partial class AgentServer
 
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
-    public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
 
     private DateTime _lastMppsCheckTime = DateTime.Now;
 
@@ -87,17 +84,11 @@ public partial class AgentServer
                     RealMpps = 1.0D / (double)(currentTime - lastPublishTime).TotalSeconds;
                     lastPublishTime = currentTime;
 
-                    // Check TPS.
+                    // Check MessagePublishedPerSecond.
                     if (DateTime.Now - _lastMppsCheckTime > MppsCheckInterval)
                     {
                         _lastMppsCheckTime = DateTime.Now;
-
-                        _logger.Debug($"Current message published per second: {RealMpps:0.00} msg/s");
-
-                        if (RealMpps < MppsLowerBound)
-                        {
-                            _logger.Warning($"Insufficient publish rate: {RealMpps:0.00} msg/s < {MppsLowerBound} msg/s");
-                        }
+                        _logger.Debug($"Current MessagePublishedPerSsecond: {RealMpps:0.00} msg/s");
                     }
                 }
             });
@@ -336,10 +327,7 @@ public partial class AgentServer
 
                 // Remove the socket.
                 _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
-                if (_sockets.TryRemove(socket.ConnectionInfo.Id, out _) == false)
-                {
-                    _logger.Error($"Failed to remove the socket with id {socket.ConnectionInfo.Id}.");
-                }
+                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
             };
 
             socket.OnMessage = text =>
