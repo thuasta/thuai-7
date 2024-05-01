@@ -115,8 +115,8 @@ public class Recorder : IRecorder, IDisposable
                     }
 
                     // Write records to file.
-                    using FileStream zipFile = new(recordFilePath, FileMode.Append, FileAccess.Write, FileShare.None);
-                    using ZipArchive archive = new(zipFile, ZipArchiveMode.Create);
+                    using FileStream zipFile = new(recordFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                    using ZipArchive archive = new(zipFile, ZipArchiveMode.Update);
                     ZipArchiveEntry entry = archive.CreateEntry(pageName, CompressionLevel.SmallestSize);
                     using StreamWriter writer = new(entry.Open());
                     writer.Write(recordJson.ToString());
