@@ -18,6 +18,7 @@ public partial class AgentServer
     public string IpAddress { get; init; } = "0.0.0.0";
     public int Port { get; init; } = 8080;
 
+    public bool WhiteListMode { get; init; } = false;
     public List<string> WhiteList { get; init; } = new();
 
     public Task? TaskForPublishingMessage { get; private set; } = null;

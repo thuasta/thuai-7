@@ -9,6 +9,7 @@ public partial class GameRunner
 
     public Game Game { get; }
 
+    public bool WhiteListMode { get; init; } = false;
     public List<string> WhiteList { get; init; } = new();
 
     public int ExpectedTicksPerSecond => Constant.TICKS_PER_SECOND;
