@@ -370,13 +370,7 @@ public partial class AgentServer
 
             socket.OnError = exception =>
             {
-                _logger.Error("Socket error.");
-
-                // Close the socket.
-                socket.Close();
-
-                // Remove the socket.
-                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _logger.Error($"Socket error: {exception.Message}");
             };
         });
     }
