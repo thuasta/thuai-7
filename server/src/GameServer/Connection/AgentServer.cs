@@ -145,16 +145,16 @@ public partial class AgentServer
 
             foreach (Guid connectionId in _sockets.Keys)
             {
-                if (token is null || _socketTokens[connectionId] == token)
+                try
                 {
-                    try
+                    if (token is null || _socketTokens[connectionId] == token)
                     {
                         sendTasks.Add(_sockets[connectionId].Send(jsonString));
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
                 }
             }
 
