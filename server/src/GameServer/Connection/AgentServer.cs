@@ -156,14 +156,21 @@ public partial class AgentServer
             {
                 if (token is null || _socketTokens[connectionId] == token)
                 {
-                    try
-                    {
-                        sendTasks.Add(_sockets[connectionId].Send(jsonString));
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
-                    }
+                    sendTasks.Add(
+                        new(
+                            () =>
+                            {
+                                try
+                                {
+                                    _sockets[connectionId].Send(jsonString);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.Error($"Failed to send message to {connectionId}: {ex.Message}");
+                                }
+                            }
+                        )
+                    );
                 }
             }
 
@@ -336,10 +343,7 @@ public partial class AgentServer
 
                 // Remove the socket.
                 _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
-                if (_sockets.TryRemove(socket.ConnectionInfo.Id, out _) == false)
-                {
-                    _logger.Error($"Failed to remove the socket with id {socket.ConnectionInfo.Id}.");
-                }
+                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
             };
 
             socket.OnMessage = text =>
