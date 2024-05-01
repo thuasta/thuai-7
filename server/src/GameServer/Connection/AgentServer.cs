@@ -146,50 +146,45 @@ public partial class AgentServer
 
     public void Publish(Message message, string? token = null)
     {
-        string jsonString = message.Json;
-
-        foreach (Guid connectionId in _sockets.Keys)
+        try
         {
-            try
+            string jsonString = message.Json;
+
+            List<Task> sendTasks = new();
+
+            foreach (Guid connectionId in _sockets.Keys)
             {
                 if (token is null || _socketTokens[connectionId] == token)
                 {
-                    Task sendTask = _sockets[connectionId].Send(jsonString);
-
-                    TimeSpan timeout = TimeSpan.FromMilliseconds(TIMEOUT_MILLISEC);
-                    DateTime startTime = DateTime.Now;
-                    while (DateTime.Now - startTime < timeout && sendTask.IsCompleted == false)
+                    try
                     {
-                        // Wait until the task is completed or the timeout is reached.
+                        sendTasks.Add(_sockets[connectionId].Send(jsonString));
                     }
-
-                    if (sendTask.IsCompletedSuccessfully == false)
+                    catch (Exception ex)
                     {
-                        _logger.Debug(
-                            $"Timeout (\"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\")."
-                            );
-                        continue;
+                        _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
                     }
-
-                    _logger.Debug($"Message published");
-                    _logger.Debug(
-                        $"Target ip: \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}\""
-                    );
-                    _logger.Debug(
-                        $"Target port: \"{_sockets[connectionId].ConnectionInfo.ClientPort}\""
-                    );
-                    _logger.Debug(
-                        $"Message type: \"{message.MessageType}\""
-                    );
-                    _logger.Verbose(jsonString);
                 }
             }
-            catch (Exception ex)
+
+            DateTime startTime = DateTime.Now;
+            Task.Delay(TIMEOUT_MILLISEC).Wait();
+
+            foreach (Task task in sendTasks)
             {
-                _logger.Error(
-                    $"Failed to send message to \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\": {ex.Message}"
-                );
+                if (task.IsCompleted == false)
+                {
+                    _logger.Debug($"Timeout (Task {task.Id}).");
+                    continue;
+                }
             }
+
+            _logger.Debug($"Message \"{message.MessageType}\" published");
+            _logger.Verbose(jsonString);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Failed to publish message: {ex.Message}");
         }
     }
 
@@ -340,7 +335,11 @@ public partial class AgentServer
                 );
 
                 // Remove the socket.
-                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
+                if (_sockets.TryRemove(socket.ConnectionInfo.Id, out _) == false)
+                {
+                    _logger.Error($"Failed to remove the socket with id {socket.ConnectionInfo.Id}.");
+                }
             };
 
             socket.OnMessage = text =>
