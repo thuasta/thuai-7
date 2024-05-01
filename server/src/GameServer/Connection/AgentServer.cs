@@ -308,7 +308,7 @@ public partial class AgentServer
         {
             socket.OnOpen = () =>
             {
-                _logger.Information(
+                _logger.Debug(
                     $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened."
                 );
 
@@ -321,7 +321,7 @@ public partial class AgentServer
 
             socket.OnClose = () =>
             {
-                _logger.Information(
+                _logger.Debug(
                     $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} closed."
                 );
 
@@ -332,6 +332,10 @@ public partial class AgentServer
 
             socket.OnMessage = text =>
             {
+                _logger.Debug(
+                    $"Received text message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                );
+
                 try
                 {
                     ParseMessage(text, socket.ConnectionInfo.Id);
@@ -344,6 +348,10 @@ public partial class AgentServer
 
             socket.OnBinary = bytes =>
             {
+                _logger.Debug(
+                    $"Received binary message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                );
+
                 try
                 {
                     string text = Encoding.UTF8.GetString(bytes);
