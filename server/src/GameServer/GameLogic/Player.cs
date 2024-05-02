@@ -54,6 +54,8 @@ public partial class Player
 
     public void Teleport(Position position)
     {
+        _logger.Debug($"Attempting to teleport to ({position.x}, {position.y}).");
+
         PlayerTeleportEvent?.Invoke(this, new PlayerTeleportEventArgs(this, position));
     }
 
@@ -111,16 +113,22 @@ public partial class Player
 
     public void MoveTo(Position destination)
     {
+        _logger.Debug($"Setting target position to ({destination.x}, {destination.y}).");
+
         PlayerTargetPosition = destination;
     }
 
     public void Stop()
     {
+        _logger.Debug("Stopping.");
+
         PlayerTargetPosition = null;
     }
 
     public void PlayerAbandon(int number, (ItemKind itemKind, string itemSpecificName) abandonedSupplies)
     {
+        _logger.Debug($"Attempting to abandon {number} {abandonedSupplies.itemSpecificName}(s).");
+
         if (IsAlive == false)
         {
             _logger.Error($"Failed to abandon items: Player {PlayerId} is already dead.");
@@ -132,6 +140,8 @@ public partial class Player
 
     public void PlayerAttack(Position targetPosition)
     {
+        _logger.Debug($"Attempting to attack ({targetPosition.x}, {targetPosition.y}).");
+
         if (IsAlive == false)
         {
             _logger.Error($"Failed to attack: Player {PlayerId} is already dead.");
@@ -143,6 +153,8 @@ public partial class Player
 
     public void PlayerUseGrenade(Position targetPosition)
     {
+        _logger.Debug($"Attempting to use grenade at ({targetPosition.x}, {targetPosition.y}).");
+
         if (IsAlive == false)
         {
             _logger.Error($"Failed to use grenade: Player {PlayerId} is already dead.");
@@ -155,6 +167,8 @@ public partial class Player
 
     public void PlayerUseMedicine(string medicineName)
     {
+        _logger.Debug($"Attempting to use medicine {medicineName}.");
+
         if (IsAlive == false)
         {
             _logger.Error($"Failed to use medicine: Player {PlayerId} is already dead.");
@@ -166,6 +180,8 @@ public partial class Player
 
     public void PlayerSwitchArm(string weaponItemId)
     {
+        _logger.Debug($"Attempting to switch weapon to {weaponItemId}.");
+
         if (IsAlive == false)
         {
             _logger.Error($"Failed to switch arm: Player {PlayerId} is already dead.");
@@ -177,6 +193,8 @@ public partial class Player
 
     public void PlayerPickUp(string targetSupply, int numb)
     {
+        _logger.Debug($"Attempting to pick up {numb} {targetSupply}(s).");
+
         if (IsAlive == false)
         {
             _logger.Error($"Failed to pick up: Player {PlayerId} is already dead.");

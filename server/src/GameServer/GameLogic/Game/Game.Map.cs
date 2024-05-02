@@ -26,7 +26,7 @@ public partial class Game
         // Check if players are in safezone
         foreach (Player player in AllPlayers)
         {
-            if (!GameMap.SafeZone.IsInSafeZone(player.PlayerPosition))
+            if (GameMap.SafeZone.IsInSafeZone(player.PlayerPosition) == false)
             {
                 player.TakeDamage(GameMap.SafeZone.DamageOutside, ignoreArmor: true);
             }
