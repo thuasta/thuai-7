@@ -149,7 +149,9 @@ public partial class AgentServer
                 {
                     if (token is null || _socketTokens[connectionId] == token)
                     {
-                        sendTasks.Add(_sockets[connectionId].Send(jsonString));
+                        Task task = _sockets[connectionId].Send(jsonString);
+                        sendTasks.Add(task);
+                        _logger.Debug($"Task {task.Id} created to send message to socket {connectionId}.");
                     }
                 }
                 catch (Exception ex)
