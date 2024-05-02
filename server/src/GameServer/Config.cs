@@ -10,6 +10,9 @@ public record Config
     [JsonPropertyName("logLevel")]
     public string LogLevel { get; init; } = "INFORMATION";
 
+    [JsonPropertyName("logTarget")]
+    public string LogTarget { get; init; } = "CONSOLE";
+
     [JsonPropertyName("mapLength")]
     public int MapLength { get; init; } = 256;
 
