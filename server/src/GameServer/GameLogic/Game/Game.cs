@@ -191,6 +191,8 @@ public partial class Game
                     Stage = GameStage.Fighting;
                 }
 
+                _logger.Debug($"Current tick: {CurrentTick}");
+
                 int alivePlayers = 0;
                 foreach (Player player in AllPlayers)
                 {
@@ -251,9 +253,6 @@ public partial class Game
                 _recorder?.Record(competitionUpdateRecord);
 
                 _events.Clear();
-                // Dereference of a possibly null reference.
-                // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
-
                 AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(AllPlayers, GameMap, CurrentTick));
             }
         }
@@ -274,6 +273,8 @@ public partial class Game
             throw new InvalidOperationException("The game should be finished before judging.");
         }
 
+        _logger.Information("Judging the game.");
+
         Player lastSurvivor = AllPlayers[0];
         if (lastSurvivor.DieTime is not null)
         {
@@ -291,6 +292,8 @@ public partial class Game
                 }
             }
         }
+
+        _logger.Information($"The winner is {lastSurvivor.PlayerId}.");
 
         return lastSurvivor.PlayerId;
     }
