@@ -286,6 +286,7 @@ class Program
             Log.ForContext("Component", "Logger").Error(
                 $"Failed to set log target to {logTarget} with level {logLevel}: {ex.Message}"
             );
+            Log.ForContext("Component", "Logger").Debug($"{ex}");
             Log.ForContext("Component", "Logger").Error(
                 $"Using default log target: CONSOLE with level INFORMATION."
             );

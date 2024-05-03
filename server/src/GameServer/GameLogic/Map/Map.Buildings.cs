@@ -14,17 +14,19 @@ public partial class Map
 
     public class HouseShape : ObstacleShape
     {
-        public override int MaxWidth => 5;
-        public override int MaxHeight => 5;
+        public override int MaxWidth => 5 + 2;
+        public override int MaxHeight => 5 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#', ' ', '#', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', '#', ' ', '#', '#'}
-    };
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', ' ', '#', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', '#', ' ', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -41,12 +43,14 @@ public partial class Map
 
     public class TreeShape : ObstacleShape
     {
-        public override int MaxWidth => 2;
-        public override int MaxHeight => 2;
+        public override int MaxWidth => 2 + 2;
+        public override int MaxHeight => 2 + 2;
 
         private readonly char[,] _shape = {
-            { '#', '#' },
-            { '#', '#' }
+            {' ', ' ', ' ', ' '},
+            {' ', '#', '#', ' '},
+            {' ', '#', '#', ' '},
+            {' ', ' ', ' ', ' '}
         };
 
         public override bool IsSolid(int x, int y)
@@ -64,13 +68,15 @@ public partial class Map
 
     public class TubeShape : ObstacleShape
     {
-        public override int MaxWidth => 3;
-        public override int MaxHeight => 6;
+        public override int MaxWidth => 3 + 2;
+        public override int MaxHeight => 6 + 2;
 
         private readonly char[,] _shape = {
-            { '#', '#', '#', '#','#', '#' },
-            { ' ',' ',' ',' ',' ',' ' },
-            { '#', '#', '#', '#','#', '#' }
+            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}
         };
 
         public override bool IsSolid(int x, int y)
@@ -88,14 +94,16 @@ public partial class Map
 
     public class RockShape : ObstacleShape
     {
-        public override int MaxWidth => 3;
-        public override int MaxHeight => 3;
+        public override int MaxWidth => 3 + 2;
+        public override int MaxHeight => 3 + 2;
 
         private readonly char[,] _shape =
         {
-        {' ', '#', ' '},
-        {'#', '#', '#'},
-        {' ', '#', ' '}
+            {' ', ' ', ' ', ' ', ' '},
+            {' ', ' ', '#', ' ', ' '},
+            {' ', '#', '#', '#', ' '},
+            {' ', ' ', '#', ' ', ' '},
+            {' ', ' ', ' ', ' ', ' '}
     };
 
         public override bool IsSolid(int x, int y)
@@ -121,12 +129,14 @@ public partial class Map
    ----------------------------------------------*/
     public class PoleShape : ObstacleShape
     {
-        public override int MaxWidth => 1;
-        public override int MaxHeight => 1;
+        public override int MaxWidth => 1 + 2;
+        public override int MaxHeight => 1 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#'}
+            {' ', ' ', ' '},
+            {' ', '#', ' '},
+            {' ', ' ', ' '}
     };
 
         public override bool IsSolid(int x, int y)
@@ -143,17 +153,19 @@ public partial class Map
     }
     public class CottageNShape : ObstacleShape
     {
-        public override int MaxWidth => 5;
-        public override int MaxHeight => 5;
+        public override int MaxWidth => 5 + 2;
+        public override int MaxHeight => 5 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#', ' ', '#', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', '#', '#', '#', '#'}
-    };
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', ' ', '#', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -169,17 +181,19 @@ public partial class Map
     }
     public class CottageSShape : ObstacleShape
     {
-        public override int MaxWidth => 5;
-        public override int MaxHeight => 5;
+        public override int MaxWidth => 5 + 2;
+        public override int MaxHeight => 5 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#', '#', '#', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', '#', ' ', '#', '#'}
-    };
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', '#', ' ', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -195,17 +209,19 @@ public partial class Map
     }
     public class CottageEShape : ObstacleShape
     {
-        public override int MaxWidth => 5;
-        public override int MaxHeight => 5;
+        public override int MaxWidth => 5 + 2;
+        public override int MaxHeight => 5 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#', '#', '#', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' '},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', '#', '#', '#', '#'}
-    };
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -221,17 +237,19 @@ public partial class Map
     }
     public class CottageWShape : ObstacleShape
     {
-        public override int MaxWidth => 5;
-        public override int MaxHeight => 5;
+        public override int MaxWidth => 5 + 2;
+        public override int MaxHeight => 5 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#', '#', '#', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', '#'},
-        {'#', '#', '#', '#', '#'}
-    };
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -247,11 +265,13 @@ public partial class Map
     }
     public class WallEWShape : ObstacleShape
     {
-        public override int MaxWidth => 1;
-        public override int MaxHeight => 5;
+        public override int MaxWidth => 1 + 2;
+        public override int MaxHeight => 5 + 2;
 
         private readonly char[,] _shape = {
-            { '#', '#', '#', '#', '#' }
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' '}
         };
 
         public override bool IsSolid(int x, int y)
@@ -268,11 +288,17 @@ public partial class Map
     }
     public class WallNSShape : ObstacleShape
     {
-        public override int MaxWidth => 5;
-        public override int MaxHeight => 1;
+        public override int MaxWidth => 5 + 2;
+        public override int MaxHeight => 1 + 2;
 
         private readonly char[,] _shape = {
-            { '#' },{ '#' },{ '#' },{ '#' },{ '#' }
+            {' ', ' ', ' '},
+            {' ', '#', ' '},
+            {' ', '#', ' '},
+            {' ', '#', ' '},
+            {' ', '#', ' '},
+            {' ', '#', ' '},
+            {' ', ' ', ' '}
         };
 
         public override bool IsSolid(int x, int y)
@@ -289,17 +315,19 @@ public partial class Map
     }
     public class MazeShape : ObstacleShape
     {
-        public override int MaxWidth => 5;
-        public override int MaxHeight => 10;
+        public override int MaxWidth => 5 + 2;
+        public override int MaxHeight => 10 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#', '#', '#', ' ','#','#','#','#','#'},
-        {' ', ' ', '#', ' ', ' ','#',' ',' ',' ','#'},
-        {'#', ' ', '#', ' ', '#',' ',' ','#',' ','#'},
-        {'#', ' ', ' ', ' ', '#',' ','#','#',' ',' '},
-        {'#', '#', '#', '#', '#',' ','#','#','#','#'}
-    };
+            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', ' ', '#', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', '#', ' '},
+            {' ', '#', ' ', '#', ' ', '#', ' ', ' ', '#', ' ', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', '#', ' ', '#', '#', ' ', ' ', ' '},
+            {' ', '#', '#', '#', '#', '#', ' ', '#', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -315,14 +343,16 @@ public partial class Map
     }
     public class Corner1Shape : ObstacleShape
     {
-        public override int MaxWidth => 2;
-        public override int MaxHeight => 2;
+        public override int MaxWidth => 2 + 2;
+        public override int MaxHeight => 2 + 2;
 
         private readonly char[,] _shape =
         {
-        {' ', '#'},
-        {'#', '#'}
-    };
+            {' ', ' ', ' ', ' '},
+            {' ', ' ', '#', ' '},
+            {' ', '#', '#', ' '},
+            {' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -338,14 +368,16 @@ public partial class Map
     }
     public class Corner2Shape : ObstacleShape
     {
-        public override int MaxWidth => 2;
-        public override int MaxHeight => 2;
+        public override int MaxWidth => 2 + 2;
+        public override int MaxHeight => 2 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', ' '},
-        {'#', '#'}
-    };
+            {' ', ' ', ' ', ' '},
+            {' ', '#', ' ', ' '},
+            {' ', '#', '#', ' '},
+            {' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -361,14 +393,16 @@ public partial class Map
     }
     public class Corner3Shape : ObstacleShape
     {
-        public override int MaxWidth => 2;
-        public override int MaxHeight => 2;
+        public override int MaxWidth => 2 + 2;
+        public override int MaxHeight => 2 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#'},
-        {'#', ' '}
-    };
+            {' ', ' ', ' ', ' '},
+            {' ', '#', '#', ' '},
+            {' ', '#', ' ', ' '},
+            {' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -384,14 +418,16 @@ public partial class Map
     }
     public class Corner4Shape : ObstacleShape
     {
-        public override int MaxWidth => 2;
-        public override int MaxHeight => 2;
+        public override int MaxWidth => 2 + 2;
+        public override int MaxHeight => 2 + 2;
 
         private readonly char[,] _shape =
         {
-        {'#', '#'},
-        {' ', '#'}
-    };
+            {' ', ' ', ' ', ' '},
+            {' ', '#', '#', ' '},
+            {' ', ' ', '#', ' '},
+            {' ', ' ', ' ', ' '}
+        };
 
         public override bool IsSolid(int x, int y)
         {
@@ -407,12 +443,14 @@ public partial class Map
     }
     public class CarShape : ObstacleShape
     {
-        public override int MaxWidth => 2;
-        public override int MaxHeight => 3;
+        public override int MaxWidth => 2 + 2;
+        public override int MaxHeight => 3 + 2;
 
         private readonly char[,] _shape = {
-            { '#', '#','#' },
-            { '#', '#','#' }
+            {' ', ' ', ' ', ' ', ' '},
+            {' ', '#', '#', '#', ' '},
+            {' ', '#', '#', '#', ' '},
+            {' ', ' ', ' ', ' ', ' '}
         };
 
         public override bool IsSolid(int x, int y)

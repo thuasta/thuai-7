@@ -39,6 +39,6 @@ msbuild.wrn
 
 
 # Project specific
-/Records
-/config.json
-/server.sln
+/**/Records
+/**/config.json
+/**/server.sln

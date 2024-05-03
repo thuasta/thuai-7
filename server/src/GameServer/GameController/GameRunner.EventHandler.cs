@@ -84,6 +84,7 @@ public partial class GameRunner
                     _logger.Error(
                         $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game: {ex.Message}"
                     );
+                    _logger.Debug($"{ex}");
                 }
             }
         }
@@ -113,6 +114,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"Abandon\" for player with token {performAbandonMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -130,6 +132,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"PickUp\" for player with token {performPickUpMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -144,6 +147,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"PickUp\" for player with token {performSwitchArmMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -158,6 +162,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"UseMedicine\" for player with token {performUseMedicineMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -174,6 +179,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"UseGrenade\" for player with token {performUseGrenadeMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -190,6 +196,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"Move\" for player with token {performMoveMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -204,6 +211,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"Stop\" for player with token {performStopMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -220,6 +228,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"Attack\" for player with token {performAttackMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
@@ -242,6 +251,7 @@ public partial class GameRunner
                         _logger.Error(
                             $"Failed to perform action \"ChooseOrigin\" for player with token {chooseOriginMessage.Token}: {ex.Message}"
                         );
+                        _logger.Debug($"{ex}");
                     }
                     break;
 
