@@ -126,7 +126,7 @@ public class Recorder : IRecorder, IDisposable
             catch (Exception ex)
             {
                 _logger.Error($"Failed to save records: {ex.Message}");
-
+                _logger.Debug($"{ex}");
             }
             finally
             {

@@ -143,6 +143,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to abandon supplies: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -225,6 +226,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to attack: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -333,6 +335,7 @@ public partial class Game : IGame
                     catch (Exception ex)
                     {
                         _logger.Error($"[Player {e.Player.PlayerId}] Failed to pick up supplies: {ex.Message}");
+                        _logger.Debug($"{ex}");
                         return;
                     }
 
@@ -361,6 +364,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to pick up supplies: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -403,6 +407,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to switch arm: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -455,6 +460,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to use grenade: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -493,6 +499,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to use medicine: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -519,6 +526,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to teleport: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 }

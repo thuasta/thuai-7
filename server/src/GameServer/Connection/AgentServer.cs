@@ -100,6 +100,7 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to start AgentServer: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -132,6 +133,7 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to stop AgentServer: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -157,6 +159,7 @@ public partial class AgentServer
                 catch (Exception ex)
                 {
                     _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
+                    _logger.Debug($"{ex}");
                 }
             }
 
@@ -178,6 +181,7 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to publish message: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -292,6 +296,7 @@ public partial class AgentServer
         catch (Exception exception)
         {
             _logger.Error($"Failed to parse message: {exception.Message}");
+            _logger.Debug($"{exception}");
         }
     }
 
@@ -345,6 +350,7 @@ public partial class AgentServer
                 catch (Exception exception)
                 {
                     _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Debug($"{exception}");
                 }
             };
 
@@ -362,6 +368,7 @@ public partial class AgentServer
                 catch (Exception exception)
                 {
                     _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Debug($"{exception}");
                 }
             };
 
