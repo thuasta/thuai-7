@@ -147,7 +147,7 @@ public partial class AgentServer
             {
                 try
                 {
-                    if (token is null || _socketTokens[connectionId] == token)
+                    if (token is null || (_socketTokens.TryGetValue(connectionId, out string? val) && val == token))
                     {
                         Task task = _sockets[connectionId].Send(jsonString);
                         sendTasks.Add(task);
@@ -328,8 +328,8 @@ public partial class AgentServer
                 );
 
                 // Remove the socket.
-                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
             };
 
             socket.OnMessage = text =>
@@ -368,6 +368,11 @@ public partial class AgentServer
             socket.OnError = exception =>
             {
                 _logger.Error($"Socket error: {exception.Message}");
+
+                // Close and remove the socket.
+                socket.Close();
+                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
             };
         });
     }
