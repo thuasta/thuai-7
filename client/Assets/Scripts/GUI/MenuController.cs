@@ -139,6 +139,7 @@ public class MenuController : MonoBehaviour
         {
             // Play sound
             _buttonSound.Play();
+            ClearChildrenInContent();
             // Open the title and start game button self.
             _title.SetActive(true);
             _startGameButton.gameObject.SetActive(true);
@@ -163,6 +164,7 @@ public class MenuController : MonoBehaviour
             // Destroy all the children
             foreach (GameObject child in scrollViewContentChildren)
             {
+                Debug.Log("Clear: ", child);
                 Destroy(child);
             }
         }
@@ -170,8 +172,8 @@ public class MenuController : MonoBehaviour
         void ListAllLevels(bool startServer = false, bool isRecord = true)
         {
             Debug.Log($"{_projectPath}");
-            // Prior: find folders
-            List<string> LevelFolders = Directory.GetDirectories($"{_projectPath}/Records").ToList();
+            // Prior: find folders 
+            List<string> LevelFolders = Directory.GetFiles($"{_projectPath}/Records", "*.dat", SearchOption.AllDirectories).ToList();
             // Next: find files
             // string[] allLevels = Directory.GetFiles($"{_projectPath}/record", "*.dat", SearchOption.AllDirectories);
             // Compare them
@@ -211,7 +213,8 @@ public class MenuController : MonoBehaviour
                     // Play sound
                     _buttonSound.Play();
                     // Load the record file
-                    _fileLoaded.File = Directory.GetFiles(folderName, "*.dat", SearchOption.AllDirectories)[0];
+                    _fileLoaded.File = folderName;
+                    //_fileLoaded.File = Directory.GetFiles(folderName, "*.dat", SearchOption.AllDirectories)[0];
                     Debug.Log($"INFO: Record file name: {_fileLoaded.File}");
                     
                     SceneManager.LoadScene("Record");
