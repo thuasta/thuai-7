@@ -4,6 +4,13 @@ namespace GameServer;
 
 public record Config
 {
+
+    [JsonPropertyName("safeZoneInitialRadius")]
+    public int SafeZoneInitialRadius { get; init; } = 256;
+
+    [JsonPropertyName("safeZoneShrinkTime")]
+    public int SafeZoneShrinkTime { get; init; } = 6000;
+
     [JsonPropertyName("damagePerTickOutsideSafeZone")]
     public int DamagePerTickOutsideSafeZone { get; init; } = 1;
 
@@ -22,15 +29,12 @@ public record Config
     [JsonPropertyName("queueTime")]
     public int QueueTime { get; init; } = 10;
 
-    [JsonPropertyName("safeZoneInitialRadius")]
-    public int SafeZoneInitialRadius { get; init; } = 256;
-
-    [JsonPropertyName("safeZoneShrinkTime")]
-    public int SafeZoneShrinkTime { get; init; } = 6000;
-
     [JsonPropertyName("serverPort")]
     public int ServerPort { get; init; } = 14514;
 
     [JsonPropertyName("tokenListEnv")]
     public string TokenListEnv { get; init; } = "TOKEN_LIST";
+
+    [JsonPropertyName("maxRunningSeconds")]
+    public int MaxRunningSeconds { get; init; } = 600;
 }

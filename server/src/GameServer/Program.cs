@@ -45,6 +45,16 @@ class Program
 
         bool useWhiteList = (allTokens.Count > 0);
 
+        Task.Run(() =>
+            {
+                Task.Delay(config.MaxRunningSeconds * 1000).Wait();
+                _logger.Error(
+                    $"GameServer has been running for {config.MaxRunningSeconds} seconds. Stopping..."
+                );
+                Environment.Exit(1);
+            }
+        );
+
         try
         {
             Welcome();
@@ -115,18 +125,26 @@ class Program
                 {
                     while (true)
                     {
-                        // TODO: Read commands from console
+                        Task.Delay(100).Wait();
+
                         string? input = Console.ReadLine();
-                        if (input == "stop")
+                        if (string.IsNullOrWhiteSpace(input) == true)
                         {
-                            gameRunner.Stop(forceStop: true);
-                            Environment.Exit(0);
+                            continue;
                         }
-                        else
+
+                        switch (input)
                         {
-                            loggerForConsole.Error(
-                                $"Unknown command: {input}."
-                            );
+                            case "stop":
+                                gameRunner.Stop(forceStop: true);
+                                Environment.Exit(0);
+                                break;
+
+                            default:
+                                loggerForConsole.Error(
+                                    $"Unknown command: \"{input}\"."
+                                );
+                                break;
                         }
                     }
                 });
