@@ -45,6 +45,16 @@ class Program
 
         bool useWhiteList = (allTokens.Count > 0);
 
+        Task.Run(() =>
+            {
+                Task.Delay(config.MaxRunningSeconds * 1000).Wait();
+                _logger.Error(
+                    $"GameServer has been running for {config.MaxRunningSeconds} seconds. Stopping..."
+                );
+                Environment.Exit(1);
+            }
+        );
+
         try
         {
             Welcome();
@@ -115,6 +125,8 @@ class Program
                 {
                     while (true)
                     {
+                        Task.Delay(100).Wait();
+
                         string? input = Console.ReadLine();
                         if (string.IsNullOrWhiteSpace(input) == true)
                         {
