@@ -206,7 +206,6 @@ public partial class Game
                 {
                     Stage = GameStage.Finished;
                     AfterGameFinishEvent?.Invoke(this, new AfterGameFinishEventArgs());
-                    return;
                 }
 
                 if (Stage == GameStage.Fighting)
