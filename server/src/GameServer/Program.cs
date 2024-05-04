@@ -115,18 +115,24 @@ class Program
                 {
                     while (true)
                     {
-                        // TODO: Read commands from console
                         string? input = Console.ReadLine();
-                        if (input == "stop")
+                        if (string.IsNullOrWhiteSpace(input) == true)
                         {
-                            gameRunner.Stop(forceStop: true);
-                            Environment.Exit(0);
+                            continue;
                         }
-                        else
+
+                        switch (input)
                         {
-                            loggerForConsole.Error(
-                                $"Unknown command: {input}."
-                            );
+                            case "stop":
+                                gameRunner.Stop(forceStop: true);
+                                Environment.Exit(0);
+                                break;
+
+                            default:
+                                loggerForConsole.Error(
+                                    $"Unknown command: \"{input}\"."
+                                );
+                                break;
                         }
                     }
                 });
