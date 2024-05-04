@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2024-05-05
+
+### Added
+
+- Ability to keep old records when running a new game.
+- Generation of bullets with weapons.
+
+### Changed
+
+- Refactored to use switch to handle commands.
+- Adjusted some log messages for clarity.
+- Added padding to obstacle shapes.
+
+### Fixed
+
+- Stopped the server after running for too long seconds.
+- Recorded the last tick.
+- Closed socket on socket error.
+
 ## [0.3.0] - 2024-05-03
 
 ### Added
@@ -80,6 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First version of server
 
+[0.4.0]: https://github.com/Zhangyr2022/thuai-7/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Zhangyr2022/thuai-7/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Zhangyr2022/thuai-7/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Zhangyr2022/thuai-7/compare/v0.0.2...v0.1.0
