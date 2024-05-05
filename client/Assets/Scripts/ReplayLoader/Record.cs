@@ -508,6 +508,9 @@ public class Record : MonoBehaviour
     private void AfterPlayerPickUpEvent(JObject eventJson)
     {
         int playerId = eventJson["playerId"].ToObject<int>();
+        Player player = PlayerSource.GetPlayers()[playerId];
+        string itemName = eventJson["itemName"].ToString();
+
     }
 
     private void AfterPlayerAbandonEvent(JObject eventJson)

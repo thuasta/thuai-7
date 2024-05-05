@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Thubg.Messages;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class Player
@@ -23,9 +24,11 @@ public class Player
         }
     }
 
-    public void Attack()
+    public void Attack(Position targetPosition)
     {
+        FaceTo(targetPosition);
         playerAnimations.SetFiring();
+        
     }
 
     public void UseMedicine()
@@ -33,16 +36,24 @@ public class Player
         playerAnimations.SetDrinking();
     }
 
+    public void FaceTo(Position pos)
+    {
+        if (pos.x == playerObj.transform.position.x && pos.y == playerObj.transform.position.z)
+        {
+            return;
+        }
+        Vector3 direction = new Vector3(pos.x, playerObj.transform.position.y, pos.y) - playerObj.transform.position;
+        playerObj.transform.forward = direction;
+    }
+
     public void UpdatePosition(Position pos)
     {
-        PlayerPosition =pos;
+        PlayerPosition = pos;
         // Compute Delta
         Vector3 newPos = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
+        FaceTo(pos);
         TryGetPlayerAnimations();
-        if (playerAnimations is not null)
-        {
-            playerAnimations.WalkTo(playerObj.transform.position, newPos);
-        }
-        playerObj.transform.position = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
+        playerAnimations?.WalkTo(playerObj.transform.position, newPos);
+        playerObj.transform.position = newPos;
     }
 }
