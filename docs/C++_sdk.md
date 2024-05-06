@@ -6,15 +6,29 @@
 
 ## 1. 准备工作
 
+使用 Windows 操作系统的选手可参考如下**视频教程** [https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/](https://cloud.tsinghua.edu.cn/f/9f18a58882614cbea368/) ，了解如何使用 C++ SDK 开发自己的 Agent。
+<!-- 
+<video controls>
+      <source src="https://cloud.tsinghua.edu.cn/seafhttp/files/f1d479b0-d8ef-4125-8ec1-f11d34b49ce8/THUAI7-Cpp.mp4">
+</video> -->
+
 ### 1.1. 环境要求
 
-要求 XMake >= 2.8.8，安装方法请参考 [XMake 官方文档](https://xmake.io/#/zh-cn/guide/installation)。
+要求 XMake >= 2.8.8，安装方法请参考 [XMake 官方文档](https://xmake.io/#/zh-cn/guide/installation)。若您没有开启代理，可以使用如下链接下载 Windows 版本：[ XMake 直链下载](https://hub.nuaa.cf/xmake-io/xmake/releases/download/v2.9.1/xmake-v2.9.1.win64.exe)
 
-具备 C++20 支持的 C++ 编译器工具链。
+具备 C++20 支持的 C++ 编译器工具链。推荐使用 MSVC，VS Build Tools 下载地址：[Visual Studio Build Tools](https://aka.ms/vs/17/release/vs_BuildTools.exe)。若您使用的是其他编译器，请确保其支持 C++20 标准。
+
+合适的代码编辑器。推荐使用 Visual Studio Code。可使用如下 Windows 下载地址：[Visual Studio Code](https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user)
 
 ### 1.2. 构建项目
 
-运行以下代码以配置项目：
+若您没有开启代理，则需要更改 xmake 的 proxy，在命令行中输入：
+
+```bash
+xmake g --proxy_pac=github_mirror.pac
+```
+
+运行以下命令以配置项目：
 
 ```bash
 xmake f -m debug
@@ -37,6 +51,7 @@ xmake
 您可以在 logic.cc 文件中编写您的代码。对于有经验的开发者，您也可以修改项目中的其他任何文件。在 logic.cc 中，我们已经为您提供了一个示例寻路代码，您可以根据自己的需求进行修改。
 
 ### 1.4. 运行
+
 如果您修改了 main.cc 中的代码，则此部分可能无效。
 
 运行以下命令启动 Agent：
@@ -177,16 +192,15 @@ agent.Stop();
 #### 2.5.4. 拾取资源
 
 ```cpp
-agent.PickUp(SupplyKind target_supply, int count, Position<float> position);
+agent.PickUp(SupplyKind target_supply, int count);
 ```
 
 - **参数：**
   - `target_supply`：目标资源种类。
   - `count`：数量。
-  - `position`：资源位置。
 - **返回类型：** 无
 
-使用 `PickUp` 方法使无人作战系统拾取地图上的资源。
+使用 `PickUp` 方法使无人作战系统拾取当前脚下 1×1 方格上的资源。
 
 #### 2.5.5. 放弃资源
 

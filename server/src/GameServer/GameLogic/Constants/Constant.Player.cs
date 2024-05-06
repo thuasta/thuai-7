@@ -8,8 +8,6 @@ public partial class Constant
     // Initial backpack size of player
     public const int PLAYER_INITIAL_BACKPACK_SIZE = 100;
 
-    public const int PLAYER_PICK_UP_DISTANCE = 1;
-
     public const double PLAYER_SPEED_PER_TICK = 0.25;
 
     public const int PLAYER_MAXIMUM_HEALTH = 100;

@@ -8,11 +8,11 @@
 
 版本要求：**Python 3.12**
 
-安装依赖项
+首先请安装依赖项，需要在命令行中输入：
 
 pip install -r requirements.txt
 
-你可以在 **logic.py** 中编写你的代码。对于有经验的开发者，你也可以修改项目中的其他任何文件。运行以下命令来启动 agent：
+你可以在 **logic.py** 中编写你的代码。对于有经验的开发者，你也可以修改项目中的其他任何文件。在命令行中运行以下命令来启动 agent：
 
 ```PowerShell
 python main.py --server <server> --token <token>
@@ -149,16 +149,15 @@ agent.stop()
 #### 2.5.4. 拾取资源
 
 ```python
-agent.pick_up(item_kind: ItemKind, count: int, position: Position[float])
+agent.pick_up(item_kind: ItemKind, count: int)
 ```
 
 - 参数：
   - item_kind (ItemKind) - 资源种类
   - count (int) - 数量
-  - position (Position[float]) - 资源位置
 - 返回类型：None
 
-使用 `pick_up` 方法使无人作战系统拾取地图上的资源。
+使用 `pick_up` 方法使无人作战系统拾取地图上的资源。拾取当前脚下 1×1 方格上的资源
 
 #### 2.5.5. 放弃资源
 

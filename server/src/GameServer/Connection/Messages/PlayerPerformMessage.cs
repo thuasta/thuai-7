@@ -31,18 +31,6 @@ public record PerformPickUpMessage : PerformMessage
 
     [JsonPropertyName("targetSupply")]
     public string TargetSupply { get; init; } = "";
-
-    [JsonPropertyName("targetPosition")]
-    public TargetPosition TargetPos { get; init; } = new();
-
-    public record TargetPosition
-    {
-        [JsonPropertyName("x")]
-        public double X { get; init; }
-
-        [JsonPropertyName("y")]
-        public double Y { get; init; }
-    }
 }
 
 public record PerformSwitchArmMessage : PerformMessage

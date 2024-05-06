@@ -49,14 +49,12 @@ public partial class Player
         public const PlayerEventType EventName = PlayerEventType.PlayerPickUp;
         public Player Player { get; }
         public string TargetSupply { get; }
-        public Position TargetPosition { get; }
         public int Numb { get; }
 
-        public PlayerPickUpEventArgs(Player player, string targetSupply, Position targetPosition, int numb)
+        public PlayerPickUpEventArgs(Player player, string targetSupply, int numb)
         {
             Player = player;
             TargetSupply = targetSupply;
-            TargetPosition = targetPosition;
             Numb = numb;
         }
     }

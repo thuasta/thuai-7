@@ -37,7 +37,9 @@ public partial class Game
     private readonly object _lock = new();
 
     private readonly Recorder.Recorder? _recorder = new(
-        Path.Combine("Records", $"{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid()}")
+        "Records",
+        "record.dat",
+        "result.json"
     );
 
     #endregion
@@ -51,7 +53,7 @@ public partial class Game
         _logger = Log.ForContext("Component", "Game");
         Config = config;
 
-        GameMap = new Map(config.MapWidth, config.MapHeight, config.SafeZoneMaxRadius, config.SafeZoneTicksUntilDisappear, config.DamageOutsideSafeZone);
+        GameMap = new Map(config.MapLength, config.MapLength, config.SafeZoneInitialRadius, config.SafeZoneShrinkTime, config.DamagePerTickOutsideSafeZone);
         AllPlayers = new List<Player>();
 
     }
@@ -64,6 +66,11 @@ public partial class Game
         _recorder?.Save();
     }
 
+    public void SaveResults(Result result)
+    {
+        _recorder?.SaveResults(result);
+    }
+
     /// <summary>
     /// Initializes the game.
     /// </summary>
@@ -71,6 +78,11 @@ public partial class Game
     {
         try
         {
+            if (AllPlayers.Count <= 0)
+            {
+                _logger.Warning("No player is in the game.");
+            }
+
             lock (_lock)
             {
                 GameMap.GenerateMap();
@@ -149,7 +161,8 @@ public partial class Game
         }
         catch (Exception e)
         {
-            _logger.Error($"Failed to initialize the game: {e}");
+            _logger.Error($"Failed to initialize the game: {e.Message}");
+            _logger.Debug($"{e}");
         }
     }
 
@@ -179,6 +192,8 @@ public partial class Game
                     Stage = GameStage.Fighting;
                 }
 
+                _logger.Debug($"Current tick: {CurrentTick}");
+
                 int alivePlayers = 0;
                 foreach (Player player in AllPlayers)
                 {
@@ -187,11 +202,10 @@ public partial class Game
                         alivePlayers++;
                     }
                 }
-                if (alivePlayers == 0)
+                if (alivePlayers <= 1)
                 {
                     Stage = GameStage.Finished;
                     AfterGameFinishEvent?.Invoke(this, new AfterGameFinishEventArgs());
-                    return;
                 }
 
                 if (Stage == GameStage.Fighting)
@@ -239,16 +253,50 @@ public partial class Game
                 _recorder?.Record(competitionUpdateRecord);
 
                 _events.Clear();
-                // Dereference of a possibly null reference.
-                // AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(this, CurrentTick));
-
                 AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(AllPlayers, GameMap, CurrentTick));
             }
         }
         catch (Exception e)
         {
-            _logger.Error($"An exception occurred while ticking the game: {e}");
+            _logger.Error($"An exception occurred while ticking the game: {e.Message}");
+            _logger.Debug($"{e}");
         }
+    }
+
+    /// <summary>
+    /// Judges the game.
+    /// </summary>
+    /// <returns>Winner's player id.</returns>
+    public int Judge()
+    {
+        if (Stage != GameStage.Finished)
+        {
+            throw new InvalidOperationException("The game should be finished before judging.");
+        }
+
+        _logger.Information("Judging the game.");
+
+        Player lastSurvivor = AllPlayers[0];
+        if (lastSurvivor.DieTime is not null)
+        {
+            foreach (Player player in AllPlayers)
+            {
+                if (player.DieTime is null)
+                {
+                    lastSurvivor = player;
+                    break;
+                }
+
+                if (player.DieTime is not null && player.DieTime > lastSurvivor.DieTime)
+                {
+                    lastSurvivor = player;
+                }
+            }
+        }
+
+        _logger.Information($"The winner is Player {lastSurvivor.PlayerId}.");
+
+        return lastSurvivor.PlayerId;
     }
     #endregion
 }

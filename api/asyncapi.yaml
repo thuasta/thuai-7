@@ -528,7 +528,6 @@ components:
         - messageType
         - token
         - targetSupply
-        - targetPosition
         - num
       properties:
         messageType:

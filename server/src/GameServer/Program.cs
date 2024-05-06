@@ -1,6 +1,8 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using GameServer.Connection;
 using GameServer.GameController;
+using GameServer.GameLogic;
 using Serilog;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
@@ -11,6 +13,8 @@ class Program
 {
     const string SerilogTemplate
         = "[{@t:HH:mm:ss} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
+    const string SerilogFileOutputTemplate
+        = "[{Timestamp:HH:mm:ss} {Level:u3}] {Component,-13:default(No Component)} {Message:lj}{NewLine}{Exception}";
 
     static void Main(string[] args)
     {
@@ -30,73 +34,64 @@ class Program
         string configJsonStr = File.ReadAllText("config.json");
         Config config = JsonSerializer.Deserialize<Config>(configJsonStr) ?? new();
 
-        SetLogLevel(config.LogLevel);
+        SetLog(config.LogTarget, config.LogLevel);
 
         ILogger _logger = Log.ForContext("Component", "GameServer");
 
         Version version = typeof(Program).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
 
-        _logger.Information(
-            @"
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |  _________   | || |  ____  ____  | || | _____  _____ | || |   ______     | || |    ______    | |
-| | |  _   _  |  | || | |_   ||   _| | || ||_   _||_   _|| || |  |_   _ \    | || |  .' ___  |   | |
-| | |_/ | | \_|  | || |   | |__| |   | || |  | |    | |  | || |    | |_) |   | || | / .'   \_|   | |
-| |     | |      | || |   |  __  |   | || |  | '    ' |  | || |    |  __'.   | || | | |    ____  | |
-| |    _| |_     | || |  _| |  | |_  | || |   \ `--' /   | || |   _| |__) |  | || | \ `.___]  _| | |
-| |   |_____|    | || | |____||____| | || |    `.__.'    | || |  |_______/   | || |  `._____.'   | |
-| |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------' "
+        string? allTokensStr = Environment.GetEnvironmentVariable(config.TokenListEnv);
+        List<string> allTokens = allTokensStr?.Split(';').ToList() ?? new();
+
+        bool useWhiteList = (allTokens.Count > 0);
+
+        Task.Run(() =>
+            {
+                Task.Delay(config.MaxRunningSeconds * 1000).Wait();
+                _logger.Error(
+                    $"GameServer has been running for {config.MaxRunningSeconds} seconds. Stopping..."
+                );
+                Environment.Exit(1);
+            }
         );
-        _logger.Information(
-            "\n" + @"
-        #                #            #     #  #       #         #   
-       ##               ##           ##    ## ##      ##   #######  
-       ##  #            ##   #       ## #  ##  ##     ##       ##   
-   ##########      ############      ##### ##  #      ##      ##    
-       ##           #   ##  #        ##    ######   ######   ##     
-       ##    #       ## ##  ##       ##  ####         ##    ##    # 
-  #############       #### ##      # ## #  ##  #      ##  ######### 
-      ###             # ####  #    ####### ##  ##     ##   #  #  ## 
-     #####        ##############   ##  ##  ## ##      ##   ## ## ## 
-     #### #            ####        ##  ##   ####      ## # ## ## ## 
-    ## ## ##          ######       ##  ##   ###       ### ## ##  ## 
-    ## ##  ##        ## ## ##      ##  ##   ##      ####  #  ##  ## 
-   ##  ##  ###      ##  ##  ###    ##  ##  ####  #   #   #  ##   ## 
-  ##   ##   ####   ##   ##   ####  ###### ##  ## #      #  ##   ##  
- #     ##     #   #     ##    ##   #   # ##    ###        ##  ####  
-       #                #               #       ##      ##      #   "
-        );
-        _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
-        _logger.Information("Copyright (c) 2024");
-        _logger.Information(
-            "Student Association of Science and Technology, Department of Automation, Tsinghua University"
-        );
-        _logger.Information(
-            "--------------------------------------------------------------------------------------------\n"
-            );
 
         try
         {
-            IGameRunner gameRunner = new GameRunner(config);
+            Welcome();
+
+            _logger.Information($"WhiteListMode: {(useWhiteList ? "ON" : "OFF")}");
+            if (useWhiteList == true)
+            {
+                _logger.Debug("WhiteList:");
+                foreach (string token in allTokens)
+                {
+                    _logger.Debug(token);
+                }
+            }
+
+            GameRunner gameRunner = new(config)
+            {
+                WhiteListMode = useWhiteList,
+                WhiteList = new(allTokens)
+            };
 
             AgentServer agentServer = new()
             {
-                Port = config.ServerPort
+                Port = config.ServerPort,
+                WhiteListMode = useWhiteList,
+                WhiteList = new(allTokens)
             };
 
             SubscribeEvents();
             agentServer.Start();
 
             // Wait for players to connect
-            Task.Delay((int)(config.WaitingTime * 1000)).Wait();
+            Task.Delay(config.QueueTime * 1000).Wait();
 
-            while (gameRunner.Game.PlayerCount < config.ExpectedPlayerNum)
+            while (gameRunner.Game.PlayerCount < config.PlayerCount)
             {
                 _logger.Information(
-                    $"Waiting for {config.ExpectedPlayerNum - gameRunner.Game.PlayerCount} more players to join..."
+                    $"Waiting for {config.PlayerCount - gameRunner.Game.PlayerCount} more players to join..."
                 );
                 Task.Delay(1000).Wait();
             }
@@ -105,7 +100,15 @@ class Program
 
             HandleCommand();
 
-            Task.Delay(-1).Wait();
+            while (true)
+            {
+                Task.Delay(0).Wait();
+                if (gameRunner.Game.Stage == Game.GameStage.Finished)
+                {
+                    gameRunner.Stop(forceStop: false);
+                    break;
+                }
+            }
 
             #region Local Functions
             void SubscribeEvents()
@@ -122,21 +125,74 @@ class Program
                 {
                     while (true)
                     {
-                        // TODO: Read commands from console
+                        Task.Delay(100).Wait();
+
                         string? input = Console.ReadLine();
-                        if (input == "stop")
+                        if (string.IsNullOrWhiteSpace(input) == true)
                         {
-                            gameRunner.Stop();
-                            Environment.Exit(0);
+                            continue;
                         }
-                        else
+
+                        switch (input)
                         {
-                            loggerForConsole.Error(
-                                $"Unknown command: {input}."
-                            );
+                            case "stop":
+                                gameRunner.Stop(forceStop: true);
+                                Environment.Exit(0);
+                                break;
+
+                            default:
+                                loggerForConsole.Error(
+                                    $"Unknown command: \"{input}\"."
+                                );
+                                break;
                         }
                     }
                 });
+            }
+
+            void Welcome()
+            {
+                _logger.Information(
+                    @"
+ .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
+| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
+| |  _________   | || |  ____  ____  | || | _____  _____ | || |   ______     | || |    ______    | |
+| | |  _   _  |  | || | |_   ||   _| | || ||_   _||_   _|| || |  |_   _ \    | || |  .' ___  |   | |
+| | |_/ | | \_|  | || |   | |__| |   | || |  | |    | |  | || |    | |_) |   | || | / .'   \_|   | |
+| |     | |      | || |   |  __  |   | || |  | '    ' |  | || |    |  __'.   | || | | |    ____  | |
+| |    _| |_     | || |  _| |  | |_  | || |   \ `--' /   | || |   _| |__) |  | || | \ `.___]  _| | |
+| |   |_____|    | || | |____||____| | || |    `.__.'    | || |  |_______/   | || |  `._____.'   | |
+| |              | || |              | || |              | || |              | || |              | |
+| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
+ '----------------'  '----------------'  '----------------'  '----------------'  '----------------' "
+                );
+                _logger.Information(
+                    "\n" + @"
+        #                #            #     #  #       #         #
+       ##               ##           ##    ## ##      ##   #######
+       ##  #            ##   #       ## #  ##  ##     ##       ##
+   ##########      ############      ##### ##  #      ##      ##
+       ##           #   ##  #        ##    ######   ######   ##
+       ##    #       ## ##  ##       ##  ####         ##    ##    #
+  #############       #### ##      # ## #  ##  #      ##  #########
+      ###             # ####  #    ####### ##  ##     ##   #  #  ##
+     #####        ##############   ##  ##  ## ##      ##   ## ## ##
+     #### #            ####        ##  ##   ####      ## # ## ## ##
+    ## ## ##          ######       ##  ##   ###       ### ## ##  ##
+    ## ##  ##        ## ## ##      ##  ##   ##      ####  #  ##  ##
+   ##  ##  ###      ##  ##  ###    ##  ##  ####  #   #   #  ##   ##
+  ##   ##   ####   ##   ##   ####  ###### ##  ## #      #  ##   ##
+ #     ##     #   #     ##    ##   #   # ##    ###        ##  ####
+       #                #               #       ##      ##      #   "
+                );
+                _logger.Information($"THUAI7 GameServer v{version.Major}.{version.Minor}.{version.Build}");
+                _logger.Information("Copyright (c) 2024");
+                _logger.Information(
+                    "Student Association of Science and Technology, Department of Automation, Tsinghua University"
+                );
+                _logger.Information(
+                    "--------------------------------------------------------------------------------------------\n"
+                );
             }
             #endregion
         }
@@ -146,44 +202,113 @@ class Program
         }
     }
 
-    static void SetLogLevel(string logLevel)
+    static void SetLog(string logTarget, string logLevel)
     {
-        Log.Logger = logLevel switch
+        try
         {
-            "VERBOSE" => new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
-                .CreateLogger(),
+            ExpressionTemplate template = new(SerilogTemplate, theme: TemplateTheme.Literate);
 
-            "DEBUG" => new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
-                .CreateLogger(),
+            if (logTarget == "CONSOLE")
+            {
+                Log.Logger = logLevel switch
+                {
+                    "VERBOSE" => new LoggerConfiguration()
+                        .MinimumLevel.Verbose()
+                        .WriteTo.Console(template)
+                        .CreateLogger(),
 
-            "INFORMATION" => new LoggerConfiguration()
+                    "DEBUG" => new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.Console(template)
+                        .CreateLogger(),
+
+                    "INFORMATION" => new LoggerConfiguration()
+                        .MinimumLevel.Information()
+                        .WriteTo.Console(template)
+                        .CreateLogger(),
+
+                    "WARNING" => new LoggerConfiguration()
+                        .MinimumLevel.Warning()
+                        .WriteTo.Console(template)
+                        .CreateLogger(),
+
+                    "ERROR" => new LoggerConfiguration()
+                        .MinimumLevel.Error()
+                        .WriteTo.Console(template)
+                        .CreateLogger(),
+
+                    "FATAL" => new LoggerConfiguration()
+                        .MinimumLevel.Fatal()
+                        .WriteTo.Console(template)
+                        .CreateLogger(),
+
+                    _ => throw new ArgumentException($"Invalid log level: {logLevel}")
+                };
+            }
+            else
+            {
+                if (File.Exists(logTarget) == true)
+                {
+                    throw new InvalidOperationException($"Writing to an existing file is forbidden.");
+                }
+
+                File.Create(logTarget).Close();
+
+                Log.Logger = logLevel switch
+                {
+                    "VERBOSE" => new LoggerConfiguration()
+                        .MinimumLevel.Verbose()
+                        .WriteTo.File(logTarget, outputTemplate: SerilogFileOutputTemplate)
+                        .CreateLogger(),
+
+                    "DEBUG" => new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.File(logTarget, outputTemplate: SerilogFileOutputTemplate)
+                        .CreateLogger(),
+
+                    "INFORMATION" => new LoggerConfiguration()
+                        .MinimumLevel.Information()
+                        .WriteTo.File(logTarget, outputTemplate: SerilogFileOutputTemplate)
+                        .CreateLogger(),
+
+                    "WARNING" => new LoggerConfiguration()
+                        .MinimumLevel.Warning()
+                        .WriteTo.File(logTarget, outputTemplate: SerilogFileOutputTemplate)
+                        .CreateLogger(),
+
+                    "ERROR" => new LoggerConfiguration()
+                        .MinimumLevel.Error()
+                        .WriteTo.File(logTarget, outputTemplate: SerilogFileOutputTemplate)
+                        .CreateLogger(),
+
+                    "FATAL" => new LoggerConfiguration()
+                        .MinimumLevel.Fatal()
+                        .WriteTo.File(logTarget, outputTemplate: SerilogFileOutputTemplate)
+                        .CreateLogger(),
+
+                    _ => throw new ArgumentException($"Invalid log level: {logLevel}")
+                };
+            }
+
+            Log.ForContext("Component", "Logger").Information(
+                $"Log target set to {logTarget} with level {logLevel}."
+            );
+            Task.Delay(1000).Wait();
+        }
+        catch (Exception ex)
+        {
+            Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
-                .CreateLogger(),
-
-            "WARNING" => new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
-                .CreateLogger(),
-
-            "ERROR" => new LoggerConfiguration()
-                .MinimumLevel.Error()
-                .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
-                .CreateLogger(),
-
-            "FATAL" => new LoggerConfiguration()
-                .MinimumLevel.Fatal()
-                .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
-                .CreateLogger(),
-
-            _ => new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .WriteTo.Console(new ExpressionTemplate(SerilogTemplate, theme: TemplateTheme.Literate))
-                .CreateLogger()
-        };
+                .CreateLogger();
+            Log.ForContext("Component", "Logger").Error(
+                $"Failed to set log target to {logTarget} with level {logLevel}: {ex.Message}"
+            );
+            Log.ForContext("Component", "Logger").Debug($"{ex}");
+            Log.ForContext("Component", "Logger").Error(
+                $"Using default log target: CONSOLE with level INFORMATION."
+            );
+            Task.Delay(1000).Wait();
+        }
     }
 }

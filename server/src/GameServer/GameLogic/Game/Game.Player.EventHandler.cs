@@ -143,6 +143,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to abandon supplies: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -225,6 +226,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to attack: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -238,16 +240,6 @@ public partial class Game : IGame
         if (e.Numb <= 0)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies with non-positive number.");
-            return;
-        }
-        if (Position.Distance(e.Player.PlayerPosition, e.TargetPosition) > Constant.PLAYER_PICK_UP_DISTANCE)
-        {
-            _logger.Error($"[Player {e.Player.PlayerId}] Not close enough to the supply.");
-            return;
-        }
-        if (GameMap.GetBlock(e.TargetPosition) is null || GameMap.GetBlock(e.TargetPosition)?.IsWall == true)
-        {
-            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies at an invalid position.");
             return;
         }
         if (e.TargetSupply == Constant.Names.FIST || e.TargetSupply == Constant.Names.NO_ARMOR)
@@ -267,7 +259,7 @@ public partial class Game : IGame
                         return;
                     }
 
-                    IItem? armorItem = GameMap.GetBlock(e.TargetPosition)?.Items.Find(
+                    IItem? armorItem = GameMap.GetBlock(e.Player.PlayerPosition)?.Items.Find(
                                     i => i.ItemSpecificName == e.TargetSupply
                                 );
 
@@ -285,7 +277,7 @@ public partial class Game : IGame
                         );
                     }
                     e.Player.PlayerArmor = ArmorFactory.CreateFromItem(armorItem);
-                    GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, armorItem);
+                    GameMap.RemoveSupplies((int)e.Player.PlayerPosition.x, (int)e.Player.PlayerPosition.y, armorItem);
                     break;
 
                 case IItem.ItemKind.Weapon:
@@ -300,7 +292,7 @@ public partial class Game : IGame
                         return;
                     }
 
-                    IItem? weaponItem = GameMap.GetBlock(e.TargetPosition)?.Items.Find(
+                    IItem? weaponItem = GameMap.GetBlock(e.Player.PlayerPosition)?.Items.Find(
                                     i => i.ItemSpecificName == e.TargetSupply
                                 );
                     if (weaponItem is null || weaponItem.Count < e.Numb)
@@ -317,13 +309,13 @@ public partial class Game : IGame
                     }
 
                     e.Player.WeaponSlot.Add(WeaponFactory.CreateFromItem(weaponItem));
-                    GameMap.RemoveSupplies((int)e.TargetPosition.x, (int)e.TargetPosition.y, weaponItem);
+                    GameMap.RemoveSupplies((int)e.Player.PlayerPosition.x, (int)e.Player.PlayerPosition.y, weaponItem);
 
                     break;
 
                 default:
                     // Check if the supply exists
-                    IItem? generalItem = GameMap.GetBlock(e.TargetPosition)?.Items.Find(
+                    IItem? generalItem = GameMap.GetBlock(e.Player.PlayerPosition)?.Items.Find(
                                     i => i.ItemSpecificName == e.TargetSupply
                                 );
 
@@ -343,13 +335,14 @@ public partial class Game : IGame
                     catch (Exception ex)
                     {
                         _logger.Error($"[Player {e.Player.PlayerId}] Failed to pick up supplies: {ex.Message}");
+                        _logger.Debug($"{ex}");
                         return;
                     }
 
                     // Remove the supply from the ground
                     GameMap.RemoveSupplies(
-                        (int)e.TargetPosition.x,
-                        (int)e.TargetPosition.y,
+                        (int)e.Player.PlayerPosition.x,
+                        (int)e.Player.PlayerPosition.y,
                         new Item(generalItem.Kind, generalItem.ItemSpecificName, e.Numb)
                     );
 
@@ -361,11 +354,6 @@ public partial class Game : IGame
                 Data = new()
                 {
                     playerId = e.Player.PlayerId,
-                    targetPosition = new()
-                    {
-                        x = e.TargetPosition.x,
-                        y = e.TargetPosition.y
-                    },
                     targetSupply = e.TargetSupply,
                     numb = e.Numb
                 }
@@ -376,6 +364,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to pick up supplies: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -418,6 +407,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to switch arm: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -470,6 +460,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to use grenade: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -508,6 +499,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to use medicine: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -534,6 +526,7 @@ public partial class Game : IGame
         catch (Exception ex)
         {
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to teleport: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 }
