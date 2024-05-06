@@ -196,8 +196,10 @@ public partial class AgentServer
             Message? message = JsonSerializer.Deserialize<Message>(text)
                                ?? throw new Exception("failed to deserialize Message");
 
-            _logger.Debug("Received message: {MessageType}", message.MessageType);
-            _logger.Verbose(text);
+            _logger.Debug(
+                $"Received message: {(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}"
+            );
+            _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
 
             switch (message.MessageType)
             {
@@ -290,7 +292,9 @@ public partial class AgentServer
                     break;
 
                 default:
-                    throw new InvalidOperationException($"Invalid message type {message.MessageType}.");
+                    throw new InvalidOperationException(
+                        $"Invalid message type {(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}."
+                    );
             }
         }
         catch (Exception exception)

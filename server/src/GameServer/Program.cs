@@ -64,7 +64,7 @@ class Program
                 _logger.Debug("WhiteList:");
                 foreach (string token in allTokens)
                 {
-                    _logger.Debug(token);
+                    _logger.Debug(token.Length > 16 ? string.Concat(token.AsSpan(0, 16), "...") : token);
                 }
             }
 
