@@ -8,18 +8,21 @@ namespace GameServer.Connection;
 
 public partial class AgentServer
 {
-    // In milliseconds.
-    public const int MESSAGE_PUBLISHED_PER_SECOND = 100;
     public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
-    public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
-    public double RealMpps { get; private set; }
-    public double MppsLowerBound => 0.9 * MESSAGE_PUBLISHED_PER_SECOND;
+    public const int TIMEOUT_MILLISEC = 10;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
     public string IpAddress { get; init; } = "0.0.0.0";
     public int Port { get; init; } = 8080;
+
+    public bool WhiteListMode { get; init; } = false;
+    public List<string> WhiteList { get; init; } = new();
+
     public Task? TaskForPublishingMessage { get; private set; } = null;
+
+    public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
+    public double RealMpps { get; private set; }
 
     private DateTime _lastMppsCheckTime = DateTime.Now;
 
@@ -81,17 +84,11 @@ public partial class AgentServer
                     RealMpps = 1.0D / (double)(currentTime - lastPublishTime).TotalSeconds;
                     lastPublishTime = currentTime;
 
-                    // Check TPS.
+                    // Check MessagePublishedPerSecond.
                     if (DateTime.Now - _lastMppsCheckTime > MppsCheckInterval)
                     {
                         _lastMppsCheckTime = DateTime.Now;
-
-                        _logger.Debug($"Current message published per second: {RealMpps:0.00} msg/s");
-
-                        if (RealMpps < MppsLowerBound)
-                        {
-                            _logger.Warning($"Insufficient publish rate: {RealMpps:0.00} msg/s < {MppsLowerBound} msg/s");
-                        }
+                        _logger.Debug($"Current MessagePublishedPerSsecond: {RealMpps:0.00} msg/s");
                     }
                 }
             });
@@ -103,6 +100,7 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to start AgentServer: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -135,40 +133,55 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to stop AgentServer: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
     public void Publish(Message message, string? token = null)
     {
-        string jsonString = message.Json;
-
-        foreach (Guid connectionId in _sockets.Keys)
+        try
         {
-            try
-            {
-                if (token is null || _socketTokens[connectionId] == token)
-                {
-                    _sockets[connectionId].Send(jsonString).Wait();
+            string jsonString = message.Json;
 
-                    _logger.Debug($"Message published");
-                    _logger.Debug(
-                        $"Target ip: \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}\""
-                    );
-                    _logger.Debug(
-                        $"Target port: \"{_sockets[connectionId].ConnectionInfo.ClientPort}\""
-                    );
-                    _logger.Debug(
-                        $"Message type: \"{message.MessageType}\""
-                    );
-                    _logger.Verbose(jsonString);
+            List<Task> sendTasks = new();
+
+            foreach (Guid connectionId in _sockets.Keys)
+            {
+                try
+                {
+                    if (token is null || (_socketTokens.TryGetValue(connectionId, out string? val) && val == token))
+                    {
+                        Task task = _sockets[connectionId].Send(jsonString);
+                        sendTasks.Add(task);
+                        _logger.Debug($"Task {task.Id} created to send message to socket {connectionId}.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
+                    _logger.Debug($"{ex}");
                 }
             }
-            catch (Exception ex)
+
+            DateTime startTime = DateTime.Now;
+            Task.Delay(TIMEOUT_MILLISEC).Wait();
+
+            foreach (Task task in sendTasks)
             {
-                _logger.Error(
-                    $"Failed to send message to \"{_sockets[connectionId].ConnectionInfo.ClientIpAddress}: {_sockets[connectionId].ConnectionInfo.ClientPort}\": {ex.Message}"
-                );
+                if (task.IsCompleted == false)
+                {
+                    _logger.Debug($"Timeout (Task {task.Id}).");
+                    continue;
+                }
             }
+
+            _logger.Debug($"Message \"{message.MessageType}\" published");
+            _logger.Verbose(jsonString);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Failed to publish message: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -283,6 +296,7 @@ public partial class AgentServer
         catch (Exception exception)
         {
             _logger.Error($"Failed to parse message: {exception.Message}");
+            _logger.Debug($"{exception}");
         }
     }
 
@@ -301,7 +315,7 @@ public partial class AgentServer
         {
             socket.OnOpen = () =>
             {
-                _logger.Information(
+                _logger.Debug(
                     $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened."
                 );
 
@@ -314,16 +328,21 @@ public partial class AgentServer
 
             socket.OnClose = () =>
             {
-                _logger.Information(
+                _logger.Debug(
                     $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} closed."
                 );
 
                 // Remove the socket.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
             };
 
             socket.OnMessage = text =>
             {
+                _logger.Debug(
+                    $"Received text message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                );
+
                 try
                 {
                     ParseMessage(text, socket.ConnectionInfo.Id);
@@ -331,11 +350,16 @@ public partial class AgentServer
                 catch (Exception exception)
                 {
                     _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Debug($"{exception}");
                 }
             };
 
             socket.OnBinary = bytes =>
             {
+                _logger.Debug(
+                    $"Received binary message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                );
+
                 try
                 {
                     string text = Encoding.UTF8.GetString(bytes);
@@ -344,18 +368,18 @@ public partial class AgentServer
                 catch (Exception exception)
                 {
                     _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Debug($"{exception}");
                 }
             };
 
             socket.OnError = exception =>
             {
-                _logger.Error("Socket error.");
+                _logger.Error($"Socket error: {exception.Message}");
 
-                // Close the socket.
+                // Close and remove the socket.
                 socket.Close();
-
-                // Remove the socket.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
             };
         });
     }

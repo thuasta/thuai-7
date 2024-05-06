@@ -43,6 +43,7 @@ public partial class AgentServer
                                 X = x,
                                 Y = y
                             },
+                            Numb = item.Count
                         }
                     );
                 }

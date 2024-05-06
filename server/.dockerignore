@@ -1,7 +1,0 @@
-/src/*/bin/
-/src/*/obj/
-/.dockerignore
-/.editorconfig
-/.gitattributes
-/.gitignore
-/Dockerfile
