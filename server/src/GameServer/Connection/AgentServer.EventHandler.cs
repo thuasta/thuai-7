@@ -57,6 +57,8 @@ public partial class AgentServer
         {
             List<PlayersInfoMessage.Player.Item> inventory = new();
 
+            List<PlayersInfoMessage.Player.FirearmInfo> weaponSlot = new();
+
             // Add inventory
             foreach (IItem item in player.PlayerBackPack.Items)
             {
@@ -69,12 +71,25 @@ public partial class AgentServer
                 );
             }
 
+            foreach (IWeapon _weapon in player.WeaponSlot)
+            {
+                weaponSlot.Add(
+                    new PlayersInfoMessage.Player.FirearmInfo
+                    {
+                        Name = _weapon.Name,
+                        Distance = _weapon.Range
+                    }
+                )
+            }
+
+
             // Add player
             players.Add(
                 new PlayersInfoMessage.Player
                 {
                     PlayerId = player.PlayerId,
                     Armor = (player.PlayerArmor is not null) ? player.PlayerArmor.ItemSpecificName : "NO_ARMOR",
+                    Current_armor_health = player.PlayerArmor.health,
                     Health = player.Health,
                     Speed = player.Speed,
                     Firearm = new PlayersInfoMessage.Player.FirearmInfo
@@ -82,6 +97,7 @@ public partial class AgentServer
                         Name = player.PlayerWeapon.Name,
                         Distance = player.PlayerWeapon.Range
                     },
+                    Firearms_pool = new(weaponSlot),
                     Position = new PlayersInfoMessage.Player.PositionInfo
                     {
                         X = player.PlayerPosition.x,
