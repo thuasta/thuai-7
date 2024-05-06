@@ -84,6 +84,19 @@ class Program
             SubscribeEvents();
             agentServer.Start();
 
+            bool allConnected = false;
+
+            Task.Run(() => {
+                Task.Delay(config.ConnectionLimitTime * 1000).Wait();
+                if (allConnected == false)
+                {
+                    _logger.Error(
+                        $"Connected clients are not enough. Stopping..."
+                    );
+                    Environment.Exit(1);
+                }
+            });
+
             // Wait for players to connect
             Task.Delay(config.QueueTime * 1000).Wait();
 
@@ -94,6 +107,8 @@ class Program
                 );
                 Task.Delay(1000).Wait();
             }
+
+            allConnected = true;
 
             gameRunner.Start();
 
