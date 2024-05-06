@@ -12,9 +12,9 @@ namespace GameServer;
 class Program
 {
     const string SerilogTemplate
-        = "[{@t:HH:mm:ss} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
+        = "[{@t:HH:mm:ss.fff} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
     const string SerilogFileOutputTemplate
-        = "[{Timestamp:HH:mm:ss} {Level:u3}] {Component,-13:default(No Component)} {Message:lj}{NewLine}{Exception}";
+        = "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Component,-13:default(No Component)} {Message:lj}{NewLine}{Exception}";
 
     static void Main(string[] args)
     {
