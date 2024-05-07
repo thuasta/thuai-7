@@ -148,7 +148,12 @@ public partial class AgentServer
                 Radius = e.GameMap.SafeZone.Radius
             }
         );
-
+        _messageToPublish.Enqueue(
+            new TicksMessage
+            {
+                ElapsedTicks = TickCount
+            }
+        );
         TickCount++;
     }
 
