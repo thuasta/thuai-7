@@ -4,7 +4,7 @@ public class PlayerAnimations : MonoBehaviour
 {
     public const float MinWalkDistance = 1f;
     public const float DeadTime = 2f;
-    public const float AttackTime = 0.5f;
+    public const float AttackTime = 0.75f;
     public const float UseMedicineTime = 1f;
     public const float UseGrenadeTime = 1f;
     private Animator _animator;
