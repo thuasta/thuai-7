@@ -36,7 +36,7 @@ public record CompetitionUpdateMessage : Message
         public string Armor { get; init; } = "";
 
         [JsonPropertyName("current_armor_health")]
-        public float Current_armor_health { get; init; } 
+        public float Current_armor_health { get; init; }
 
         [JsonPropertyName("health")]
         public int Health { get; init; }
