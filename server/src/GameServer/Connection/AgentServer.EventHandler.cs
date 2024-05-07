@@ -61,7 +61,7 @@ public partial class AgentServer
 
             float _current_armor_health = 0;
 
-            if (player.PlayerArmor.ItemSpecificName != "NO_ARMOR")
+            if (player.PlayerArmor != null)
                 _current_armor_health = player.PlayerArmor.Health;
 
 
