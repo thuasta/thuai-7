@@ -79,7 +79,7 @@ public partial class AgentServer
                         Name = _weapon.Name,
                         Distance = _weapon.Range
                     }
-                )
+                );
             }
 
 
