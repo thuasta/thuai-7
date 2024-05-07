@@ -59,6 +59,12 @@ public partial class AgentServer
 
             List<PlayersInfoMessage.Player.FirearmInfo> weaponSlot = new();
 
+            float _current_armor_health = 0;
+
+            if (player.PlayerArmor.ItemSpecificName != "NO_ARMOR")
+                _current_armor_health = player.PlayerArmor.Health;
+
+
             // Add inventory
             foreach (IItem item in player.PlayerBackPack.Items)
             {
@@ -89,7 +95,7 @@ public partial class AgentServer
                 {
                     PlayerId = player.PlayerId,
                     Armor = (player.PlayerArmor is not null) ? player.PlayerArmor.ItemSpecificName : "NO_ARMOR",
-                    Current_armor_health = player.PlayerArmor.Health,
+                    Current_armor_health = _current_armor_health,
                     Health = player.Health,
                     Speed = player.Speed,
                     Firearm = new PlayersInfoMessage.Player.FirearmInfo
