@@ -1,13 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerAnimations : MonoBehaviour
 {
-    public const float MinWalkDistance = 0.1f;
+    public const float MinWalkDistance = 1f;
     public const float DeadTime = 2f;
-    public const float AttackTime = 0.5f;
+    public const float AttackTime = 0.75f;
     public const float UseMedicineTime = 1f;
     public const float UseGrenadeTime = 1f;
     private Animator _animator;
@@ -38,7 +35,6 @@ public class PlayerAnimations : MonoBehaviour
     public void WalkTo(Vector3 originalPosition, Vector3 newPosition)
     {
         TryGetAnimator();
-
         if (Vector3.Distance(originalPosition, newPosition) > MinWalkDistance * Record.RecordInfo.FrameTime)
             _animator.SetBool("Running", true);
         else

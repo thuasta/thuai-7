@@ -29,6 +29,9 @@ public record Config
     [JsonPropertyName("queueTime")]
     public int QueueTime { get; init; } = 10;
 
+    [JsonPropertyName("connectionLimitTime")]
+    public int ConnectionLimitTime { get; init; } = 30;
+
     [JsonPropertyName("serverPort")]
     public int ServerPort { get; init; } = 14514;
 
