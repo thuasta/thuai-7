@@ -89,7 +89,7 @@ public partial class AgentServer
                 {
                     PlayerId = player.PlayerId,
                     Armor = (player.PlayerArmor is not null) ? player.PlayerArmor.ItemSpecificName : "NO_ARMOR",
-                    Current_armor_health = player.PlayerArmor.health,
+                    Current_armor_health = player.PlayerArmor.Health,
                     Health = player.Health,
                     Speed = player.Speed,
                     Firearm = new PlayersInfoMessage.Player.FirearmInfo
