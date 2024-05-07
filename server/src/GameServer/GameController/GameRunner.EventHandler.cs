@@ -22,9 +22,12 @@ public partial class GameRunner
             return;
         }
 
-        if ((WhiteListMode == true) && (WhiteList.Any(token => token == (e.Message as PerformMessage)!.Token) == false))
+        string playerToken = (e.Message as PerformMessage)!.Token;
+        string playerTokenForLogging = playerToken.Length > 16 ? string.Concat(playerToken.AsSpan(0, 16), "...") : playerToken;
+
+        if ((WhiteListMode == true) && (WhiteList.Any(token => token == playerToken) == false))
         {
-            _logger.Error($"Token {(e.Message as PerformMessage)!.Token} is not in the whitelist.");
+            _logger.Error($"Token {playerTokenForLogging} is not in the whitelist.");
             return;
         }
 
@@ -33,7 +36,7 @@ public partial class GameRunner
             if (_tokenToPlayerId.Any(kvp => kvp.Key == getPlayerInfoMessage.Token) == true)
             {
                 _logger.Debug(
-                    $"Client with Id {e.SocketId} wants to join with token \"{getPlayerInfoMessage.Token}\" again."
+                    $"Client with Id {e.SocketId} wants to join with token \"{playerTokenForLogging}\" again."
                 );
                 AfterPlayerConnectEvent?.Invoke(
                     this,
@@ -47,7 +50,7 @@ public partial class GameRunner
             else
             {
                 _logger.Information(
-                    $"Adding player {_nextPlayerId} with token \"{getPlayerInfoMessage.Token}\" to the game."
+                    $"Adding player {_nextPlayerId} with token \"{playerTokenForLogging}\" to the game."
                 );
                 try
                 {
@@ -64,7 +67,7 @@ public partial class GameRunner
                     )
                     {
                         _logger.Error(
-                            $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game."
+                            $"Failed to add player with token \"{playerTokenForLogging}\" to the game."
                         );
                         return;
                     }
@@ -82,7 +85,7 @@ public partial class GameRunner
                 catch (Exception ex)
                 {
                     _logger.Error(
-                        $"Failed to add player with token \"{getPlayerInfoMessage.Token}\" to the game: {ex.Message}"
+                        $"Failed to add player with token \"{playerTokenForLogging}\" to the game: {ex.Message}"
                     );
                     _logger.Debug($"{ex}");
                 }
@@ -92,7 +95,7 @@ public partial class GameRunner
         {
             if (!_tokenToPlayerId.ContainsKey((e.Message as PerformMessage)!.Token))
             {
-                _logger.Error($"Player with token \"{(e.Message as PerformMessage)!.Token}\" does not exist.");
+                _logger.Error($"Player with token \"{playerTokenForLogging}\" does not exist.");
                 return;
             }
 
@@ -112,7 +115,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"Abandon\" for player with token {performAbandonMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"Abandon\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -130,7 +133,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"PickUp\" for player with token {performPickUpMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"PickUp\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -145,7 +148,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"PickUp\" for player with token {performSwitchArmMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"PickUp\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -160,7 +163,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"UseMedicine\" for player with token {performUseMedicineMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"UseMedicine\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -177,7 +180,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"UseGrenade\" for player with token {performUseGrenadeMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"UseGrenade\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -194,7 +197,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"Move\" for player with token {performMoveMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"Move\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -209,7 +212,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"Stop\" for player with token {performStopMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"Stop\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -226,7 +229,7 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"Attack\" for player with token {performAttackMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"Attack\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
@@ -249,14 +252,18 @@ public partial class GameRunner
                     catch (Exception ex)
                     {
                         _logger.Error(
-                            $"Failed to perform action \"ChooseOrigin\" for player with token {chooseOriginMessage.Token}: {ex.Message}"
+                            $"Failed to perform action \"ChooseOrigin\" for player with token {playerTokenForLogging}: {ex.Message}"
                         );
                         _logger.Debug($"{ex}");
                     }
                     break;
 
                 default:
-                    _logger.Error($"Unknown message type: {e.Message.MessageType}");
+                    _logger.Error(
+                        $"Unknown message type: {(e.Message.MessageType.Length > 32 ?
+                        string.Concat(e.Message.MessageType.AsSpan(0, 32), "...")
+                        : e.Message.MessageType)}"
+                    );
                     break;
             }
         }

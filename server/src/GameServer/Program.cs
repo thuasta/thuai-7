@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using GameServer.Connection;
 using GameServer.GameController;
 using GameServer.GameLogic;
@@ -12,9 +11,9 @@ namespace GameServer;
 class Program
 {
     const string SerilogTemplate
-        = "[{@t:HH:mm:ss} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
+        = "[{@t:HH:mm:ss.fff} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
     const string SerilogFileOutputTemplate
-        = "[{Timestamp:HH:mm:ss} {Level:u3}] {Component,-13:default(No Component)} {Message:lj}{NewLine}{Exception}";
+        = "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Component,-13:default(No Component)} {Message:lj}{NewLine}{Exception}";
 
     static void Main(string[] args)
     {
@@ -65,7 +64,7 @@ class Program
                 _logger.Debug("WhiteList:");
                 foreach (string token in allTokens)
                 {
-                    _logger.Debug(token);
+                    _logger.Debug(token.Length > 16 ? string.Concat(token.AsSpan(0, 16), "...") : token);
                 }
             }
 
@@ -85,6 +84,19 @@ class Program
             SubscribeEvents();
             agentServer.Start();
 
+            bool allConnected = false;
+
+            Task.Run(() => {
+                Task.Delay(config.ConnectionLimitTime * 1000).Wait();
+                if (allConnected == false)
+                {
+                    _logger.Error(
+                        $"Connected clients are not enough. Stopping..."
+                    );
+                    Environment.Exit(1);
+                }
+            });
+
             // Wait for players to connect
             Task.Delay(config.QueueTime * 1000).Wait();
 
@@ -95,6 +107,8 @@ class Program
                 );
                 Task.Delay(1000).Wait();
             }
+
+            allConnected = true;
 
             gameRunner.Start();
 

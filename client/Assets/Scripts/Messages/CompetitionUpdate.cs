@@ -45,7 +45,6 @@ namespace Thubg.Messages
         {
             public virtual string eventType { get; }
         }
-
         public record PlayerAttackEvent : Event
         {
             public override string eventType { get; } = "PLAYER_ATTACK";

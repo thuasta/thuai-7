@@ -1,12 +1,12 @@
+using System;
 using System.Collections.Generic;
-using System.IO.Compression;
+
+using Newtonsoft.Json.Linq;
+
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using Thubg.Messages;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
 
 public class Record : MonoBehaviour
 {
@@ -507,33 +507,37 @@ public class Record : MonoBehaviour
     }
     private void AfterPlayerPickUpEvent(JObject eventJson)
     {
-        int playerId = eventJson["playerId"].ToObject<int>();
+        int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        Player player = PlayerSource.GetPlayers()[playerId];
+        string itemName = eventJson["data"]["turgetSupply"].ToString();
     }
 
     private void AfterPlayerAbandonEvent(JObject eventJson)
     {
-        int playerId = eventJson["playerId"].ToObject<int>();
+        int playerId = eventJson["data"]["playerId"].ToObject<int>();
     }
 
     private void AfterPlayerAttackEvent(JObject eventJson)
     {
-        int playerId = eventJson["playerId"].ToObject<int>();
-        Position targetPosition = eventJson["targetPosition"].ToObject<Position>();
+        int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        Position targetPosition = eventJson["data"]["turgetPosition"].ToObject<Position>();
+        PlayerSource.GetPlayers()[playerId].Attack(targetPosition);
     }
 
     private void AfterPlayerUseMedicineEvent(JObject eventJson)
     {
-        int playerId = eventJson["playerId"].ToObject<int>();
+        int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        PlayerSource.GetPlayers()[playerId].UseMedicine();
     }
 
     private void AfterPlayerSwitchArmEvent(JObject eventJson)
     {
-        int playerId = eventJson["playerId"].ToObject<int>();
+        int playerId = eventJson["data"]["playerId"].ToObject<int>();
     }
 
     private void AfterPlayerUseGrenadeEvent(JObject eventJson)
     {
-        int playerId = eventJson["playerId"].ToObject<int>();
+        int playerId = eventJson["data"]["playerId"].ToObject<int>();
     }
 
     #endregion
@@ -553,6 +557,39 @@ public class Record : MonoBehaviour
                     UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
                     _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
                     _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
+                    JArray events = (JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["events"];
+                    if (events != null)
+                    {
+                        foreach (JObject eventJson in events)
+                        {
+                            JObject eventJsonInfo = (JObject)eventJson["Json"];
+                            switch(eventJson["Json"]["eventType"].ToString())
+                            {
+                            case "PLAYER_ATTACK":
+                                AfterPlayerAttackEvent(eventJsonInfo);
+                                break;
+                            case "PLAYER_SWITCH_ARM":
+                                AfterPlayerSwitchArmEvent(eventJsonInfo);
+                                break;
+                            case "PLAYER_PICK_UP":
+                                AfterPlayerPickUpEvent(eventJsonInfo);
+                                break;
+                            case "PLAYER_USE_MEDICINE":
+                                AfterPlayerUseMedicineEvent(eventJsonInfo);
+                                break;
+                            case "PLAYER_USE_GRENADE":
+                                AfterPlayerUseGrenadeEvent(eventJsonInfo);
+                                break;
+                            case "PLAYER_ABANDON":
+                                AfterPlayerAbandonEvent(eventJsonInfo);
+                                break;
+                            case "PLAYER_PREPARE":
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
                 }
                 if (_recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "SAFE_ZONE")
                 {
