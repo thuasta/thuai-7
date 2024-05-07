@@ -509,7 +509,7 @@ public class Record : MonoBehaviour
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Player player = PlayerSource.GetPlayers()[playerId];
-        string itemName = eventJson["data"]["itemName"].ToString();
+        string itemName = eventJson["data"]["turgetSupply"].ToString();
     }
 
     private void AfterPlayerAbandonEvent(JObject eventJson)
