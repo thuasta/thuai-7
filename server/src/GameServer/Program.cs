@@ -86,7 +86,8 @@ class Program
 
             bool allConnected = false;
 
-            Task.Run(() = >{
+            Task.Run(() =>
+            {
                 Task.Delay(config.ConnectionLimitTime * 1000).Wait();
                 if (allConnected == false)
                 {
