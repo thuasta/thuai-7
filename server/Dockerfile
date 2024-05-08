@@ -16,4 +16,3 @@ COPY --from=build-env /app/bin/GameServer .
 RUN ln -s /record Records
 ENTRYPOINT ["./GameServer"]
 EXPOSE 14514
-ENV JUDGE=1
