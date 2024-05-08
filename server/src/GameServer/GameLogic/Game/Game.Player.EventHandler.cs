@@ -527,6 +527,7 @@ public partial class Game : IGame
             _logger.Error(
                 $"[Player {e.Player.PlayerId}] Teleportation is only allowed at stage Preparing (actual stage {Stage})."
             );
+            return;
         }
 
         try
