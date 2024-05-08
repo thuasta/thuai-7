@@ -9,7 +9,7 @@ namespace GameServer.Connection;
 public partial class AgentServer
 {
     public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
-    public const int TIMEOUT_MILLISEC = 10;
+    public const int TIMEOUT_MILLISEC = 3;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 

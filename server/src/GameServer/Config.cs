@@ -15,7 +15,7 @@ public record Config
     public int DamagePerTickOutsideSafeZone { get; init; } = 1;
 
     [JsonPropertyName("logLevel")]
-    public string LogLevel { get; init; } = "INFORMATION";
+    public string LogLevel { get; init; } = "DEBUG";
 
     [JsonPropertyName("logTarget")]
     public string LogTarget { get; init; } = "CONSOLE";
