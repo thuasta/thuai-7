@@ -35,6 +35,9 @@ public record CompetitionUpdateMessage : Message
         [JsonPropertyName("armor")]
         public string Armor { get; init; } = "";
 
+        [JsonPropertyName("current_armor_health")]
+        public float Current_armor_health { get; init; }
+
         [JsonPropertyName("health")]
         public int Health { get; init; }
 
@@ -43,6 +46,9 @@ public record CompetitionUpdateMessage : Message
 
         [JsonPropertyName("firearm")]
         public Firearm Weapon { get; init; } = new();
+
+        [JsonPropertyName("firearms_pool")]
+        public List<Firearm> WeaponSlot { get; init; } = new();
 
         [JsonPropertyName("inventory")]
         public List<Item> Invenroty { get; init; } = new();
