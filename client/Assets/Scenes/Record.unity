@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.1304748, g: 0.111304, b: 0.31082442, a: 1}
+  m_IndirectSpecularColor: {r: 0.08038893, g: 0.099763766, b: 0.30102187, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -5480,9 +5480,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Player 0
-
-    Health: 100, '
+  m_text: "Player 0\nHealth: 100, \nArmor:NoArmor\nFirearm:Fist\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fbe28ebce2073194282d94880968109c, type: 2}
   m_sharedMaterial: {fileID: -5459410016884986833, guid: fbe28ebce2073194282d94880968109c, type: 2}
