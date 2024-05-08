@@ -70,7 +70,7 @@ players_info = agent.all_player_info
 
 - 返回类型：Optional[List[PlayerInfo]]
 
-`all_player_info` 属性将返回一个包含所有玩家信息的列表。每个玩家信息包括玩家的 ID、生命值、护甲、速度、当前武器、位置和背包物品等。
+`all_player_info` 属性将返回一个包含所有玩家信息的列表。每个玩家信息包括玩家的 ID、生命值、护甲、当前护甲血量、速度、当前武器、武器池、位置和背包物品等。
 
 #### 2.4.2. 获取地图信息
 
@@ -111,6 +111,16 @@ self_id = agent.self_id
 - 返回类型：Optional[int]
 
 `self_id` 属性将返回自身玩家的 ID。
+
+#### 2.4.6. 获取ticks
+
+```python
+ticks = agent.ticks
+```
+
+- 返回类型：Optional[int]
+
+`ticks` 属性将返回当前ticks
 
 ### 2.5. 操作无人作战系统
 
