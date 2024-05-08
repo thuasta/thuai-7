@@ -10,6 +10,9 @@ public record PlayersInfoMessage : Message
     [JsonPropertyName("players")]
     public List<Player> Players { get; init; } = new();
 
+    [JsonPropertyName("elapsedTicks")]
+    public int ElapsedTicks { get; init; }
+
     public record Player
     {
         [JsonPropertyName("playerId")]
