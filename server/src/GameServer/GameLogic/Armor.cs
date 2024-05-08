@@ -101,8 +101,9 @@ public class Armor
         }
         else
         {
+            int damageDealedByPlayer = Damage - Health;
             Health = 0;
-            return (Damage - Health);
+            return damageDealedByPlayer;
         }
     }
 }
