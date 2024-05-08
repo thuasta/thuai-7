@@ -82,27 +82,35 @@ public partial class GameRunner
 
     public void Stop(bool forceStop = false)
     {
-        _isRunning = false;
-        _logger.Information("Server stop requested.");
-
-        // Stop the game.
-        _logger.Information("Stopping server...");
-        _tickTask?.Wait();
-        _tickTask?.Dispose();
-        _tickTask = null;
-
-        // Save records.
-        _logger.Information("Saving records...");
-        Game.SaveRecord();
-
-        if (forceStop == false)
+        try
         {
-            int winnerId = Game.Judge();
-            Result result = new()
+            _isRunning = false;
+            _logger.Information("Server stop requested.");
+
+            // Stop the game.
+            _logger.Information("Stopping server...");
+            _tickTask?.Wait();
+            _tickTask?.Dispose();
+            _tickTask = null;
+
+            // Save records.
+            _logger.Information("Saving records...");
+            Game.SaveRecord();
+
+            if (forceStop == false)
             {
-                Winner = _tokenToPlayerId.First(kvp => kvp.Value == winnerId).Key
-            };
-            Game.SaveResults(result);
+                int winnerId = Game.Judge();
+                Result result = new()
+                {
+                    Winner = _tokenToPlayerId.First(kvp => kvp.Value == winnerId).Key
+                };
+                Game.SaveResults(result);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Failed to stop game: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 

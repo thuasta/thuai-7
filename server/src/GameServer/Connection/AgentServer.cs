@@ -100,6 +100,7 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to start AgentServer: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -132,6 +133,7 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to stop AgentServer: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -147,7 +149,7 @@ public partial class AgentServer
             {
                 try
                 {
-                    if (token is null || _socketTokens[connectionId] == token)
+                    if (token is null || (_socketTokens.TryGetValue(connectionId, out string? val) && val == token))
                     {
                         Task task = _sockets[connectionId].Send(jsonString);
                         sendTasks.Add(task);
@@ -157,6 +159,7 @@ public partial class AgentServer
                 catch (Exception ex)
                 {
                     _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
+                    _logger.Debug($"{ex}");
                 }
             }
 
@@ -178,6 +181,7 @@ public partial class AgentServer
         catch (Exception ex)
         {
             _logger.Error($"Failed to publish message: {ex.Message}");
+            _logger.Debug($"{ex}");
         }
     }
 
@@ -192,8 +196,10 @@ public partial class AgentServer
             Message? message = JsonSerializer.Deserialize<Message>(text)
                                ?? throw new Exception("failed to deserialize Message");
 
-            _logger.Debug("Received message: {MessageType}", message.MessageType);
-            _logger.Verbose(text);
+            _logger.Debug(
+                $"Received message: {(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}"
+            );
+            _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
 
             switch (message.MessageType)
             {
@@ -286,12 +292,15 @@ public partial class AgentServer
                     break;
 
                 default:
-                    throw new InvalidOperationException($"Invalid message type {message.MessageType}.");
+                    throw new InvalidOperationException(
+                        $"Invalid message type {(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}."
+                    );
             }
         }
         catch (Exception exception)
         {
             _logger.Error($"Failed to parse message: {exception.Message}");
+            _logger.Debug($"{exception}");
         }
     }
 
@@ -328,8 +337,8 @@ public partial class AgentServer
                 );
 
                 // Remove the socket.
-                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
             };
 
             socket.OnMessage = text =>
@@ -345,6 +354,7 @@ public partial class AgentServer
                 catch (Exception exception)
                 {
                     _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Debug($"{exception}");
                 }
             };
 
@@ -362,12 +372,18 @@ public partial class AgentServer
                 catch (Exception exception)
                 {
                     _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Debug($"{exception}");
                 }
             };
 
             socket.OnError = exception =>
             {
                 _logger.Error($"Socket error: {exception.Message}");
+
+                // Close and remove the socket.
+                socket.Close();
+                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
             };
         });
     }

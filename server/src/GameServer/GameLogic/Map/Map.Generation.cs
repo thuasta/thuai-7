@@ -16,12 +16,15 @@ public partial class Map
         {
             // Weapons
             Constant.Names.S686, Constant.Names.M16, Constant.Names.VECTOR, Constant.Names.AWM,
+
             // Medicines
             Constant.Names.BANDAGE, Constant.Names.FIRST_AID,
+
             // Armors
             Constant.Names.PRIMARY_ARMOR, Constant.Names.PREMIUM_ARMOR,
-            // Bullets
-            Constant.Names.BULLET,
+
+            // Bullets will be generated with weapons
+
             // Grenades
             Constant.Names.GRENADE
         };
@@ -43,6 +46,24 @@ public partial class Map
                     itemType, itemSpecificName, IItem.AllowPileUp(itemType) ? itemCount : 1
                 )
             );
+
+            if (itemType == IItem.ItemKind.Weapon)
+            {
+                int bulletCount = itemSpecificName switch
+                {
+                    Constant.Names.S686 => 8,
+                    Constant.Names.M16 => 16,
+                    Constant.Names.VECTOR => 16,
+                    Constant.Names.AWM => 4,
+                    _ => _random.Next(_minItemsPerSupply, _maxItemsPerSupply + 1)
+                };
+
+                AddSupplies(
+                    (int)nextPosition.x,
+                    (int)nextPosition.y,
+                    new Item(IItem.ItemKind.Bullet, Constant.Names.BULLET, bulletCount)
+                );
+            }
         }
     }
 

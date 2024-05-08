@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using GameServer.Connection;
 using GameServer.GameController;
 using GameServer.GameLogic;
@@ -12,9 +11,9 @@ namespace GameServer;
 class Program
 {
     const string SerilogTemplate
-        = "[{@t:HH:mm:ss} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
+        = "[{@t:HH:mm:ss.fff} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
     const string SerilogFileOutputTemplate
-        = "[{Timestamp:HH:mm:ss} {Level:u3}] {Component,-13:default(No Component)} {Message:lj}{NewLine}{Exception}";
+        = "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Component,-13:default(No Component)} {Message:lj}{NewLine}{Exception}";
 
     static void Main(string[] args)
     {
@@ -45,6 +44,16 @@ class Program
 
         bool useWhiteList = (allTokens.Count > 0);
 
+        Task.Run(() =>
+            {
+                Task.Delay(config.MaxRunningSeconds * 1000).Wait();
+                _logger.Error(
+                    $"GameServer has been running for {config.MaxRunningSeconds} seconds. Stopping..."
+                );
+                Environment.Exit(1);
+            }
+        );
+
         try
         {
             Welcome();
@@ -55,7 +64,7 @@ class Program
                 _logger.Debug("WhiteList:");
                 foreach (string token in allTokens)
                 {
-                    _logger.Debug(token);
+                    _logger.Debug(token.Length > 16 ? string.Concat(token.AsSpan(0, 16), "...") : token);
                 }
             }
 
@@ -75,6 +84,20 @@ class Program
             SubscribeEvents();
             agentServer.Start();
 
+            bool allConnected = false;
+
+            Task.Run(() =>
+            {
+                Task.Delay(config.ConnectionLimitTime * 1000).Wait();
+                if (allConnected == false)
+                {
+                    _logger.Error(
+                        $"Connected clients are not enough. Stopping..."
+                    );
+                    Environment.Exit(1);
+                }
+            });
+
             // Wait for players to connect
             Task.Delay(config.QueueTime * 1000).Wait();
 
@@ -85,6 +108,8 @@ class Program
                 );
                 Task.Delay(1000).Wait();
             }
+
+            allConnected = true;
 
             gameRunner.Start();
 
@@ -115,18 +140,26 @@ class Program
                 {
                     while (true)
                     {
-                        // TODO: Read commands from console
+                        Task.Delay(100).Wait();
+
                         string? input = Console.ReadLine();
-                        if (input == "stop")
+                        if (string.IsNullOrWhiteSpace(input) == true)
                         {
-                            gameRunner.Stop(forceStop: true);
-                            Environment.Exit(0);
+                            continue;
                         }
-                        else
+
+                        switch (input)
                         {
-                            loggerForConsole.Error(
-                                $"Unknown command: {input}."
-                            );
+                            case "stop":
+                                gameRunner.Stop(forceStop: true);
+                                Environment.Exit(0);
+                                break;
+
+                            default:
+                                loggerForConsole.Error(
+                                    $"Unknown command: \"{input}\"."
+                                );
+                                break;
                         }
                     }
                 });
@@ -286,6 +319,7 @@ class Program
             Log.ForContext("Component", "Logger").Error(
                 $"Failed to set log target to {logTarget} with level {logLevel}: {ex.Message}"
             );
+            Log.ForContext("Component", "Logger").Debug($"{ex}");
             Log.ForContext("Component", "Logger").Error(
                 $"Using default log target: CONSOLE with level INFORMATION."
             );

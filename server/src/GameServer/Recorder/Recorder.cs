@@ -35,6 +35,8 @@ public class Recorder : IRecorder, IDisposable
     private readonly string _recordsDir;
     private readonly string _targetRecordFileName;
     private readonly string _targetResultFileName;
+    private readonly string _copyRecordDir;
+
     private readonly ConcurrentQueue<IRecord> _recordQueue = new();
     private readonly object _saveLock = new();
 
@@ -47,14 +49,26 @@ public class Recorder : IRecorder, IDisposable
         _recordsDir = recordsDir;
         _targetRecordFileName = targetRecordFileName;
         _targetResultFileName = targetResultFileName;
+        _copyRecordDir = Path.Combine(_recordsDir, "copy", $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{Guid.NewGuid()}");
 
-        // Remove directory of record files if it exists.
-        if (Directory.Exists(_recordsDir))
+        // Remove record file if it exists.
+        if (File.Exists(Path.Combine(_recordsDir, _targetRecordFileName)))
         {
-            Directory.Delete(_recordsDir, true);
+            File.Delete(Path.Combine(_recordsDir, _targetRecordFileName));
+        }
+        if (File.Exists(Path.Combine(_recordsDir, _targetResultFileName)))
+        {
+            File.Delete(Path.Combine(_recordsDir, _targetResultFileName));
         }
 
-        Directory.CreateDirectory(_recordsDir);
+        if (!Directory.Exists(_recordsDir))
+        {
+            Directory.CreateDirectory(_recordsDir);
+        }
+        if (!Directory.Exists(_copyRecordDir))
+        {
+            Directory.CreateDirectory(_copyRecordDir);
+        }
     }
     #endregion
 
@@ -120,13 +134,23 @@ public class Recorder : IRecorder, IDisposable
                     ZipArchiveEntry entry = archive.CreateEntry(pageName, CompressionLevel.SmallestSize);
                     using StreamWriter writer = new(entry.Open());
                     writer.Write(recordJson.ToString());
-                }
+                    writer.Close();
 
+                    // Create a copy of the record file.
+                    using FileStream copyZipFile
+                        = new(Path.Combine(_copyRecordDir, $"{timestamp}.dat"), FileMode.Create);
+                    using ZipArchive copyArchive = new(copyZipFile, ZipArchiveMode.Create);
+                    ZipArchiveEntry copyEntry
+                        = copyArchive.CreateEntry("record.json", CompressionLevel.SmallestSize);
+                    using StreamWriter copyWriter = new(copyEntry.Open());
+                    copyWriter.Write(recordJson.ToString());
+                    copyWriter.Close();
+                }
             }
             catch (Exception ex)
             {
                 _logger.Error($"Failed to save records: {ex.Message}");
-
+                _logger.Debug($"{ex}");
             }
             finally
             {

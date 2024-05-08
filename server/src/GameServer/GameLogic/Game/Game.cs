@@ -161,7 +161,8 @@ public partial class Game
         }
         catch (Exception e)
         {
-            _logger.Error($"Failed to initialize the game: {e}");
+            _logger.Error($"Failed to initialize the game: {e.Message}");
+            _logger.Debug($"{e}");
         }
     }
 
@@ -205,7 +206,6 @@ public partial class Game
                 {
                     Stage = GameStage.Finished;
                     AfterGameFinishEvent?.Invoke(this, new AfterGameFinishEventArgs());
-                    return;
                 }
 
                 if (Stage == GameStage.Fighting)
@@ -258,7 +258,8 @@ public partial class Game
         }
         catch (Exception e)
         {
-            _logger.Error($"An exception occurred while ticking the game: {e}");
+            _logger.Error($"An exception occurred while ticking the game: {e.Message}");
+            _logger.Debug($"{e}");
         }
     }
 
@@ -293,7 +294,7 @@ public partial class Game
             }
         }
 
-        _logger.Information($"The winner is {lastSurvivor.PlayerId}.");
+        _logger.Information($"The winner is Player {lastSurvivor.PlayerId}.");
 
         return lastSurvivor.PlayerId;
     }
