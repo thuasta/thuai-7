@@ -134,6 +134,7 @@ public partial class AgentServer
         _messageToPublish.Enqueue(
             new PlayersInfoMessage
             {
+                ElapsedTicks = TickCount,
                 Players = new(players)
             }
         );
@@ -146,12 +147,6 @@ public partial class AgentServer
                     Y = e.GameMap.SafeZone.Center.y
                 },
                 Radius = e.GameMap.SafeZone.Radius
-            }
-        );
-        _messageToPublish.Enqueue(
-            new TicksMessage
-            {
-                ElapsedTicks = TickCount
             }
         );
         TickCount++;
