@@ -16,6 +16,7 @@ public class Player
     public BeamAnimations beamAnimations;
     public GameObject playerObj;
     public GameObject beam;
+    public GameObject playertitle;
     public Color lineColor;
 
     public void TryGetPlayerAnimations()
@@ -65,5 +66,12 @@ public class Player
         playerAnimations?.WalkTo(playerObj.transform.position, newPos);
         playerObj.transform.position = newPos;
         Debug.Log(newPos);
+    }
+    public void CreateTitleUI()
+    {
+        GameObject canvastitle = playertitle;
+        canvastitle.name = "Player_title";
+
+        GameObject titletext = canvastitle.transform.Find("Text").gameObject;
     }
 }

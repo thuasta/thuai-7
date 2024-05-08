@@ -92,7 +92,7 @@ public class Record : MonoBehaviour
     private GameObject _spotLight;
 
     private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
-
+    private Dictionary<string, List<GameObject>> itemInstances = new Dictionary<string, List<GameObject>>();
     // record data
     private readonly string _recordFilePath = null;
     private JArray _recordArray;
@@ -435,9 +435,38 @@ public class Record : MonoBehaviour
                 GameObject newSupply= Instantiate(_propDict[name],_supplyParent.transform);
                 newSupply.transform.position = supplyPosition;
                 newSupply.transform.Rotate(0,0, UnityEngine.Random.Range(0, 360));
+                if (!itemInstances.ContainsKey(name) || itemInstances[name] == null)
+                {
+                    itemInstances[name] = new List<GameObject>();
+                }
+                itemInstances[name].Add(newSupply);
             }
         }
+    }/*
+    // 这个方法将根据玩家的位置设置头顶UI文本的位置
+    private void SetHeadTextPosition(GameObject textGO, Position playerPosition)
+    {
+        // 将Text GameObject放置在玩家的头顶位置
+        // 注意：这里的代码需要根据您游戏的具体实现来调整
+        // 以下代码仅为示例，假设有一个方法可以将Position转换为World Space的Vector3
+        Vector3 worldPosition = ConvertPositionToWorldSpace(playerPosition);
+        textGO.transform.position = worldPosition + new Vector3(0, 0.2f, 0); // 根据需要调整偏移量
+
+        // 确保Text GameObject使用World Space Canvas渲染
+        Canvas canvas = textGO.GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+        }
     }
+    
+    // 这个方法需要实现将Position转换为世界空间中的Vector3
+    private Vector3 ConvertPositionToWorldSpace(Position playerPosition)
+    {
+        // 实现转换逻辑，这取决于您的游戏是如何将Position映射到世界空间的
+        // 以下为示例代码，您需要根据实际情况进行调整
+        return new Vector3(playerPosition.x, 0.2f, playerPosition.y); // 假设玩家的Position直接对应世界坐标
+    }*/
     private void UpdatePlayers(JArray players)
     {
         if (players is null)
@@ -451,7 +480,15 @@ public class Record : MonoBehaviour
 
             // Check if the player is in dict
             PlayerSource.AddPlayer(playerId, "");
-
+            /*
+            // Create UI for player ID display
+            GameObject playerHeadTextGO = new GameObject("PlayerIDText_" + playerId);
+            TextMeshProUGUI textComponent = playerHeadTextGO.AddComponent<TextMeshProUGUI>();
+            textComponent.text = "Player " + playerId; // 设置文本内容
+            textComponent.fontSize = 1; // 设置字体大小
+            textComponent.color = Color.blue; // 设置字体颜色
+            SetHeadTextPosition(playerHeadTextGO, playerPosition);
+            */
             Dictionary<string, int> inventory = new();
             foreach (JObject item in (JArray)player["inventory"])
             {
@@ -492,6 +529,8 @@ public class Record : MonoBehaviour
             {
                 infoString += "\n";
             }
+            infoString += $"Armor: {player["armor"]}\n";
+            infoString += $"Firearm: {player["firearm"]}\n";
         }
         _infoText.text = infoString;
     }
@@ -510,6 +549,23 @@ public class Record : MonoBehaviour
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Player player = PlayerSource.GetPlayers()[playerId];
         string itemName = eventJson["data"]["turgetSupply"].ToString();
+        Vector3 itemPosition = new Vector3((float)eventJson["data"]["targetPosition"]["x"], 0.1f, (float)eventJson["data"]["targetPosition"]["y"]);
+        if (itemInstances.ContainsKey(itemName))
+        {
+            foreach (GameObject itemInstance in itemInstances[itemName])
+            {
+                if (itemInstance.transform.position == itemPosition)
+                {
+                    Destroy(itemInstance);
+                    itemInstances[itemName].Remove(itemInstance);
+                    if (itemInstances[itemName].Count == 0)
+                    {
+                        itemInstances.Remove(itemName);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     private void AfterPlayerAbandonEvent(JObject eventJson)
