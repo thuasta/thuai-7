@@ -504,15 +504,13 @@ private void Start()
                 inventory,
                 playerPosition
             );
-            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\n";
+            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\nInventory: ";
             foreach(KeyValuePair<string, int> keyValue in inventory)
             {
                 infoString += $"{keyValue.Key} {keyValue.Value}; ";
             }
-            if (inventory.Count != 0)
-            {
-                infoString += "\n";
-            }
+            infoString += "\n";
+            
             infoString += $"Armor: {player["armor"]}\n";
             infoString += $"Firearm: {player["firearm"]["name"]}\n";
             infoString += $"-----------------------\n";
