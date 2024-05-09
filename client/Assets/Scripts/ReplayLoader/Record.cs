@@ -40,7 +40,7 @@ public class Record : MonoBehaviour
         /// <summary>
         /// Contains all the item in the game
         /// </summary>
-        public float NowFrameTime
+        public double NowFrameTime
         {
             get
             {
@@ -92,7 +92,7 @@ public class Record : MonoBehaviour
     private GameObject _spotLight;
 
     private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
-
+    private readonly Dictionary<string, List<GameObject>> itemInstances = new Dictionary<string, List<GameObject>>();
     // record data
     private readonly string _recordFilePath = null;
     private JArray _recordArray;
@@ -117,7 +117,11 @@ public class Record : MonoBehaviour
     };
     private Camera _camera;
     // viewer
-    private void Start()
+
+    private Dictionary<string, AudioClip> _audioClipDict;
+
+    private AudioSource _as;
+private void Start()
     {
         if (Debug.isDebugBuild)
         {
@@ -166,11 +170,22 @@ public class Record : MonoBehaviour
             { "AWM", Resources.Load<GameObject>("Prefabs/AWM") },
             { "VECTOR", Resources.Load<GameObject>("Prefabs/Vector") },
             { "S686", Resources.Load<GameObject>("Prefabs/S686") },
+            { "M16", Resources.Load<GameObject>("Prefabs/M16") },
+            { "BULLET", Resources.Load<GameObject>("Prefabs/Bullet") },
+            { "PRIMARY_ARMOR", Resources.Load<GameObject>("Prefabs/Primary_armor") },
+            { "PREMIUM_ARMOR", Resources.Load<GameObject>("Prefabs/Premium_armor") },
             { "GRENADE", Resources.Load<GameObject>("Prefabs/Grenade") }
         };
         _supplyParent = GameObject.Find("Supplies");
 
-
+        _audioClipDict = new()
+        {
+            { "AWM", Resources.Load<AudioClip>("Music/Audio/AWM") },
+            { "VECTOR", Resources.Load<AudioClip>("Music/Audio/VECTOR") },
+            { "S686", Resources.Load<AudioClip>("Music/Audio/S686") },
+            { "M16", Resources.Load<AudioClip>("Music/Audio/M16") },
+            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") }
+        };
         // GUI //
 
         // Get stop button 
@@ -192,6 +207,7 @@ public class Record : MonoBehaviour
            {
                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
                _recordInfo.NowPlayState = PlayState.Play;
+                _recordInfo.NowTime = System.DateTime.Now.Ticks;
            }
         });
 
@@ -290,20 +306,22 @@ public class Record : MonoBehaviour
 
         //    }
         //});
+
+        _as = GameObject.Find("AudioSourceObj").GetComponent<AudioSource>();
     }
 
     private JArray LoadRecordData()
     {
         JObject recordJsonObject = JsonUtility.UnzipRecord(_recordFile);
         // Load the record array
-        JArray recordArray = (JArray)recordJsonObject["records"];
+        JArray recordArray = (JArray)recordJsonObject["records"]; 
 
         if (recordArray == null)
         {
             Debug.Log("Record file is empty!");
             return null;
         }
-        return recordArray;
+        return recordArray; 
     }
 
     #region Event Definition
@@ -435,6 +453,11 @@ public class Record : MonoBehaviour
                 GameObject newSupply= Instantiate(_propDict[name],_supplyParent.transform);
                 newSupply.transform.position = supplyPosition;
                 newSupply.transform.Rotate(0,0, UnityEngine.Random.Range(0, 360));
+                if (!itemInstances.ContainsKey(name) || itemInstances[name] == null)
+                {
+                    itemInstances[name] = new List<GameObject>();
+                }
+                itemInstances[name].Add(newSupply);
             }
         }
     }
@@ -451,7 +474,6 @@ public class Record : MonoBehaviour
 
             // Check if the player is in dict
             PlayerSource.AddPlayer(playerId, "");
-
             Dictionary<string, int> inventory = new();
             foreach (JObject item in (JArray)player["inventory"])
             {
@@ -472,26 +494,29 @@ public class Record : MonoBehaviour
                     _ => ArmorTypes.NoArmor
                 },
                 player["speed"].ToObject<float>(),
-                player["firearm"].ToString() switch
+                player["firearm"]["name"].ToString() switch
                 {
                     "S686" => FirearmTypes.S686,
                     "AWM" => FirearmTypes.Awm,
                     "VECTOR" => FirearmTypes.Vector,
                     "FISTS" => FirearmTypes.Fists,
+                    "M16" => FirearmTypes.M16,
                     _ => FirearmTypes.Fists,
                 },
                 inventory,
-                playerPosition
+                playerPosition,
+                (float)player["firearm"]["distance"]
             );
-            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\n";
+            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\nInventory: ";
             foreach(KeyValuePair<string, int> keyValue in inventory)
             {
-                infoString += $"{keyValue.Key}-{keyValue.Value} ";
+                infoString += $"{keyValue.Key} {keyValue.Value}; ";
             }
-            if (inventory.Count != 0)
-            {
-                infoString += "\n";
-            }
+            infoString += "\n";
+            
+            infoString += $"Armor: {player["armor"]}\n";
+            infoString += $"Firearm: {player["firearm"]["name"]}\n";
+            infoString += $"-----------------------\n";
         }
         _infoText.text = infoString;
     }
@@ -510,6 +535,24 @@ public class Record : MonoBehaviour
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Player player = PlayerSource.GetPlayers()[playerId];
         string itemName = eventJson["data"]["turgetSupply"].ToString();
+
+        if (itemInstances.ContainsKey(itemName))
+        {
+            foreach (GameObject itemInstance in itemInstances[itemName])
+            {
+                if ((int)(itemInstance.transform.position.x) == player.PlayerPosition.x && (int)(itemInstance.transform.position.z) == player.PlayerPosition.y)
+                {
+                    Debug.Log("Found obj picked up!");
+                    Destroy(itemInstance);
+                    itemInstances[itemName].Remove(itemInstance);
+                    if (itemInstances[itemName].Count == 0)
+                    {
+                        itemInstances.Remove(itemName);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     private void AfterPlayerAbandonEvent(JObject eventJson)
@@ -521,7 +564,19 @@ public class Record : MonoBehaviour
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Position targetPosition = eventJson["data"]["turgetPosition"].ToObject<Position>();
-        PlayerSource.GetPlayers()[playerId].Attack(targetPosition);
+        Player player = PlayerSource.GetPlayers()[playerId];
+        player.Attack(targetPosition, player.FirearmRange);
+        string firearmString = player.Firearm switch
+        {
+            FirearmTypes.S686 => "S686",
+            FirearmTypes.Awm => "AWM",
+            FirearmTypes.Vector => "VECTOR",
+            FirearmTypes.Fists => "FISTS",
+            FirearmTypes.M16 => "M16",
+            _ => "M16"
+        };
+        // Play sound
+        _as.PlayOneShot(_audioClipDict[firearmString]);
     }
 
     private void AfterPlayerUseMedicineEvent(JObject eventJson)
@@ -548,56 +603,62 @@ public class Record : MonoBehaviour
     {
         //try
         //{
-            if (_recordInfo.RecordSpeed > 0)
+        if (_recordInfo.RecordSpeed < 0)
+        {
+            return;
+        }
+
+        int recordTick = _recordInfo.NowTick;
+        while (recordTick == _recordInfo.NowTick) { 
+            if (_recordArray[_recordInfo.NowRecordNum].Value<string>("currentTicks") != null &&
+                _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "COMPETITION_UPDATE")
             {
-                if (_recordArray[_recordInfo.NowRecordNum].Value<string>("currentTicks") != null &&
-                    _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "COMPETITION_UPDATE")
+                //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
+                UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
+                _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
+                _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
+                JArray events = (JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["events"];
+                if (events != null)
                 {
-                    //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
-                    UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
-                    _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
-                    _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
-                    JArray events = (JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["events"];
-                    if (events != null)
+                    foreach (JObject eventJson in events)
                     {
-                        foreach (JObject eventJson in events)
+                        JObject eventJsonInfo = (JObject)eventJson["Json"];
+                        switch(eventJson["Json"]["eventType"].ToString())
                         {
-                            JObject eventJsonInfo = (JObject)eventJson["Json"];
-                            switch(eventJson["Json"]["eventType"].ToString())
-                            {
-                            case "PLAYER_ATTACK":
-                                AfterPlayerAttackEvent(eventJsonInfo);
-                                break;
-                            case "PLAYER_SWITCH_ARM":
-                                AfterPlayerSwitchArmEvent(eventJsonInfo);
-                                break;
-                            case "PLAYER_PICK_UP":
-                                AfterPlayerPickUpEvent(eventJsonInfo);
-                                break;
-                            case "PLAYER_USE_MEDICINE":
-                                AfterPlayerUseMedicineEvent(eventJsonInfo);
-                                break;
-                            case "PLAYER_USE_GRENADE":
-                                AfterPlayerUseGrenadeEvent(eventJsonInfo);
-                                break;
-                            case "PLAYER_ABANDON":
-                                AfterPlayerAbandonEvent(eventJsonInfo);
-                                break;
-                            case "PLAYER_PREPARE":
-                                break;
-                            default:
-                                break;
-                            }
+                        case "PLAYER_ATTACK":
+                            AfterPlayerAttackEvent(eventJsonInfo);
+                            break;
+                        case "PLAYER_SWITCH_ARM":
+                            AfterPlayerSwitchArmEvent(eventJsonInfo);
+                            break;
+                        case "PLAYER_PICK_UP":
+                            AfterPlayerPickUpEvent(eventJsonInfo);
+                            break;
+                        case "PLAYER_USE_MEDICINE":
+                            AfterPlayerUseMedicineEvent(eventJsonInfo);
+                            break;
+                        case "PLAYER_USE_GRENADE":
+                            AfterPlayerUseGrenadeEvent(eventJsonInfo);
+                            break;
+                        case "PLAYER_ABANDON":
+                            AfterPlayerAbandonEvent(eventJsonInfo);
+                            break;
+                        case "PLAYER_PREPARE":
+                            break;
+                        default:
+                            break;
                         }
                     }
                 }
-                if (_recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "SAFE_ZONE")
-                {
-                    UpdateCircle(new Vector2((float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["x"], (float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["y"]),
-                        (float)_recordArray[_recordInfo.NowRecordNum]["data"]["radius"]);
-                }
-                _recordInfo.NowRecordNum++;
+
             }
+            if (_recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "SAFE_ZONE")
+            {
+                UpdateCircle(new Vector2((float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["x"], (float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["y"]),
+                    (float)_recordArray[_recordInfo.NowRecordNum]["data"]["radius"]);
+            }
+            _recordInfo.NowRecordNum++;
+        }
         //}
         //catch
         //{
@@ -607,14 +668,17 @@ public class Record : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if ((_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowTick < _recordInfo.MaxTick) || (_recordInfo.NowPlayState == PlayState.Jump))
+
+        if (!(_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowTick < _recordInfo.MaxTick))
         {
-            if ((float)(System.DateTime.Now.Ticks - _recordInfo.NowTime)/1e7 > _recordInfo.NowFrameTime || _recordInfo.NowPlayState == PlayState.Jump)
-            {
-                _recordInfo.NowTime = System.DateTime.Now.Ticks;
-                UpdateTick();
-                _recordInfo.NowDeltaTime = 0;
-            }
+            return;
+        }
+
+        if ((float)(System.DateTime.Now.Ticks - _recordInfo.NowTime)/1e7 > _recordInfo.NowFrameTime)
+        {
+            _recordInfo.NowTime = _recordInfo.NowTime + (long)(_recordInfo.NowFrameTime*1e7);
+            UpdateTick();
+            _recordInfo.NowDeltaTime = 0;
         }
     }
 }

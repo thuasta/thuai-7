@@ -10,7 +10,7 @@ public class BGM : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _num = 1;
+        _num = 0;
         _audios = new()
         {
             Resources.Load<AudioClip>("Music/Sound/BGM/1"),

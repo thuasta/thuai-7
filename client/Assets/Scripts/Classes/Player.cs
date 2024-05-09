@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using static Thubg.Messages.CompetitionUpdate;
 
 public class Player
 {
@@ -16,7 +17,9 @@ public class Player
     public BeamAnimations beamAnimations;
     public GameObject playerObj;
     public GameObject beam;
+    public GameObject playertitle;
     public Color lineColor;
+    public float FirearmRange;
 
     public void TryGetPlayerAnimations()
     {
@@ -26,10 +29,10 @@ public class Player
         }
     }
 
-    public void Attack(Position targetPosition)
+    public void Attack(Position targetPosition, float range)
     {
         FaceTo(targetPosition);
-        ShowGunFire(targetPosition);
+        ShowGunFire(targetPosition, range);
         playerAnimations.SetFiring();
     }
 
@@ -48,10 +51,15 @@ public class Player
         playerObj.transform.forward = Quaternion.AngleAxis(30, Vector3.up) * direction;
     }
 
-    public void ShowGunFire(Position pos)
+    public void ShowGunFire(Position pos, float range)
     {
-        Vector3 endPoint = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
-        beam.transform.forward = endPoint - playerObj.transform.position + beam.transform.localPosition;
+        Vector3 height = new Vector3(0, 1.8f, 0);
+        Vector3 endPoint = new Vector3(pos.x, playerObj.transform.position.y, pos.y) + height;
+        beam.transform.position = playerObj.transform.position + height ;
+        MeshRenderer childComponent = beam.GetComponentInChildren<MeshRenderer>();
+        childComponent.transform.localPosition = new Vector3(childComponent.transform.localPosition.x, childComponent.transform.localPosition.y, range/2 );
+        childComponent.transform.localScale = new Vector3(childComponent.transform.localScale.x, childComponent.transform.localScale.y, range );
+        beam.transform.LookAt(endPoint);
         beamAnimations.Blink(PlayerAnimations.AttackTime);
     }
 
@@ -64,6 +72,13 @@ public class Player
         TryGetPlayerAnimations();
         playerAnimations?.WalkTo(playerObj.transform.position, newPos);
         playerObj.transform.position = newPos;
-        Debug.Log(newPos);
+        //Debug.Log(newPos);
+    }
+    public void CreateTitleUI()
+    {
+        GameObject canvastitle = playertitle;
+        canvastitle.name = "Player_title";
+
+        GameObject titletext = canvastitle.transform.Find("Text").gameObject;
     }
 }
