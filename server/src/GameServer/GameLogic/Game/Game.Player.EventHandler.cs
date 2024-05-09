@@ -252,6 +252,10 @@ public partial class Game : IGame
             _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up {e.TargetSupply}.");
             return;
         }
+        if (e.Player.LastPickUpTick is not null && CurrentTick - e.Player.LastPickUpTick < Constant.PLAYER_PICK_UP_COOLDOWN) {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies too frequently.");
+            return;
+        }
 
         try
         {
@@ -374,6 +378,8 @@ public partial class Game : IGame
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to pick up supplies: {ex.Message}");
             _logger.Debug($"{ex}");
         }
+
+        e.Player.LastPickUpTick = CurrentTick;
     }
 
     private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
@@ -430,6 +436,11 @@ public partial class Game : IGame
             return;
         }
 
+        if (e.Player.LastUseGrenadeTick is not null && CurrentTick - e.Player.LastUseGrenadeTick < Constant.PLAYER_USE_GRENADE_COOLDOWN) {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot use grenades too frequently.");
+            return;
+        }
+
         try
         {
             lock (_lock)
@@ -476,6 +487,8 @@ public partial class Game : IGame
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to use grenade: {ex.Message}");
             _logger.Debug($"{ex}");
         }
+
+        e.Player.LastUseGrenadeTick = CurrentTick;
     }
 
     private void OnPlayerUseMedicine(object? sender, Player.PlayerUseMedicineEventArgs e)

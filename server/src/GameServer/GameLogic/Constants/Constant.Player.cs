@@ -13,4 +13,8 @@ public partial class Constant
     public const int PLAYER_MAXIMUM_HEALTH = 200;
 
     public const int PLAYER_WEAPON_SLOT_SIZE = 2;
+
+    public const int PLAYER_USE_GRENADE_COOLDOWN = 20;
+
+    public const int PLAYER_PICK_UP_COOLDOWN = 3;
 }
