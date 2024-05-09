@@ -38,8 +38,8 @@ public class PlayerSource : MonoBehaviour
             newBeam.GetComponentInChildren<MeshRenderer>().material.color = Color.blue;
         else
             newBeam.GetComponentInChildren<MeshRenderer>().material.color = Color.red;
-        newBeam.transform.SetParent(newPlayerObj.transform);
-        newBeam.transform.localPosition = new Vector3(0, 1.8f, 0);
+        //newBeam.transform.SetParent(newPlayerObj.transform);
+        newBeam.transform.position = new Vector3(0, 1.8f, 0);
         // Create Player
         GameObject uiCanvasGO = new GameObject("PlayerIDCanvas");
         uiCanvasGO.transform.SetParent(newPlayerObj.transform); // Set the canvas as a child of the player object
@@ -70,7 +70,7 @@ public class PlayerSource : MonoBehaviour
         return true;
     }
 
-    public static void UpdatePlayer(int id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Dictionary<string, int> inventory, Position position)
+    public static void UpdatePlayer(int id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Dictionary<string, int> inventory, Position position,float firearmRange)
     {
         if (_playerDict.ContainsKey(id))
         {
@@ -82,6 +82,7 @@ public class PlayerSource : MonoBehaviour
             player.Inventory = inventory;
             player.UpdatePosition(position);
             player.TryGetPlayerAnimations();
+            player.FirearmRange = firearmRange;
         }
     }
 
