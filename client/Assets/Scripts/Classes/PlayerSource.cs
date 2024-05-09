@@ -18,7 +18,7 @@ public class PlayerSource : MonoBehaviour
     {
         private void LateUpdate()
         {
-            transform.forward = Camera.main.transform.forward;
+            transform.forward = GameObject.Find("Camera").transform.forward;
         }
     }
 
@@ -43,8 +43,9 @@ public class PlayerSource : MonoBehaviour
         // Create Player
         GameObject uiCanvasGO = new GameObject("PlayerIDCanvas");
         uiCanvasGO.transform.SetParent(newPlayerObj.transform); // Set the canvas as a child of the player object
-        uiCanvasGO.transform.localPosition = new Vector3(0, 4.0f, 0); // Adjust as needed for positioning
+        uiCanvasGO.transform.localPosition = new Vector3(0, 3.0f, 0); // Adjust as needed for positioning
         Canvas canvas = uiCanvasGO.AddComponent<Canvas>();
+        canvas.sortingLayerID = LayerMask.NameToLayer("UI");
         canvas.renderMode = RenderMode.WorldSpace; // Set the render mode to World Space
         TextMeshProUGUI textComponent = uiCanvasGO.AddComponent<TextMeshProUGUI>();
         textComponent.text = "Player ID: " + id; // Set the initial text to the player's ID

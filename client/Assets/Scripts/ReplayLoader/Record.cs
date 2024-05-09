@@ -92,7 +92,7 @@ public class Record : MonoBehaviour
     private GameObject _spotLight;
 
     private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
-    private Dictionary<string, List<GameObject>> itemInstances = new Dictionary<string, List<GameObject>>();
+    private readonly Dictionary<string, List<GameObject>> itemInstances = new Dictionary<string, List<GameObject>>();
     // record data
     private readonly string _recordFilePath = null;
     private JArray _recordArray;
@@ -523,14 +523,15 @@ public class Record : MonoBehaviour
             infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\n";
             foreach(KeyValuePair<string, int> keyValue in inventory)
             {
-                infoString += $"{keyValue.Key}-{keyValue.Value} ";
+                infoString += $"{keyValue.Key} {keyValue.Value}; ";
             }
             if (inventory.Count != 0)
             {
                 infoString += "\n";
             }
             infoString += $"Armor: {player["armor"]}\n";
-            infoString += $"Firearm: {player["firearm"]}\n";
+            infoString += $"Firearm: {player["firearm"]["name"]}\n";
+            infoString += $"-----------------------\n";
         }
         _infoText.text = infoString;
     }
@@ -549,13 +550,14 @@ public class Record : MonoBehaviour
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Player player = PlayerSource.GetPlayers()[playerId];
         string itemName = eventJson["data"]["turgetSupply"].ToString();
-        Vector3 itemPosition = new Vector3((float)eventJson["data"]["targetPosition"]["x"], 0.1f, (float)eventJson["data"]["targetPosition"]["y"]);
+
         if (itemInstances.ContainsKey(itemName))
         {
             foreach (GameObject itemInstance in itemInstances[itemName])
             {
-                if (itemInstance.transform.position == itemPosition)
+                if ((int)(itemInstance.transform.position.x) == player.PlayerPosition.x && (int)(itemInstance.transform.position.z) == player.PlayerPosition.y)
                 {
+                    Debug.Log("Found obj picked up!");
                     Destroy(itemInstance);
                     itemInstances[itemName].Remove(itemInstance);
                     if (itemInstances[itemName].Count == 0)
