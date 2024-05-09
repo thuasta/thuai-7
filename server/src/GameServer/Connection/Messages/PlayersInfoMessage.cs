@@ -10,6 +10,9 @@ public record PlayersInfoMessage : Message
     [JsonPropertyName("players")]
     public List<Player> Players { get; init; } = new();
 
+    [JsonPropertyName("elapsedTicks")]
+    public int ElapsedTicks { get; init; }
+
     public record Player
     {
         [JsonPropertyName("playerId")]
@@ -17,6 +20,9 @@ public record PlayersInfoMessage : Message
 
         [JsonPropertyName("armor")]
         public string Armor { get; init; } = "";
+
+        [JsonPropertyName("current_armor_health")]
+        public float Current_armor_health { get; init; }
 
         [JsonPropertyName("health")]
         public int Health { get; init; }
@@ -26,6 +32,9 @@ public record PlayersInfoMessage : Message
 
         [JsonPropertyName("firearm")]
         public FirearmInfo Firearm { get; init; } = new();
+
+        [JsonPropertyName("firearms_pool")]
+        public List<FirearmInfo> Firearms_pool { get; init; } = new();
 
         [JsonPropertyName("position")]
         public PositionInfo Position { get; init; } = new();

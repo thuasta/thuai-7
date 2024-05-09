@@ -57,6 +57,14 @@ public partial class AgentServer
         {
             List<PlayersInfoMessage.Player.Item> inventory = new();
 
+            List<PlayersInfoMessage.Player.FirearmInfo> weaponSlot = new();
+
+            float _current_armor_health = 0;
+
+            if (player.PlayerArmor != null)
+                _current_armor_health = player.PlayerArmor.Health;
+
+
             // Add inventory
             foreach (IItem item in player.PlayerBackPack.Items)
             {
@@ -69,12 +77,25 @@ public partial class AgentServer
                 );
             }
 
+            foreach (IWeapon _weapon in player.WeaponSlot)
+            {
+                weaponSlot.Add(
+                    new PlayersInfoMessage.Player.FirearmInfo
+                    {
+                        Name = _weapon.Name,
+                        Distance = _weapon.Range
+                    }
+                );
+            }
+
+
             // Add player
             players.Add(
                 new PlayersInfoMessage.Player
                 {
                     PlayerId = player.PlayerId,
                     Armor = (player.PlayerArmor is not null) ? player.PlayerArmor.ItemSpecificName : "NO_ARMOR",
+                    Current_armor_health = _current_armor_health,
                     Health = player.Health,
                     Speed = player.Speed,
                     Firearm = new PlayersInfoMessage.Player.FirearmInfo
@@ -82,6 +103,7 @@ public partial class AgentServer
                         Name = player.PlayerWeapon.Name,
                         Distance = player.PlayerWeapon.Range
                     },
+                    Firearms_pool = new(weaponSlot),
                     Position = new PlayersInfoMessage.Player.PositionInfo
                     {
                         X = player.PlayerPosition.x,
@@ -112,6 +134,7 @@ public partial class AgentServer
         _messageToPublish.Enqueue(
             new PlayersInfoMessage
             {
+                ElapsedTicks = TickCount,
                 Players = new(players)
             }
         );
@@ -126,7 +149,6 @@ public partial class AgentServer
                 Radius = e.GameMap.SafeZone.Radius
             }
         );
-
         TickCount++;
     }
 

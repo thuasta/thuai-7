@@ -31,6 +31,7 @@ jobs:
 
       - run: |
           mkdir -p release
+          mkdir -p release/Records
           cp CHANGELOG.md COPYING README.md release/
           cp -r build/${{ matrix.targetPlatform }}/* release/
 

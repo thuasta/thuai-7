@@ -10,7 +10,11 @@ public partial class Constant
 
     public const double PLAYER_SPEED_PER_TICK = 0.25;
 
-    public const int PLAYER_MAXIMUM_HEALTH = 100;
+    public const int PLAYER_MAXIMUM_HEALTH = 150;
 
     public const int PLAYER_WEAPON_SLOT_SIZE = 2;
+
+    public const int PLAYER_USE_GRENADE_COOLDOWN = 20;
+
+    public const int PLAYER_PICK_UP_OR_ABANDON_COOLDOWN = 3;
 }
