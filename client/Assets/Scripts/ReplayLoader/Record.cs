@@ -313,14 +313,14 @@ private void Start()
     {
         JObject recordJsonObject = JsonUtility.UnzipRecord(_recordFile);
         // Load the record array
-        JArray recordArray = (JArray)recordJsonObject["records"];
+        JArray recordArray = (JArray)recordJsonObject["records"]; 
 
         if (recordArray == null)
         {
             Debug.Log("Record file is empty!");
             return null;
         }
-        return recordArray;
+        return recordArray; 
     }
 
     #region Event Definition
@@ -493,12 +493,13 @@ private void Start()
                     _ => ArmorTypes.NoArmor
                 },
                 player["speed"].ToObject<float>(),
-                player["firearm"].ToString() switch
+                player["firearm"]["name"].ToString() switch
                 {
                     "S686" => FirearmTypes.S686,
                     "AWM" => FirearmTypes.Awm,
                     "VECTOR" => FirearmTypes.Vector,
                     "FISTS" => FirearmTypes.Fists,
+                    "M16" => FirearmTypes.M16,
                     _ => FirearmTypes.Fists,
                 },
                 inventory,
