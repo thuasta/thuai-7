@@ -4,4 +4,5 @@ public enum FirearmTypes
     Vector,
     Awm,
     S686,
+    M16,
 }

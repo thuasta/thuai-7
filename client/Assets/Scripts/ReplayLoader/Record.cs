@@ -117,7 +117,11 @@ public class Record : MonoBehaviour
     };
     private Camera _camera;
     // viewer
-    private void Start()
+
+    private Dictionary<string, AudioClip> _audioClipDict;
+
+    private AudioSource _as;
+private void Start()
     {
         if (Debug.isDebugBuild)
         {
@@ -170,7 +174,14 @@ public class Record : MonoBehaviour
         };
         _supplyParent = GameObject.Find("Supplies");
 
-
+        _audioClipDict = new()
+        {
+            { "AWM", Resources.Load<AudioClip>("Music/Audio/AWM") },
+            { "VECTOR", Resources.Load<AudioClip>("Music/Audio/VECTOR") },
+            { "S686", Resources.Load<AudioClip>("Music/Audio/S686") },
+            { "M16", Resources.Load<AudioClip>("Music/Audio/M16") },
+            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") }
+        };
         // GUI //
 
         // Get stop button 
@@ -290,6 +301,8 @@ public class Record : MonoBehaviour
 
         //    }
         //});
+
+        _as = GameObject.Find("AudioSourceObj").GetComponent<AudioSource>();
     }
 
     private JArray LoadRecordData()
@@ -579,7 +592,19 @@ public class Record : MonoBehaviour
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Position targetPosition = eventJson["data"]["turgetPosition"].ToObject<Position>();
-        PlayerSource.GetPlayers()[playerId].Attack(targetPosition);
+        Player player = PlayerSource.GetPlayers()[playerId];
+        player.Attack(targetPosition);
+        string firearmString = player.Firearm switch
+        {
+            FirearmTypes.S686 => "S686",
+            FirearmTypes.Awm => "AWM",
+            FirearmTypes.Vector => "VECTOR",
+            FirearmTypes.Fists => "FISTS",
+            FirearmTypes.M16 => "M16",
+            _ => "M16"
+        };
+        // Play sound
+        _as.PlayOneShot(_audioClipDict[firearmString]);
     }
 
     private void AfterPlayerUseMedicineEvent(JObject eventJson)
