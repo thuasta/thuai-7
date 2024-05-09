@@ -10,10 +10,6 @@ using UnityEngine.UI;
 
 public class Record : MonoBehaviour
 {
-     long begin ;
-
-
-
     public const float ObjPrefabScaling=0.4f;
     public enum PlayState
     {
@@ -508,7 +504,8 @@ private void Start()
                     _ => FirearmTypes.Fists,
                 },
                 inventory,
-                playerPosition
+                playerPosition,
+                (float)player["firearm"]["distance"]
             );
             infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\nInventory: ";
             foreach(KeyValuePair<string, int> keyValue in inventory)
@@ -568,7 +565,7 @@ private void Start()
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Position targetPosition = eventJson["data"]["turgetPosition"].ToObject<Position>();
         Player player = PlayerSource.GetPlayers()[playerId];
-        player.Attack(targetPosition);
+        player.Attack(targetPosition, player.FirearmRange);
         string firearmString = player.Firearm switch
         {
             FirearmTypes.S686 => "S686",
@@ -679,9 +676,6 @@ private void Start()
 
         if ((float)(System.DateTime.Now.Ticks - _recordInfo.NowTime)/1e7 > _recordInfo.NowFrameTime)
         {
-            long finishedTime = System.DateTime.Now.Ticks;
-            Debug.Log($"Finished: {(finishedTime - begin) / 1e7} | {System.DateTime.Now.ToString("o")}");
-            begin = System.DateTime.Now.Ticks;
             _recordInfo.NowTime = _recordInfo.NowTime + (long)(_recordInfo.NowFrameTime*1e7);
             UpdateTick();
             _recordInfo.NowDeltaTime = 0;
