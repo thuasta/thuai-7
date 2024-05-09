@@ -170,6 +170,10 @@ private void Start()
             { "AWM", Resources.Load<GameObject>("Prefabs/AWM") },
             { "VECTOR", Resources.Load<GameObject>("Prefabs/Vector") },
             { "S686", Resources.Load<GameObject>("Prefabs/S686") },
+            { "M16", Resources.Load<GameObject>("Prefabs/M16") },
+            { "BULLET", Resources.Load<GameObject>("Prefabs/Bullet") },
+            { "PRIMARY_ARMOR", Resources.Load<GameObject>("Prefabs/Primary_armor") },
+            { "PREMIUM_ARMOR", Resources.Load<GameObject>("Prefabs/Premium_armor") },
             { "GRENADE", Resources.Load<GameObject>("Prefabs/Grenade") }
         };
         _supplyParent = GameObject.Find("Supplies");
@@ -455,31 +459,7 @@ private void Start()
                 itemInstances[name].Add(newSupply);
             }
         }
-    }/*
-    // 这个方法将根据玩家的位置设置头顶UI文本的位置
-    private void SetHeadTextPosition(GameObject textGO, Position playerPosition)
-    {
-        // 将Text GameObject放置在玩家的头顶位置
-        // 注意：这里的代码需要根据您游戏的具体实现来调整
-        // 以下代码仅为示例，假设有一个方法可以将Position转换为World Space的Vector3
-        Vector3 worldPosition = ConvertPositionToWorldSpace(playerPosition);
-        textGO.transform.position = worldPosition + new Vector3(0, 0.2f, 0); // 根据需要调整偏移量
-
-        // 确保Text GameObject使用World Space Canvas渲染
-        Canvas canvas = textGO.GetComponent<Canvas>();
-        if (canvas != null)
-        {
-            canvas.renderMode = RenderMode.WorldSpace;
-        }
     }
-    
-    // 这个方法需要实现将Position转换为世界空间中的Vector3
-    private Vector3 ConvertPositionToWorldSpace(Position playerPosition)
-    {
-        // 实现转换逻辑，这取决于您的游戏是如何将Position映射到世界空间的
-        // 以下为示例代码，您需要根据实际情况进行调整
-        return new Vector3(playerPosition.x, 0.2f, playerPosition.y); // 假设玩家的Position直接对应世界坐标
-    }*/
     private void UpdatePlayers(JArray players)
     {
         if (players is null)
@@ -493,15 +473,6 @@ private void Start()
 
             // Check if the player is in dict
             PlayerSource.AddPlayer(playerId, "");
-            /*
-            // Create UI for player ID display
-            GameObject playerHeadTextGO = new GameObject("PlayerIDText_" + playerId);
-            TextMeshProUGUI textComponent = playerHeadTextGO.AddComponent<TextMeshProUGUI>();
-            textComponent.text = "Player " + playerId; // 设置文本内容
-            textComponent.fontSize = 1; // 设置字体大小
-            textComponent.color = Color.blue; // 设置字体颜色
-            SetHeadTextPosition(playerHeadTextGO, playerPosition);
-            */
             Dictionary<string, int> inventory = new();
             foreach (JObject item in (JArray)player["inventory"])
             {
