@@ -65,7 +65,7 @@ public class Player
         TryGetPlayerAnimations();
         playerAnimations?.WalkTo(playerObj.transform.position, newPos);
         playerObj.transform.position = newPos;
-        Debug.Log(newPos);
+        //Debug.Log(newPos);
     }
     public void CreateTitleUI()
     {

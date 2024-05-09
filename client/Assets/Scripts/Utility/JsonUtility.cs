@@ -144,15 +144,19 @@ public class JsonUtility
                 }
                 else
                 {
-                    JValue tick = (JValue)records[0]["currentTicks"];
-                    if (tick != null)
+                    foreach (JToken recordInfo in records)
                     {
-                        // The first tick
-                        indexAndTicks[nowRecordIndex].Item2 = (int)tick;
-                    }
-                    else
-                    {
-                        indexAndTicks[nowRecordIndex].Item2 = -2;
+                        JValue tick = (JValue)recordInfo["currentTicks"];
+                        if (tick != null)
+                        {
+                            // The first tick
+                            indexAndTicks[nowRecordIndex].Item2 = (int)tick;
+                            break;
+                        }
+                        else
+                        {
+                            indexAndTicks[nowRecordIndex].Item2 = -2;
+                        }
                     }
                 }
             }
@@ -162,6 +166,9 @@ public class JsonUtility
         List<(int, int)> indexAndTicksList = indexAndTicks.ToList<(int, int)>();
         indexAndTicksList.Sort((x, y) => x.Item2.CompareTo(y.Item2));
 
+        foreach ((int, int) it in indexAndTicksList) {
+            Debug.Log($"RecordInfo: {it.Item1},{it.Item2}");
+        }
 
         // Write the json obj according to the order
         JObject recordJsonObject = new()
