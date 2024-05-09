@@ -5,5 +5,4 @@ public enum FirearmTypes
     Awm,
     M16,
     S686,
-    M16,
 }
