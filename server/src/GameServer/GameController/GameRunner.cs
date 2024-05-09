@@ -102,7 +102,8 @@ public partial class GameRunner
                 int winnerId = Game.Judge();
                 Result result = new()
                 {
-                    Winner = _tokenToPlayerId.First(kvp => kvp.Value == winnerId).Key
+                    Winner = _tokenToPlayerId.First(kvp => kvp.Value == winnerId).Key,
+                    WinnerPlayerId = winnerId
                 };
                 Game.SaveResults(result);
             }
