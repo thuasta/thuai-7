@@ -33,6 +33,12 @@ public partial class Game : IGame
             return;
         }
 
+        if (e.Player.LastPickUpOrAbandonTick is not null && CurrentTick - e.Player.LastPickUpOrAbandonTick < Constant.PLAYER_PICK_UP_OR_ABANDON_COOLDOWN)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot abandon or pick up supplies too frequently.");
+            return;
+        }
+
         Position playerPosition = e.Player.PlayerPosition;
         int playerIntX = (int)playerPosition.x;
         int playerIntY = (int)playerPosition.y;
@@ -147,6 +153,8 @@ public partial class Game : IGame
             _logger.Error($"[Player {e.Player.PlayerId}] Failed to abandon supplies: {ex.Message}");
             _logger.Debug($"{ex}");
         }
+
+        e.Player.LastPickUpOrAbandonTick = CurrentTick;
     }
 
     private void OnPlayerAttack(object? sender, Player.PlayerAttackEventArgs e)
@@ -252,8 +260,9 @@ public partial class Game : IGame
             _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up {e.TargetSupply}.");
             return;
         }
-        if (e.Player.LastPickUpTick is not null && CurrentTick - e.Player.LastPickUpTick < Constant.PLAYER_PICK_UP_COOLDOWN) {
-            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up supplies too frequently.");
+        if (e.Player.LastPickUpOrAbandonTick is not null && CurrentTick - e.Player.LastPickUpOrAbandonTick < Constant.PLAYER_PICK_UP_OR_ABANDON_COOLDOWN)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot pick up or abandon supplies too frequently.");
             return;
         }
 
@@ -379,7 +388,7 @@ public partial class Game : IGame
             _logger.Debug($"{ex}");
         }
 
-        e.Player.LastPickUpTick = CurrentTick;
+        e.Player.LastPickUpOrAbandonTick = CurrentTick;
     }
 
     private void OnPlayerSwitchArm(object? sender, Player.PlayerSwitchArmEventArgs e)
@@ -436,7 +445,8 @@ public partial class Game : IGame
             return;
         }
 
-        if (e.Player.LastUseGrenadeTick is not null && CurrentTick - e.Player.LastUseGrenadeTick < Constant.PLAYER_USE_GRENADE_COOLDOWN) {
+        if (e.Player.LastUseGrenadeTick is not null && CurrentTick - e.Player.LastUseGrenadeTick < Constant.PLAYER_USE_GRENADE_COOLDOWN)
+        {
             _logger.Error($"[Player {e.Player.PlayerId}] Cannot use grenades too frequently.");
             return;
         }

@@ -30,7 +30,7 @@ public partial class Player
     public int MaxWeaponSlotSize => 1 + Constant.PLAYER_WEAPON_SLOT_SIZE;
     public bool IsWeaponSlotFull => WeaponSlot.Count >= MaxWeaponSlotSize;
 
-    public int? LastPickUpTick { get; set; } = null;
+    public int? LastPickUpOrAbandonTick { get; set; } = null;
     public int? LastUseGrenadeTick { get; set; } = null;
 
     private readonly ILogger _logger;
