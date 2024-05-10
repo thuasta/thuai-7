@@ -225,6 +225,7 @@ public partial class Game
                             select new Recorder.CompetitionUpdate.playersType
                             {
                                 playerId = player.PlayerId,
+                                token = player.Token,
                                 armor = player.PlayerArmor.ItemSpecificName,
                                 position = new()
                                 {

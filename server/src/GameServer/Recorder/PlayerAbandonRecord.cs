@@ -20,6 +20,9 @@ public record PlayerAbandonRecord : IRecord
         [JsonPropertyName("playerId")]
         public int? playerId { get; init; }
 
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
         [JsonPropertyName("numb")]
         public int? numb { get; init; }
 
