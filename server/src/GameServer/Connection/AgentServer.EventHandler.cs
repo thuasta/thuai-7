@@ -134,7 +134,7 @@ public partial class AgentServer
         _messageToPublish.Enqueue(
             new PlayersInfoMessage
             {
-                ElapsedTicks = TickCount,
+                ElapsedTicks = e.CurrentTick,
                 Players = new(players)
             }
         );

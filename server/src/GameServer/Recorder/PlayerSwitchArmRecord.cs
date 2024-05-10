@@ -20,6 +20,9 @@ public record PlayerSwitchArmRecord : IRecord
         [JsonPropertyName("playerId")]
         public int? playerId { get; init; }
 
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
         [JsonPropertyName("turgetFirearm")]
         public string? turgetFirearm { get; init; }
     }

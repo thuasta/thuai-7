@@ -41,6 +41,9 @@ public record CompetitionUpdate : IRecord
         [JsonPropertyName("playerId")]
         public int? playerId { get; init; }
 
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
         [JsonPropertyName("armor")]
         public string? armor { get; init; }
 
@@ -52,6 +55,9 @@ public record CompetitionUpdate : IRecord
 
         [JsonPropertyName("firearm")]
         public firearmType? firearm { get; init; }
+
+        [JsonPropertyName("firearmsPool")]
+        public List<firearmType>? firearmsPool { get; init; }
 
         [JsonPropertyName("inventory")]
         public List<inventoryType>? inventory { get; init; }

@@ -20,6 +20,9 @@ public record PlayerUseGrenadeRecord : IRecord
         [JsonPropertyName("playerId")]
         public int? playerId { get; init; }
 
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
         [JsonPropertyName("turgetPosition")]
         public positionType? turgetPosition { get; init; }
     }

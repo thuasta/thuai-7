@@ -23,8 +23,8 @@ public partial class Map
         MapChunk = new IBlock[width, height];
 
         // Randomly generate the center of the safe zone
-        int centerX = (int)_random.NextInt64(0, width);
-        int centerY = (int)_random.NextInt64(0, height);
+        int centerX = 128;
+        int centerY = 128;
         SafeZone = new SafeZone(new Position(centerX, centerY), safeZoneMaxRadius, safeZoneTicksUntilDisappear, damageOutsideSafeZone);
 
         _obstacleShapes = new List<ObstacleShape>
