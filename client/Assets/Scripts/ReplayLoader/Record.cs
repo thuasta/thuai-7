@@ -535,12 +535,11 @@ private void Start()
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Player player = PlayerSource.GetPlayers()[playerId];
         string itemName = eventJson["data"]["turgetSupply"].ToString();
-
         if (itemInstances.ContainsKey(itemName))
         {
             foreach (GameObject itemInstance in itemInstances[itemName])
             {
-                if ((int)(itemInstance.transform.position.x) == player.PlayerPosition.x && (int)(itemInstance.transform.position.z) == player.PlayerPosition.y)
+                if ((int)(itemInstance.transform.position.x) == (int)player.PlayerPosition.x && (int)(itemInstance.transform.position.z) == (int)player.PlayerPosition.y)
                 {
                     Debug.Log("Found obj picked up!");
                     Destroy(itemInstance);
