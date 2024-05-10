@@ -41,6 +41,9 @@ public record CompetitionUpdate : IRecord
         [JsonPropertyName("playerId")]
         public int? playerId { get; init; }
 
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
         [JsonPropertyName("armor")]
         public string? armor { get; init; }
 

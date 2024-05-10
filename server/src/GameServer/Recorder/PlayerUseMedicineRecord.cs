@@ -20,6 +20,9 @@ public record PlayerUseMedicineRecord : IRecord
         [JsonPropertyName("playerId")]
         public int? playerId { get; init; }
 
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
         [JsonPropertyName("targetMedicine")]
         public string? targetMedicine { get; init; }
     }
