@@ -239,6 +239,12 @@ public partial class Game
                                     name = player.PlayerWeapon.Name,
                                     distance = player.PlayerWeapon.Range
                                 },
+                                firearmsPool = (from weapon in player.WeaponSlot
+                                                select new Recorder.CompetitionUpdate.firearmType
+                                                {
+                                                    name = weapon.Name,
+                                                    distance = weapon.Range
+                                                }).ToList(),
                                 inventory = (from supplies in player.PlayerBackPack.Items
                                              select new Recorder.CompetitionUpdate.inventoryType
                                              {

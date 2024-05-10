@@ -56,6 +56,9 @@ public record CompetitionUpdate : IRecord
         [JsonPropertyName("firearm")]
         public firearmType? firearm { get; init; }
 
+        [JsonPropertyName("firearmsPool")]
+        public List<firearmType>? firearmsPool { get; init; }
+
         [JsonPropertyName("inventory")]
         public List<inventoryType>? inventory { get; init; }
 
