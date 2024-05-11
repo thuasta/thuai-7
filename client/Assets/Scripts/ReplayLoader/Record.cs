@@ -557,6 +557,28 @@ private void Start()
     private void AfterPlayerAbandonEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        Player player = PlayerSource.GetPlayers()[playerId];
+        JArray abandonedSupplies = (JArray)eventJson["data"]["abandonedSupplies"];
+        foreach (JObject supplyJson in abandonedSupplies)
+        {
+            string itemName = supplyJson["name"].ToString();
+            int itemCount = (int)supplyJson["count"];
+            Vector3 position = new Vector3((float)supplyJson["position"]["x"],0.1f, (float)supplyJson["position"]["y"]);
+            for (int i = 0; i < itemCount; i++)
+            {
+                GameObject supplyPrefab = _propDict.ContainsKey(itemName) ? _propDict[itemName] : null;
+                if (supplyPrefab != null)
+                {
+                    GameObject newSupply = Instantiate(supplyPrefab, position, Quaternion.identity, _supplyParent.transform);
+                    newSupply.transform.Rotate(0, UnityEngine.Random.Range(0, 360), 0);
+                    if (!itemInstances.ContainsKey(itemName) || itemInstances[itemName] == null)
+                    {
+                        itemInstances[itemName] = new List<GameObject>();
+                    }
+                    itemInstances[itemName].Add(newSupply);
+                }
+            }
+        }
     }
 
     private void AfterPlayerAttackEvent(JObject eventJson)
