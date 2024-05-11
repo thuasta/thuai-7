@@ -184,7 +184,10 @@ private void Start()
             { "VECTOR", Resources.Load<AudioClip>("Music/Audio/VECTOR") },
             { "S686", Resources.Load<AudioClip>("Music/Audio/S686") },
             { "M16", Resources.Load<AudioClip>("Music/Audio/M16") },
-            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") }
+            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") },
+            { "FireInTheHole", Resources.Load<AudioClip>("Music/Audio/ct_fireinthehole")},
+            { "Go", Resources.Load<AudioClip>("Music/Audio/go") },
+            { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
         };
         // GUI //
 
@@ -208,6 +211,7 @@ private void Start()
                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
                _recordInfo.NowPlayState = PlayState.Play;
                 _recordInfo.NowTime = System.DateTime.Now.Ticks;
+                _as.PlayOneShot(_audioClipDict["Go"]);
            }
         });
 
