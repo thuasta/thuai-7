@@ -184,7 +184,10 @@ private void Start()
             { "VECTOR", Resources.Load<AudioClip>("Music/Audio/VECTOR") },
             { "S686", Resources.Load<AudioClip>("Music/Audio/S686") },
             { "M16", Resources.Load<AudioClip>("Music/Audio/M16") },
-            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") }
+            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") },
+            { "FireInTheHole", Resources.Load<AudioClip>("Music/Audio/ct_fireinthehole")},
+            { "Go", Resources.Load<AudioClip>("Music/Audio/go") },
+            { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
         };
         // GUI //
 
@@ -208,6 +211,7 @@ private void Start()
                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
                _recordInfo.NowPlayState = PlayState.Play;
                 _recordInfo.NowTime = System.DateTime.Now.Ticks;
+                _as.PlayOneShot(_audioClipDict["Go"]);
            }
         });
 
@@ -584,7 +588,7 @@ private void Start()
     private void AfterPlayerAttackEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
-        Position targetPosition = eventJson["data"]["turgetPosition"].ToObject<Position>();
+        Position targetPosition = new Position((float)eventJson["data"]["turgetPosition"]["x"], (float)eventJson["data"]["turgetPosition"]["y"]);
         Player player = PlayerSource.GetPlayers()[playerId];
         player.Attack(targetPosition, player.FirearmRange);
         string firearmString = player.Firearm switch
@@ -637,7 +641,7 @@ private void Start()
                 //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
                 UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
                 _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
-                _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
+                _currentTickText.text = $"{_recordInfo.NowTick}";
                 JArray events = (JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["events"];
                 if (events != null)
                 {
