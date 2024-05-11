@@ -1,3 +1,4 @@
+using System.Security.Principal;
 using GameServer.Geometry;
 using GameServer.Geometry.Shapes;
 
@@ -140,6 +141,7 @@ public partial class Game : IGame
                     Data = new()
                     {
                         playerId = e.Player.PlayerId,
+                        token = e.Player.Token,
                         numb = e.Number,
                         abandonedSupplies = itemSpecificName
                     }
@@ -225,6 +227,7 @@ public partial class Game : IGame
                     Data = new()
                     {
                         playerId = e.Player.PlayerId,
+                        token = e.Player.Token,
                         turgetPosition = new()
                         {
                             x = e.TargetPosition.x,
@@ -374,6 +377,7 @@ public partial class Game : IGame
                     Data = new()
                     {
                         playerId = e.Player.PlayerId,
+                        token = e.Player.Token,
                         targetSupply = e.TargetSupply,
                         numb = e.Numb
                     }
@@ -423,6 +427,7 @@ public partial class Game : IGame
                     Data = new()
                     {
                         playerId = e.Player.PlayerId,
+                        token = e.Player.Token,
                         turgetFirearm = e.TargetFirearm
                     }
                 };
@@ -481,6 +486,7 @@ public partial class Game : IGame
                     Data = new()
                     {
                         playerId = e.Player.PlayerId,
+                        token = e.Player.Token,
                         turgetPosition = new()
                         {
                             x = e.TargetPosition.x,
@@ -529,6 +535,7 @@ public partial class Game : IGame
                     Data = new()
                     {
                         playerId = e.Player.PlayerId,
+                        token = e.Player.Token,
                         targetMedicine = e.MedicineName
                     }
                 };

@@ -20,6 +20,9 @@ public record PlayerPrepareRecord : IRecord
         [JsonPropertyName("playerId")]
         public int? PlayerId { get; init; }
 
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
         [JsonPropertyName("turgetPosition")]
         public positionType? turgetPosition { get; init; }
     }

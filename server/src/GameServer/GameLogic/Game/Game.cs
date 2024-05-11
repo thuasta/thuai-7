@@ -225,6 +225,7 @@ public partial class Game
                             select new Recorder.CompetitionUpdate.playersType
                             {
                                 playerId = player.PlayerId,
+                                token = player.Token,
                                 armor = player.PlayerArmor.ItemSpecificName,
                                 position = new()
                                 {
@@ -238,6 +239,12 @@ public partial class Game
                                     name = player.PlayerWeapon.Name,
                                     distance = player.PlayerWeapon.Range
                                 },
+                                firearmsPool = (from weapon in player.WeaponSlot
+                                                select new Recorder.CompetitionUpdate.firearmType
+                                                {
+                                                    name = weapon.Name,
+                                                    distance = weapon.Range
+                                                }).ToList(),
                                 inventory = (from supplies in player.PlayerBackPack.Items
                                              select new Recorder.CompetitionUpdate.inventoryType
                                              {
