@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using GameServer.GameController;
 using GameServer.GameLogic;
 
@@ -88,6 +89,25 @@ public partial class AgentServer
                 );
             }
 
+            PlayersInfoMessage.Player.PositionInfo tempPosition;
+
+            if (e.CurrentTick <= 200)
+            {
+                tempPosition = new PlayersInfoMessage.Player.PositionInfo
+                {
+                    X = 0,
+                    Y = 0
+                };
+            }
+            else
+            {
+                tempPosition = new PlayersInfoMessage.Player.PositionInfo
+                {
+                    X = player.PlayerPosition.x,
+                    Y = player.PlayerPosition.y
+                };
+            }
+
 
             // Add player
             players.Add(
@@ -104,11 +124,7 @@ public partial class AgentServer
                         Distance = player.PlayerWeapon.Range
                     },
                     Firearms_pool = new(weaponSlot),
-                    Position = new PlayersInfoMessage.Player.PositionInfo
-                    {
-                        X = player.PlayerPosition.x,
-                        Y = player.PlayerPosition.y
-                    },
+                    Position = tempPosition,
                     Inventory = new(inventory)
                 }
             );
