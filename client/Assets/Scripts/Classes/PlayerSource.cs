@@ -51,7 +51,14 @@ public class PlayerSource : MonoBehaviour
         textComponent.text = "Player ID: " + id; // Set the initial text to the player's ID
         textComponent.fontSize = 1; // Set the font size
         textComponent.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        textComponent.color = Color.red; // Set the font color
+        if (_playerDict.Count == 0)
+        {
+            textComponent.color = Color.blue; // Set the font color
+        }
+        else
+        {
+            textComponent.color = Color.red; // Set the font color
+        }
         textComponent.alignment = TextAlignmentOptions.Center;
         textComponent.rectTransform.pivot = new Vector2(0.5f, 0.5f); // Ensure text is centered
         canvas.transform.localRotation = Quaternion.Euler(new Vector3(0, 180, 0));

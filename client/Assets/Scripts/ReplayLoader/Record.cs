@@ -588,7 +588,7 @@ private void Start()
     private void AfterPlayerAttackEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
-        Position targetPosition = eventJson["data"]["turgetPosition"].ToObject<Position>();
+        Position targetPosition = new Position((float)eventJson["data"]["turgetPosition"]["x"], (float)eventJson["data"]["turgetPosition"]["y"]);
         Player player = PlayerSource.GetPlayers()[playerId];
         player.Attack(targetPosition, player.FirearmRange);
         string firearmString = player.Firearm switch
@@ -641,7 +641,7 @@ private void Start()
                 //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
                 UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
                 _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
-                _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
+                _currentTickText.text = $"{_recordInfo.NowTick}";
                 JArray events = (JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["events"];
                 if (events != null)
                 {
