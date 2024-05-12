@@ -184,7 +184,10 @@ private void Start()
             { "VECTOR", Resources.Load<AudioClip>("Music/Audio/VECTOR") },
             { "S686", Resources.Load<AudioClip>("Music/Audio/S686") },
             { "M16", Resources.Load<AudioClip>("Music/Audio/M16") },
-            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") }
+            { "FISTS", Resources.Load<AudioClip>("Music/Audio/FISTS") },
+            { "FireInTheHole", Resources.Load<AudioClip>("Music/Audio/ct_fireinhole")},
+            { "Go", Resources.Load<AudioClip>("Music/Audio/go") },
+            { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
         };
         // GUI //
 
@@ -208,6 +211,7 @@ private void Start()
                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
                _recordInfo.NowPlayState = PlayState.Play;
                 _recordInfo.NowTime = System.DateTime.Now.Ticks;
+                _as.PlayOneShot(_audioClipDict["Go"]);
            }
         });
 
@@ -470,10 +474,11 @@ private void Start()
         foreach (JObject player in players)
         {
             int playerId = player["playerId"].ToObject<int>();
+            string playerToken = player["token"].ToString();
             Position playerPosition = new Position((float)player["position"]["x"], (float)player["position"]["y"]);
 
             // Check if the player is in dict
-            PlayerSource.AddPlayer(playerId, "");
+            PlayerSource.AddPlayer(playerId, playerToken);
             Dictionary<string, int> inventory = new();
             foreach (JObject item in (JArray)player["inventory"])
             {
@@ -507,7 +512,7 @@ private void Start()
                 playerPosition,
                 (float)player["firearm"]["distance"]
             );
-            infoString += $"<Player {playerId}> : Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\nInventory: ";
+            infoString += $"<Player {(PlayerSource.GetPlayers()[playerId].Name.Length <= 6 ? PlayerSource.GetPlayers()[playerId].Name : PlayerSource.GetPlayers()[playerId].Name.Substring(0, 6) + "...") }> Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\nInventory: ";
             foreach(KeyValuePair<string, int> keyValue in inventory)
             {
                 infoString += $"{keyValue.Key} {keyValue.Value}; ";
@@ -557,12 +562,34 @@ private void Start()
     private void AfterPlayerAbandonEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        Player player = PlayerSource.GetPlayers()[playerId];
+        JArray abandonedSupplies = (JArray)eventJson["data"]["abandonedSupplies"];
+        foreach (JObject supplyJson in abandonedSupplies)
+        {
+            string itemName = supplyJson["name"].ToString();
+            int itemCount = (int)supplyJson["count"];
+            Vector3 position = new Vector3((float)supplyJson["position"]["x"],0.1f, (float)supplyJson["position"]["y"]);
+            for (int i = 0; i < itemCount; i++)
+            {
+                GameObject supplyPrefab = _propDict.ContainsKey(itemName) ? _propDict[itemName] : null;
+                if (supplyPrefab != null)
+                {
+                    GameObject newSupply = Instantiate(supplyPrefab, position, Quaternion.identity, _supplyParent.transform);
+                    newSupply.transform.Rotate(0, UnityEngine.Random.Range(0, 360), 0);
+                    if (!itemInstances.ContainsKey(itemName) || itemInstances[itemName] == null)
+                    {
+                        itemInstances[itemName] = new List<GameObject>();
+                    }
+                    itemInstances[itemName].Add(newSupply);
+                }
+            }
+        }
     }
 
     private void AfterPlayerAttackEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
-        Position targetPosition = eventJson["data"]["turgetPosition"].ToObject<Position>();
+        Position targetPosition = new Position((float)eventJson["data"]["turgetPosition"]["x"], (float)eventJson["data"]["turgetPosition"]["y"]);
         Player player = PlayerSource.GetPlayers()[playerId];
         player.Attack(targetPosition, player.FirearmRange);
         string firearmString = player.Firearm switch
@@ -592,6 +619,9 @@ private void Start()
     private void AfterPlayerUseGrenadeEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        _as.PlayOneShot(_audioClipDict["FireInTheHole"]);
+
+        // TODO:
     }
 
     #endregion
@@ -615,7 +645,7 @@ private void Start()
                 //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
                 UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
                 _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
-                _currentTickText.text = $"Ticks: {_recordInfo.NowTick}";
+                _currentTickText.text = $"{_recordInfo.NowTick}";
                 JArray events = (JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["events"];
                 if (events != null)
                 {

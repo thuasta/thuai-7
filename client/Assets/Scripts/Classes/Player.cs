@@ -59,6 +59,7 @@ public class Player
         MeshRenderer childComponent = beam.GetComponentInChildren<MeshRenderer>();
         childComponent.transform.localPosition = new Vector3(childComponent.transform.localPosition.x, childComponent.transform.localPosition.y, range/2 );
         childComponent.transform.localScale = new Vector3(childComponent.transform.localScale.x, childComponent.transform.localScale.y, range );
+
         beam.transform.LookAt(endPoint);
         beamAnimations.Blink(PlayerAnimations.AttackTime);
     }
