@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
+using UnityEngine.Windows;
+using static Thubg.Messages.CompetitionUpdate;
 
 public class PlayerSource : MonoBehaviour
 {
@@ -48,7 +51,7 @@ public class PlayerSource : MonoBehaviour
         canvas.sortingLayerID = LayerMask.NameToLayer("UI");
         canvas.renderMode = RenderMode.WorldSpace; // Set the render mode to World Space
         TextMeshProUGUI textComponent = uiCanvasGO.AddComponent<TextMeshProUGUI>();
-        textComponent.text = "Player ID: " + id; // Set the initial text to the player's ID
+        textComponent.text = "Player Token: " + (name.Length <= 6 ? name : name.Substring(0, 6) + "..."); // Set the initial text to the player's token
         textComponent.fontSize = 1; // Set the font size
         textComponent.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         if (_playerDict.Count == 0)
