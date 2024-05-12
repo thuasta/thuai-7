@@ -26,6 +26,17 @@ public class Grenade
     {
         if (tick >= explodeTick && !hasExploded)
         {
+            Recorder.GrenadeExplodeRecord record = new()
+            {
+                Data = new()
+                {
+                    ExplodePosition = new()
+                    {
+                        x = position.x,
+                        y = position.y
+                    }
+                }
+            };
             hasExploded = true;
             foreach (Player player in players)
             {
