@@ -51,8 +51,8 @@ public class PlayerSource : MonoBehaviour
         canvas.sortingLayerID = LayerMask.NameToLayer("UI");
         canvas.renderMode = RenderMode.WorldSpace; // Set the render mode to World Space
         TextMeshProUGUI textComponent = uiCanvasGO.AddComponent<TextMeshProUGUI>();
-        textComponent.text = "Player Token: " + (name.Length <= 6 ? name : name.Substring(0, 6) + "..."); // Set the initial text to the player's token
-        textComponent.fontSize = 1; // Set the font size
+        textComponent.text = "" + (name.Length <= 6 ? name : name.Substring(0, 6) + "..."); // Set the initial text to the player's token
+        textComponent.fontSize = 2; // Set the font size
         textComponent.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         if (_playerDict.Count == 0)
         {
@@ -80,7 +80,7 @@ public class PlayerSource : MonoBehaviour
         return true;
     }
 
-    public static void UpdatePlayer(int id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Dictionary<string, int> inventory, Position position,float firearmRange)
+    public static void UpdatePlayer(int id, int health, ArmorTypes armor, float speed, FirearmTypes firearm, Dictionary<string, int> inventory, Position position, float firearmRange)
     {
         if (_playerDict.ContainsKey(id))
         {
