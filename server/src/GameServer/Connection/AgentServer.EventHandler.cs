@@ -91,7 +91,7 @@ public partial class AgentServer
 
             PlayersInfoMessage.Player.PositionInfo tempPosition;
 
-            if (e.CurrentTick < 200)
+            if (e.CurrentTick <= Constant.PREPERATION_TICKS)
             {
                 tempPosition = new PlayersInfoMessage.Player.PositionInfo
                 {
