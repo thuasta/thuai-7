@@ -9,7 +9,7 @@ public partial class Game
         // Update all grenades
         foreach (Grenade grenade in _allGrenades)
         {
-            grenade.Explode(CurrentTick, AllPlayers.ToArray(), GameMap);
+            grenade.Explode(CurrentTick, AllPlayers.ToArray(), GameMap, _recorder);
         }
     }
 }
