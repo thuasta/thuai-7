@@ -48,7 +48,7 @@ public partial class GameRunner
                 if (DateTime.UtcNow < expectedNextTickTime)
                 {
                     // Wait for the next tick
-                    Task.Delay(DateTime.UtcNow - expectedNextTickTime).Wait();
+                    Task.Delay(expectedNextTickTime - DateTime.UtcNow).Wait();
                 }
 
                 DateTime currentTime = DateTime.UtcNow;
