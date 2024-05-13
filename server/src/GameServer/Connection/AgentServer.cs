@@ -24,7 +24,7 @@ public partial class AgentServer
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
 
-    private DateTime _lastMppsCheckTime = DateTime.Now;
+    private DateTime _lastMppsCheckTime = DateTime.UtcNow;
 
     private readonly ILogger _logger = Log.Logger.ForContext("Component", "AgentServer");
 
@@ -56,7 +56,7 @@ public partial class AgentServer
 
             Action actionForPublishingMessage = new(() =>
             {
-                DateTime lastPublishTime = DateTime.Now;
+                DateTime lastPublishTime = DateTime.UtcNow;
 
                 while (_isRunning)
                 {
@@ -79,15 +79,19 @@ public partial class AgentServer
 
                         Publish(message);
                     }
+                    else
+                    {
+                        Task.Delay(10).Wait();
+                    }
 
-                    DateTime currentTime = DateTime.Now;
+                    DateTime currentTime = DateTime.UtcNow;
                     RealMpps = 1.0D / (double)(currentTime - lastPublishTime).TotalSeconds;
                     lastPublishTime = currentTime;
 
                     // Check MessagePublishedPerSecond.
-                    if (DateTime.Now - _lastMppsCheckTime > MppsCheckInterval)
+                    if (DateTime.UtcNow - _lastMppsCheckTime > MppsCheckInterval)
                     {
-                        _lastMppsCheckTime = DateTime.Now;
+                        _lastMppsCheckTime = DateTime.UtcNow;
                         _logger.Debug($"Current MessagePublishedPerSsecond: {RealMpps:0.00} msg/s");
                     }
                 }
@@ -163,7 +167,7 @@ public partial class AgentServer
                 }
             }
 
-            DateTime startTime = DateTime.Now;
+            DateTime startTime = DateTime.UtcNow;
             Task.Delay(TIMEOUT_MILLISEC).Wait();
 
             foreach (Task task in sendTasks)

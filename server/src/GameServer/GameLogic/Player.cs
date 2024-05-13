@@ -87,7 +87,7 @@ public partial class Player
 
         if (Health == 0)
         {
-            DieTime = DateTime.Now;
+            DieTime = DateTime.UtcNow;
         }
     }
 

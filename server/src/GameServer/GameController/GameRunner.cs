@@ -18,7 +18,7 @@ public partial class GameRunner
     public double TpsLowerBound => 0.9 * ExpectedTicksPerSecond;
     public double TpsUpperBound => 1.1 * ExpectedTicksPerSecond;
 
-    private DateTime _lastTpsCheckTime = DateTime.Now;
+    private DateTime _lastTpsCheckTime = DateTime.UtcNow;
 
     private Task? _tickTask = null;
     private bool _isRunning = false;
@@ -38,25 +38,28 @@ public partial class GameRunner
 
         _tickTask = new Task(() =>
         {
-            DateTime lastTickTime = DateTime.Now;
+            DateTime lastTickTime = DateTime.UtcNow;
+            DateTime expectedNextTickTime = DateTime.UtcNow + TimeSpan.FromMilliseconds(1000 / ExpectedTicksPerSecond);
 
             while (_isRunning)
             {
                 Game.Tick();
 
-                while (DateTime.Now - lastTickTime < TimeSpan.FromMilliseconds(1000 / ExpectedTicksPerSecond))
+                if (DateTime.UtcNow < expectedNextTickTime)
                 {
                     // Wait for the next tick
+                    Task.Delay(DateTime.UtcNow - expectedNextTickTime).Wait();
                 }
 
-                DateTime currentTime = DateTime.Now;
+                DateTime currentTime = DateTime.UtcNow;
                 RealTicksPerSecond = 1.0D / (double)(currentTime - lastTickTime).TotalSeconds;
                 lastTickTime = currentTime;
+                expectedNextTickTime += TimeSpan.FromMilliseconds(1000 / ExpectedTicksPerSecond);
 
                 // Check TPS.
-                if (DateTime.Now - _lastTpsCheckTime > TpsCheckInterval)
+                if (DateTime.UtcNow - _lastTpsCheckTime > TpsCheckInterval)
                 {
-                    _lastTpsCheckTime = DateTime.Now;
+                    _lastTpsCheckTime = DateTime.UtcNow;
 
                     _logger.Debug($"Current TPS: {RealTicksPerSecond:0.00} tps");
 

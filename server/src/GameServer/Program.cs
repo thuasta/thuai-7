@@ -117,7 +117,7 @@ class Program
 
             while (true)
             {
-                Task.Delay(0).Wait();
+                Task.Delay(100).Wait();
                 if (gameRunner.Game.Stage == Game.GameStage.Finished)
                 {
                     gameRunner.Stop(forceStop: false);
