@@ -6,12 +6,12 @@ public class WatchDog
 {
     public static void Feed(WatchDog dog)
     {
-        dog._lastFeedTime = DateTime.Now;
+        dog._lastFeedTime = DateTime.UtcNow;
         dog._logger.Verbose($"WatchDog fed at {dog._lastFeedTime}.");
     }
 
     private readonly int _maxFeedInterval;
-    private DateTime _lastFeedTime = DateTime.Now;
+    private DateTime _lastFeedTime = DateTime.UtcNow;
 
     private Task? _taskForWatching = null;
 
@@ -30,7 +30,7 @@ public class WatchDog
             return;
         }
 
-        _lastFeedTime = DateTime.Now;
+        _lastFeedTime = DateTime.UtcNow;
 
         _taskForWatching = Task.Run(() =>
         {
@@ -38,7 +38,7 @@ public class WatchDog
             {
                 Task.Delay(_maxFeedInterval).Wait();
 
-                if (DateTime.Now - _lastFeedTime > TimeSpan.FromMilliseconds(_maxFeedInterval))
+                if (DateTime.UtcNow - _lastFeedTime > TimeSpan.FromMilliseconds(_maxFeedInterval))
                 {
                     _logger.Error(
                         $"\"{taskName}\" (with Task Id {task.Id}) doesn't feed dog for more than {_maxFeedInterval} ms."

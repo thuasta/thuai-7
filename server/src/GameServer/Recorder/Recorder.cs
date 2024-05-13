@@ -49,7 +49,7 @@ public class Recorder : IRecorder, IDisposable
         _recordsDir = recordsDir;
         _targetRecordFileName = targetRecordFileName;
         _targetResultFileName = targetResultFileName;
-        _copyRecordDir = Path.Combine(_recordsDir, "copy", $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{Guid.NewGuid()}");
+        _copyRecordDir = Path.Combine(_recordsDir, "copy", $"{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss}-{Guid.NewGuid()}");
 
         // Remove record file if it exists.
         if (File.Exists(Path.Combine(_recordsDir, _targetRecordFileName)))
