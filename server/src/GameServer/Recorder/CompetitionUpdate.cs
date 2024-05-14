@@ -47,6 +47,9 @@ public record CompetitionUpdate : IRecord
         [JsonPropertyName("armor")]
         public string? armor { get; init; }
 
+        [JsonPropertyName("currentArmorHealth")]
+        public float currentArmorHealth { get; init; }
+
         [JsonPropertyName("health")]
         public int? health { get; init; }
 

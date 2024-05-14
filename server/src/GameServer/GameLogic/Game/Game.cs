@@ -227,6 +227,7 @@ public partial class Game
                                 playerId = player.PlayerId,
                                 token = player.Token,
                                 armor = player.PlayerArmor.ItemSpecificName,
+                                currentArmorHealth = player.PlayerArmor.Health,
                                 position = new()
                                 {
                                     x = player.PlayerPosition.x,
