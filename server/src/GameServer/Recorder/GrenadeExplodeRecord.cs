@@ -12,14 +12,11 @@ public record GrenadeExplodeRecord : IRecord
     [JsonIgnore]
     public JsonNode Json => JsonNode.Parse(JsonSerializer.Serialize(this))!;
 
-    [JsonPropertyName("data")]
-    public DataType? Data { get; init; }
+    [JsonPropertyName("explodePosition")]
+    public positionType? ExplodePosition { get; init; }
 
-    public record DataType
-    {
-        [JsonPropertyName("explodePosition")]
-        public positionType? ExplodePosition { get; init; }
-    }
+    [JsonPropertyName("Victims")]
+    public List<Victim>? Victims { get; init; }
 
     public record positionType
     {
@@ -28,5 +25,14 @@ public record GrenadeExplodeRecord : IRecord
 
         [JsonPropertyName("y")]
         public double y { get; init; }
+    }
+
+    public record Victim
+    {
+        [JsonPropertyName("token")]
+        public string? token { get; init; }
+
+        [JsonPropertyName("hurt")]
+        public float hurt { get; init; }
     }
 }

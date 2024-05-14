@@ -24,25 +24,31 @@ public class Grenade
     //否则return false
     public bool Explode(int tick, Player[] players, Map map, Recorder.Recorder? _recorder)
     {
+        List<Recorder.GrenadeExplodeRecord.Victim> _victims = new();
         if (tick >= explodeTick && !hasExploded)
         {
-            Recorder.GrenadeExplodeRecord record = new()
-            {
-                Data = new()
-                {
-                    ExplodePosition = new()
-                    {
-                        x = position.x,
-                        y = position.y
-                    }
-                }
-            };
-            _recorder?.Record(record);
             hasExploded = true;
             foreach (Player player in players)
             {
-                player.TakeDamage(ComputeGrenadeDamage(position, player.PlayerPosition, map));
+                int tempHurt = ComputeGrenadeDamage(position, player.PlayerPosition, map);
+                player.TakeDamage(tempHurt);
+                _victims.Add(new Recorder.GrenadeExplodeRecord.Victim()
+                {
+                    token = player.Token,
+                    hurt = tempHurt
+                });
             }
+
+            Recorder.GrenadeExplodeRecord record = new()
+            {
+                ExplodePosition = new()
+                {
+                    x = position.x,
+                    y = position.y
+                },
+                Victims = new(_victims)
+            };
+            _recorder?.Record(record);
             return true;
         }
         return false;
