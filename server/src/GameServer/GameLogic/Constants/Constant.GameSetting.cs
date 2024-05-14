@@ -6,7 +6,7 @@ public partial class Constant
 
     public const int PREPERATION_TICKS = 10 * TICKS_PER_SECOND;
 
-    public const int WALL_GENERATE_TRY_TIMES = 1024;
+    public const int WALL_GENERATE_TRY_TIMES = 2048;
 
     public const int NUM_SUPPLY_POINTS = 256;
     public const int MIN_ITEMS_PER_SUPPLY = 1;

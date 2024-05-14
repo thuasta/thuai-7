@@ -453,7 +453,7 @@ private void Start()
             string name = supplyJson["name"].ToString();
             if (_propDict.ContainsKey(name))
             {
-                Vector3 supplyPosition = new Vector3((float)supplyJson["position"]["x"], 0.1f, (float)supplyJson["position"]["y"]);
+                Vector3 supplyPosition = new Vector3((float)supplyJson["position"]["x"]+0.5f, 0.1f, (float)supplyJson["position"]["y"]+0.5f);
                 GameObject newSupply= Instantiate(_propDict[name],_supplyParent.transform);
                 newSupply.transform.position = supplyPosition;
                 newSupply.transform.Rotate(0,0, UnityEngine.Random.Range(0, 360));
@@ -563,27 +563,25 @@ private void Start()
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Player player = PlayerSource.GetPlayers()[playerId];
-        JArray abandonedSupplies = (JArray)eventJson["data"]["abandonedSupplies"];
-        foreach (JObject supplyJson in abandonedSupplies)
+        JToken abandonedSupplies = (JToken)eventJson["data"]["abandonedSupplies"];
+
+        string itemName = abandonedSupplies.ToString();
+        //int itemCount = (int)abandonedSupplies["count"];
+        Vector3 position = new Vector3((int)player.PlayerPosition.x + 0.5f, 0.1f, (int)player.PlayerPosition.y + 0.5f);
+        //for (int i = 0; i < itemCount; i++)
+        //{
+        GameObject supplyPrefab = _propDict.ContainsKey(itemName) ? _propDict[itemName] : null;
+        if (supplyPrefab != null)
         {
-            string itemName = supplyJson["name"].ToString();
-            int itemCount = (int)supplyJson["count"];
-            Vector3 position = new Vector3((float)supplyJson["position"]["x"],0.1f, (float)supplyJson["position"]["y"]);
-            for (int i = 0; i < itemCount; i++)
+            GameObject newSupply = Instantiate(supplyPrefab, position, Quaternion.identity, _supplyParent.transform);
+            newSupply.transform.Rotate(0, UnityEngine.Random.Range(0, 360), 0);
+            if (!itemInstances.ContainsKey(itemName) || itemInstances[itemName] == null)
             {
-                GameObject supplyPrefab = _propDict.ContainsKey(itemName) ? _propDict[itemName] : null;
-                if (supplyPrefab != null)
-                {
-                    GameObject newSupply = Instantiate(supplyPrefab, position, Quaternion.identity, _supplyParent.transform);
-                    newSupply.transform.Rotate(0, UnityEngine.Random.Range(0, 360), 0);
-                    if (!itemInstances.ContainsKey(itemName) || itemInstances[itemName] == null)
-                    {
-                        itemInstances[itemName] = new List<GameObject>();
-                    }
-                    itemInstances[itemName].Add(newSupply);
-                }
+                itemInstances[itemName] = new List<GameObject>();
             }
+            itemInstances[itemName].Add(newSupply);
         }
+        //}
     }
 
     private void AfterPlayerAttackEvent(JObject eventJson)
