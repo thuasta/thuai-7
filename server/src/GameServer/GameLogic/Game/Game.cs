@@ -261,7 +261,9 @@ public partial class Game
                 _recorder?.Record(competitionUpdateRecord);
 
                 _events.Clear();
-                AfterGameTickEvent?.Invoke(this, new AfterGameTickEventArgs(AllPlayers, GameMap, CurrentTick));
+                AfterGameTickEvent?.Invoke(
+                    this, new AfterGameTickEventArgs(AllPlayers, GameMap, CurrentTick, _allGrenades)
+                );
             }
         }
         catch (Exception e)
