@@ -706,7 +706,7 @@ private void Start()
                             break;
                         case "PLAYER_PREPARE":
                             break;
-                        case "GRENADE EXPLODE":
+                        case "GRENADE_EXPLODE":
                             AfterGrenadeExplosionEvent(eventJsonInfo);
                             break;
                         default:
