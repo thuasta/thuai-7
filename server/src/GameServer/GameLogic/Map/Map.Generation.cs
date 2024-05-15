@@ -52,7 +52,7 @@ public partial class Map
             if (itemType == IItem.ItemKind.Weapon)
             {
                 (int, int) bulletCountRange = GetItemCountRange(Constant.Names.BULLET);
-                int bulletCount =  _random.Next(bulletCountRange.Item1, bulletCountRange.Item2 + 1);
+                int bulletCount = _random.Next(bulletCountRange.Item1, bulletCountRange.Item2 + 1);
 
                 AddSupplies(
                     (int)nextPosition.x,
