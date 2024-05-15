@@ -128,6 +128,12 @@ public partial class AgentServer
                 // Add the socket.
                 _sockets.TryAdd(socket.ConnectionInfo.Id, socket);
 
+                _socketRawTextReceivingQueue.AddOrUpdate(
+                    socket.ConnectionInfo.Id,
+                    new ConcurrentQueue<string>(),
+                    (key, oldValue) => new ConcurrentQueue<string>()
+                );
+
                 Task task = CreateTaskForParsingMessage(socket.ConnectionInfo.Id);
                 task.Start();
 
@@ -139,12 +145,6 @@ public partial class AgentServer
                         oldValue?.Dispose();
                         return task;
                     }
-                );
-
-                _socketRawTextReceivingQueue.AddOrUpdate(
-                    socket.ConnectionInfo.Id,
-                    new ConcurrentQueue<string>(),
-                    (key, oldValue) => new ConcurrentQueue<string>()
                 );
             };
 
