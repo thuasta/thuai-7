@@ -119,7 +119,8 @@ public class Record : MonoBehaviour
     // viewer
 
     private Dictionary<string, AudioClip> _audioClipDict;
-
+    private GameObject _grenadeExplosionPrefab;
+    private GameObject _grenadeBeamPrefab;
     private AudioSource _as;
 private void Start()
     {
@@ -188,7 +189,10 @@ private void Start()
             { "FireInTheHole", Resources.Load<AudioClip>("Music/Audio/ct_fireinhole")},
             { "Go", Resources.Load<AudioClip>("Music/Audio/go") },
             { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
+            { "Grenade", Resources.Load<AudioClip>("Music/Audio/grenade") },
         };
+        _grenadeExplosionPrefab = Resources.Load<GameObject>("Prefabs/BigExplosionEffect");
+        _grenadeBeamPrefab = Resources.Load<GameObject>("Beam/GrenadeBeam");
         // GUI //
 
         // Get stop button 
@@ -618,8 +622,38 @@ private void Start()
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         _as.PlayOneShot(_audioClipDict["FireInTheHole"]);
-
+        float x=(float) eventJson["data"]["turgetPosition"]["x"];
+        float y=(float) eventJson["data"]["turgetPosition"]["y"];
         // TODO:
+        GameObject beamPrefab = Instantiate(_grenadeBeamPrefab);
+        Vector3 endPoint = new Vector3(x, 0, y) ;
+        beamPrefab.transform.position = endPoint;
+        beamPrefab.GetComponentInChildren<MeshRenderer>().material.color = playerId == 0 ? Color.blue : Color.red;
+        beamPrefab.GetComponent<BeamAnimations>().Blink(5.0f);
+        
+    }
+
+    private void AfterGrenadeExplosionEvent(JObject eventJson)
+    {
+        double x, y;
+        if ((JToken)eventJson["data"] != null)
+        {
+            x = (double)eventJson["data"]["explodePosition"]["x"];
+            y = (double)eventJson["data"]["explodePosition"]["y"];
+        }
+        else
+        {
+            x = (double)eventJson["explodePosition"]["x"];
+            y = (double)eventJson["explodePosition"]["y"];
+        }
+        // Instantiate Prefab
+        GameObject prefab = Instantiate(_grenadeExplosionPrefab);
+        prefab.transform.position = new Vector3((float)x, 0.2f, (float)y);
+        prefab.GetComponent<ParticleSystem>().Play();
+        prefab.AddComponent<AutoDelete>();
+
+        _as.PlayOneShot(_audioClipDict["Grenade"]);
+
     }
 
     #endregion
@@ -672,6 +706,9 @@ private void Start()
                             break;
                         case "PLAYER_PREPARE":
                             break;
+                        case "GRENADE EXPLODE":
+                            AfterGrenadeExplosionEvent(eventJsonInfo);
+                            break;
                         default:
                             break;
                         }
@@ -679,10 +716,15 @@ private void Start()
                 }
 
             }
-            if (_recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "SAFE_ZONE")
+            if (_recordArray[_recordInfo.NowRecordNum]["messageType"]!=null && _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "SAFE_ZONE")
             {
                 UpdateCircle(new Vector2((float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["x"], (float)_recordArray[_recordInfo.NowRecordNum]["data"]["center"]["y"]),
                     (float)_recordArray[_recordInfo.NowRecordNum]["data"]["radius"]);
+            }
+
+            if (_recordArray[_recordInfo.NowRecordNum]["eventType"] != null && _recordArray[_recordInfo.NowRecordNum]["eventType"].ToString() == "GRENADE_EXPLODE")
+            {
+                AfterGrenadeExplosionEvent((JObject)_recordArray[_recordInfo.NowRecordNum]);
             }
             _recordInfo.NowRecordNum++;
         }
