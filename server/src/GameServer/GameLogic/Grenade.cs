@@ -8,14 +8,32 @@ public class Grenade
     public Position Position { get; set; }
     //爆炸的tick
     public int ExplodeTick { get; set; }
+    public int ThrowTick { get; init; }
     //是否已经爆炸，初始为false
     public bool HasExploded { get; set; } = false;
+
+    public Position EvaluatedPosition { get; private set; }
+
+    private readonly Random _random = new();
 
     //构造函数：初始化手雷的爆炸位置、扔出的tick
     public Grenade(Position position, int throwTick)
     {
         Position = position;
+        ThrowTick = throwTick;
         ExplodeTick = throwTick + Constant.GRENADE_EXPLODE_TICK;
+
+        double evaluatedRadius = Constant.GRENADE_MAX_RADIUS * _random.NextDouble();
+
+        double evalX = _random.NextDouble() - 0.5;
+        double evalY = _random.NextDouble() - 0.5;
+        Position evalDirection = new(evalX, evalY);
+        evalDirection = evalDirection.Normalize();
+
+        EvaluatedPosition = new(
+            Position.x + evalDirection.x * evaluatedRadius,
+            Position.y + evalDirection.y * evaluatedRadius
+        );
     }
 
     //判断手雷是否爆炸，如果tick>=ExplodeTick，爆炸，设HasExploded为True
