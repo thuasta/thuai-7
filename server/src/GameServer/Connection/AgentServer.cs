@@ -175,7 +175,7 @@ public partial class AgentServer
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
                         _logger.Warning(
-                            $"Received too many nessages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
+                            $"Received too many messages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                         );
                         _logger.Warning("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
@@ -203,7 +203,7 @@ public partial class AgentServer
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
                         _logger.Warning(
-                            $"Received too many nessages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
+                            $"Received too many messages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                         );
                         _logger.Warning("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();

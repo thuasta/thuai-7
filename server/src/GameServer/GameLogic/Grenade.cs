@@ -5,18 +5,35 @@ namespace GameServer.GameLogic;
 public class Grenade
 {
     //定点爆炸的坐标
-    public Position position { get; set; }
+    public Position Position { get; set; }
     //爆炸的tick
-    public int explodeTick { get; set; }
+    public int ExplodeTick { get; set; }
+    public int ThrowTick { get; init; }
     //是否已经爆炸，初始为false
-    public bool hasExploded { get; set; } = false;
+    public bool HasExploded { get; set; } = false;
 
+    public Position EvaluatedPosition { get; private set; }
+
+    private readonly Random _random = new();
 
     //构造函数：初始化手雷的爆炸位置、扔出的tick
     public Grenade(Position position, int throwTick)
     {
-        this.position = position;
-        explodeTick = throwTick + Constant.GRENADE_EXPLODE_TICK;
+        Position = position;
+        ThrowTick = throwTick;
+        ExplodeTick = throwTick + Constant.GRENADE_EXPLODE_TICK;
+
+        double evaluatedRadius = Constant.GRENADE_MAX_RADIUS * _random.NextDouble();
+
+        double evalX = _random.NextDouble() - 0.5;
+        double evalY = _random.NextDouble() - 0.5;
+        Position evalDirection = new(evalX, evalY);
+        evalDirection = evalDirection.Normalize();
+
+        EvaluatedPosition = new(
+            Position.x + evalDirection.x * evaluatedRadius,
+            Position.y + evalDirection.y * evaluatedRadius
+        );
     }
 
     //判断手雷是否爆炸，如果tick>=ExplodeTick，爆炸，设HasExploded为True
@@ -25,12 +42,12 @@ public class Grenade
     public bool Explode(int tick, Player[] players, Map map, List<Recorder.IRecord> _events)
     {
         List<Recorder.GrenadeExplodeRecord.Victim> _victims = new();
-        if (tick >= explodeTick && !hasExploded)
+        if (tick >= ExplodeTick && !HasExploded)
         {
-            hasExploded = true;
+            HasExploded = true;
             foreach (Player player in players)
             {
-                int tempHurt = ComputeGrenadeDamage(position, player.PlayerPosition, map);
+                int tempHurt = ComputeGrenadeDamage(Position, player.PlayerPosition, map);
                 player.TakeDamage(tempHurt);
                 _victims.Add(new Recorder.GrenadeExplodeRecord.Victim()
                 {
@@ -43,8 +60,8 @@ public class Grenade
             {
                 ExplodePosition = new()
                 {
-                    x = position.x,
-                    y = position.y
+                    x = Position.x,
+                    y = Position.y
                 },
                 Victims = new(_victims)
             };

@@ -38,7 +38,7 @@ public partial class AgentServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
+                    _logger.Error($"Failed to add message to message queue of socket {connectionId}: {ex.Message}");
                     _logger.Debug($"{ex}");
                 }
             }
