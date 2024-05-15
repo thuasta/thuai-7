@@ -130,7 +130,7 @@ public partial class AgentServer
         // Append map message, supplies message, players info message, and safe zone message to _messageToPublish
         if (e.CurrentTick % 100 == 0)
         {
-            _messageToPublish.Enqueue(
+            Publish(
                 new MapMessage
                 {
                     Length = e.GameMap.Height,
@@ -138,20 +138,21 @@ public partial class AgentServer
                 }
             );
         }
-        _messageToPublish.Enqueue(
+
+        Publish(
             new SuppliesMessage
             {
                 Supplies = new(supplies)
             }
         );
-        _messageToPublish.Enqueue(
+        Publish(
             new PlayersInfoMessage
             {
                 ElapsedTicks = e.CurrentTick,
                 Players = new(players)
             }
         );
-        _messageToPublish.Enqueue(
+        Publish(
             new SafeZoneMessage
             {
                 CenterOfCircle = new SafeZoneMessage.Center

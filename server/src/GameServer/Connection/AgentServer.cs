@@ -8,7 +8,6 @@ namespace GameServer.Connection;
 public partial class AgentServer
 {
     public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
-    public const int TIMEOUT_MILLISEC = 10;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
@@ -17,11 +16,6 @@ public partial class AgentServer
 
     public bool WhiteListMode { get; init; } = false;
     public List<string> WhiteList { get; init; } = new();
-
-    public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
-    public double RealMpps { get; private set; }
-
-    private DateTime _lastMppsCheckTime = DateTime.UtcNow;
 
     private readonly ILogger _logger = Log.Logger.ForContext("Component", "AgentServer");
 
@@ -48,8 +42,6 @@ public partial class AgentServer
 
             _isRunning = true;
 
-            _taskForPublishingMessage = Task.Run(ActionForPublishingMessage);
-
             _logger.Information("AgentServer started. Waiting for connections...");
         }
         catch (Exception ex)
@@ -71,8 +63,6 @@ public partial class AgentServer
 
         try
         {
-            _taskForPublishingMessage?.Dispose();
-            _taskForPublishingMessage = null;
 
             foreach (KeyValuePair<Guid, Task> kvp in _tasksForParsingMessage)
             {
@@ -80,14 +70,18 @@ public partial class AgentServer
             }
             _tasksForParsingMessage.Clear();
 
+            foreach(KeyValuePair<Guid, Task> kvp in _tasksForSendingMessage)
+            {
+                kvp.Value?.Dispose();
+            }
+            _tasksForSendingMessage.Clear();
+
             _wsServer?.Dispose();
             _wsServer = null;
 
             _isRunning = false;
 
             _sockets.Clear();
-
-            _messageToPublish.Clear();
 
             _logger.Information("Stopped.");
         }
@@ -128,16 +122,29 @@ public partial class AgentServer
                     (key, oldValue) => new ConcurrentQueue<string>()
                 );
 
-                Task task = CreateTaskForParsingMessage(socket.ConnectionInfo.Id);
-                task.Start();
+                Task parsingTask = CreateTaskForParsingMessage(socket.ConnectionInfo.Id);
+                parsingTask.Start();
 
                 _tasksForParsingMessage.AddOrUpdate(
                     socket.ConnectionInfo.Id,
-                    task,
+                    parsingTask,
                     (key, oldValue) =>
                     {
                         oldValue?.Dispose();
-                        return task;
+                        return parsingTask;
+                    }
+                );
+
+                Task sendingTask = CreateTaskForSendingMessage(socket.ConnectionInfo.Id);
+                sendingTask.Start();
+
+                _tasksForSendingMessage.AddOrUpdate(
+                    socket.ConnectionInfo.Id,
+                    sendingTask,
+                    (key, oldValue) =>
+                    {
+                        oldValue?.Dispose();
+                        return sendingTask;
                     }
                 );
             };
@@ -153,8 +160,11 @@ public partial class AgentServer
                 _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
                 _socketRawTextReceivingQueue.TryRemove(socket.ConnectionInfo.Id, out _);
 
-                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? task);
-                task?.Dispose();
+                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? parsingTask);
+                parsingTask?.Dispose();
+
+                _tasksForSendingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? sendingTask);
+                sendingTask?.Dispose();
             };
 
             socket.OnMessage = text =>
@@ -165,7 +175,7 @@ public partial class AgentServer
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
                         _logger.Warning(
-                            $"Message queue for {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
+                            $"Received too many nessages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
                         );
                         _logger.Warning("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
@@ -193,7 +203,7 @@ public partial class AgentServer
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
                         _logger.Warning(
-                            $"Message queue for {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
+                            $"Received too many nessages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
                         );
                         _logger.Warning("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
@@ -224,8 +234,11 @@ public partial class AgentServer
                 _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
                 _socketRawTextReceivingQueue.TryRemove(socket.ConnectionInfo.Id, out _);
 
-                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? task);
-                task?.Dispose();
+                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? parsingTask);
+                parsingTask?.Dispose();
+
+                _tasksForSendingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? sendingTask);
+                sendingTask?.Dispose();
             };
         });
     }

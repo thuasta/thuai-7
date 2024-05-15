@@ -22,7 +22,7 @@ public partial class AgentServer
                                ?? throw new Exception("failed to deserialize Message");
 
             _logger.Debug(
-                $"Received message: {(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}"
+                $"Parsing message: \"{(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}\""
             );
             _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
 
@@ -135,16 +135,24 @@ public partial class AgentServer
         {
             while (_isRunning)
             {
-                if (_socketRawTextReceivingQueue.TryGetValue(socketId, out ConcurrentQueue<string>? queue))
+                try
                 {
-                    if (queue.TryDequeue(out string? text))
+                    if (_socketRawTextReceivingQueue.TryGetValue(socketId, out ConcurrentQueue<string>? queue))
                     {
-                        ParseMessage(text, socketId);
+                        if (queue.TryDequeue(out string? text) && text is not null)
+                        {
+                            ParseMessage(text, socketId);
+                        }
+                        else
+                        {
+                            Task.Delay(MESSAGE_PARSE_INTERVAL).Wait();
+                        }
                     }
-                    else
-                    {
-                        Task.Delay(MESSAGE_PARSE_INTERVAL).Wait();
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to parse message from socket {socketId}: {ex.Message}");
+                    _logger.Debug($"{ex}");
                 }
             }
         });
