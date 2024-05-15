@@ -70,7 +70,7 @@ public partial class AgentServer
             }
             _tasksForParsingMessage.Clear();
 
-            foreach(KeyValuePair<Guid, Task> kvp in _tasksForSendingMessage)
+            foreach (KeyValuePair<Guid, Task> kvp in _tasksForSendingMessage)
             {
                 kvp.Value?.Dispose();
             }
