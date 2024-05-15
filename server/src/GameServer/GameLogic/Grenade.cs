@@ -22,7 +22,7 @@ public class Grenade
     //判断手雷是否爆炸，如果tick>=ExplodeTick，爆炸，设HasExploded为True
     //  进行范围伤害计算并作用到player上，并return true;
     //否则return false
-    public bool Explode(int tick, Player[] players, Map map, Recorder.Recorder? _recorder)
+    public bool Explode(int tick, Player[] players, Map map, List<Recorder.IRecord> _events)
     {
         List<Recorder.GrenadeExplodeRecord.Victim> _victims = new();
         if (tick >= explodeTick && !hasExploded)
@@ -48,7 +48,7 @@ public class Grenade
                 },
                 Victims = new(_victims)
             };
-            _recorder?.Record(record);
+            _events.Add(record);
             return true;
         }
         return false;
