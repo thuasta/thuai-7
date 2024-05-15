@@ -14,7 +14,7 @@ public partial class Constant
         public const int FIRST_AID = 10;
         public const int BANDAGE = 2;
 
-        public const int GRENADE = 15;
+        public const int GRENADE = 27;
 
         public const int PRIMARY_ARMOR = 0;
         public const int PREMIUM_ARMOR = 0;
