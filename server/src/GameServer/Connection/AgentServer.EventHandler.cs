@@ -5,7 +5,6 @@ namespace GameServer.Connection;
 
 public partial class AgentServer
 {
-    public static int TickCount = 0;
     public void HandleAfterGameTickEvent(object? sender, AfterGameTickEventArgs e)
     {
         List<MapMessage.Wall> walls = new();
@@ -129,7 +128,7 @@ public partial class AgentServer
         }
 
         // Append map message, supplies message, players info message, and safe zone message to _messageToPublish
-        if (TickCount % 100 == 0)
+        if (e.CurrentTick % 100 == 0)
         {
             _messageToPublish.Enqueue(
                 new MapMessage
@@ -163,7 +162,6 @@ public partial class AgentServer
                 Radius = e.GameMap.SafeZone.Radius
             }
         );
-        TickCount++;
     }
 
     public void HandleAfterPlayerConnectEvent(object? sender, AfterPlayerConnect e)
