@@ -183,13 +183,13 @@ public partial class Game
                 }
 
                 // Check if the type weapon requires bullets
-                if (e.Player.PlayerWeapon.RequiresBullet == true)
+                if (e.Player.PlayerWeapon.RequiredBulletNum > 0)
                 {
                     // Check if the player has enough bullets
                     IItem? bullet = e.Player.PlayerBackPack.FindItems(IItem.ItemKind.Bullet, Constant.Names.BULLET);
-                    if (bullet is null || bullet.Count <= 0)
+                    if (bullet is null || bullet.Count < e.Player.PlayerWeapon.RequiredBulletNum)
                     {
-                        _logger.Error($"[Player {e.Player.PlayerId}] No bullet.");
+                        _logger.Error($"[Player {e.Player.PlayerId}] No enough bullet.");
                         return;
                     }
 
