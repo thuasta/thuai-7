@@ -9,7 +9,7 @@ public partial class Game
         // Remove all exploded grenades
         for (int i = 0; i < _allGrenades.Count; i++)
         {
-            if (_allGrenades[i].hasExploded == true)
+            if (_allGrenades[i].HasExploded == true)
             {
                 _allGrenades.RemoveAt(i);
                 i--;
