@@ -5,7 +5,10 @@ namespace GameServer.Connection;
 
 public partial class AgentServer
 {
-    private ConcurrentDictionary<Guid, Task> _tasksForParsingMessage = new();
+    public const int MESSAGE_PARSE_INTERVAL = 10;
+
+    private readonly ConcurrentDictionary<Guid, ConcurrentQueue<string>> _socketRawTextReceivingQueue = new();
+    private readonly ConcurrentDictionary<Guid, Task> _tasksForParsingMessage = new();
 
     /// <summary>
     /// Parse the message

@@ -9,8 +9,6 @@ public partial class AgentServer
 {
     public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
     public const int TIMEOUT_MILLISEC = 10;
-    public const int MESSAGE_PUBLISH_INTERVAL = 10;
-    public const int MESSAGE_PARSE_INTERVAL = 10;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
@@ -32,10 +30,6 @@ public partial class AgentServer
 
     private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _sockets = new();
     private readonly ConcurrentDictionary<Guid, string> _socketTokens = new();
-
-    private readonly ConcurrentDictionary<Guid, ConcurrentQueue<string>> _socketRawTextReceivingQueue = new();
-
-    private readonly ConcurrentQueue<Message> _messageToPublish = new();
 
     public void Start()
     {

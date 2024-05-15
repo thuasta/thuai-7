@@ -1,7 +1,13 @@
+using System.Collections.Concurrent;
+
 namespace GameServer.Connection;
 
 public partial class AgentServer
 {
+    public const int MESSAGE_PUBLISH_INTERVAL = 10;
+
+
+    private readonly ConcurrentQueue<Message> _messageToPublish = new();
     private Task? _taskForPublishingMessage = null;
 
     public void Publish(Message message, string? token = null)
