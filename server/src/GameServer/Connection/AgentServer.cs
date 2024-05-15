@@ -18,7 +18,6 @@ public partial class AgentServer
     public bool WhiteListMode { get; init; } = false;
     public List<string> WhiteList { get; init; } = new();
 
-    public Task? TaskForPublishingMessage { get; private set; } = null;
 
     public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
     public double RealMpps { get; private set; }
@@ -27,14 +26,17 @@ public partial class AgentServer
 
     private readonly ILogger _logger = Log.Logger.ForContext("Component", "AgentServer");
 
-    /// <summary>
-    /// Message to publish to clients
-    /// </summary>
-    private readonly ConcurrentQueue<Message> _messageToPublish = new();
+
     private bool _isRunning = false;
     private IWebSocketServer? _wsServer = null;
     private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _sockets = new();
     private readonly ConcurrentDictionary<Guid, string> _socketTokens = new();
+
+    /// <summary>
+    /// Message to publish to clients
+    /// </summary>
+    private readonly ConcurrentQueue<Message> _messageToPublish = new();
+    private Task? _taskForPublishingMessage = null;
 
     public void Start()
     {
@@ -96,7 +98,7 @@ public partial class AgentServer
                 }
             });
 
-            TaskForPublishingMessage = Task.Run(actionForPublishingMessage);
+            _taskForPublishingMessage = Task.Run(actionForPublishingMessage);
 
             _logger.Information("AgentServer started. Waiting for connections...");
         }
@@ -119,8 +121,8 @@ public partial class AgentServer
 
         try
         {
-            TaskForPublishingMessage?.Dispose();
-            TaskForPublishingMessage = null;
+            _taskForPublishingMessage?.Dispose();
+            _taskForPublishingMessage = null;
 
             _wsServer?.Dispose();
             _wsServer = null;
