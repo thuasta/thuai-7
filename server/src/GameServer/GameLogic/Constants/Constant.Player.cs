@@ -17,4 +17,6 @@ public partial class Constant
     public const int PLAYER_USE_GRENADE_COOLDOWN = 20;
 
     public const int PLAYER_PICK_UP_OR_ABANDON_COOLDOWN = 3;
+
+    public const int PLAYER_FIREARM_PREPARATION_TICK = 10;
 }

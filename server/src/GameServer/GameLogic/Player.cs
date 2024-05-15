@@ -32,6 +32,7 @@ public partial class Player
 
     public int? LastPickUpOrAbandonTick { get; set; } = null;
     public int? LastUseGrenadeTick { get; set; } = null;
+    public int? LastSwitchArmTick { get; set; } = null;
 
     private readonly ILogger _logger;
 

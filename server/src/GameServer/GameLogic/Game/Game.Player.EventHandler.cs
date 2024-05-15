@@ -165,6 +165,12 @@ public partial class Game
             _logger.Error($"[Player {e.Player.PlayerId}] Cannot attack when the game is at stage {Stage}.");
             return;
         }
+        if (e.Player.LastSwitchArmTick is not null
+            && CurrentTick - e.Player.LastSwitchArmTick < Constant.PLAYER_FIREARM_PREPARATION_TICK)
+        {
+            _logger.Error($"[Player {e.Player.PlayerId}] Cannot attack instantly after switching arm.");
+            return;
+        }
 
         try
         {
@@ -417,6 +423,7 @@ public partial class Game
                     if (e.Player.WeaponSlot[i].Name == e.TargetFirearm)
                     {
                         e.Player.PlayerWeapon = e.Player.WeaponSlot[i];
+                        e.Player.LastSwitchArmTick = CurrentTick;
                         break;
                     }
                 }
