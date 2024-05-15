@@ -79,7 +79,6 @@ public partial class Game
                             return;
                         }
 
-                        GameMap.AddSupplies(playerIntX, playerIntY, ArmorFactory.ToItem(e.Player.PlayerArmor, 1));
                         e.Player.PlayerArmor = Armor.DefaultArmor;
                         break;
 
@@ -293,7 +292,7 @@ public partial class Game
 
                         if (armorItem is null || armorItem.Count < e.Numb)
                         {
-                            _logger.Error($"[Player {e.Player.PlayerId}] Supply not found or no enough supplies.");
+                            _logger.Error($"[Player {e.Player.PlayerId}] No enough {e.TargetSupply}.");
                             return;
                         }
 
@@ -325,7 +324,7 @@ public partial class Game
                                     );
                         if (weaponItem is null || weaponItem.Count < e.Numb)
                         {
-                            _logger.Error($"[Player {e.Player.PlayerId}] Supply not found or no enough supplies.");
+                            _logger.Error($"[Player {e.Player.PlayerId}] No enough {e.TargetSupply}.");
                             return;
                         }
                         if (e.Player.WeaponSlot.Any(w => w.Name == e.TargetSupply) == true)
@@ -349,7 +348,7 @@ public partial class Game
 
                         if (generalItem is null || generalItem.Count < e.Numb)
                         {
-                            _logger.Error($"[Player {e.Player.PlayerId}] Supply not found or no enough supplies.");
+                            _logger.Error($"[Player {e.Player.PlayerId}] No enough {e.TargetSupply}.");
                             return;
                         }
 
