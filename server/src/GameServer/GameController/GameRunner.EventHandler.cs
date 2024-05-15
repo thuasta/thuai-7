@@ -14,7 +14,7 @@ public partial class GameRunner
 
     public void HandleAfterMessageReceiveEvent(object? sender, AfterMessageReceiveEventArgs e)
     {
-        _logger.Debug($"Handling message: {e.Message.MessageType}");
+        _logger.Debug($"Handling message: \"{e.Message.MessageType}\"");
 
         if (e.Message is not PerformMessage)
         {

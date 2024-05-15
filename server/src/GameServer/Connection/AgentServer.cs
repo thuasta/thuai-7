@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Text;
-using System.Text.Json;
 using Fleck;
 using Serilog;
 
@@ -9,7 +8,6 @@ namespace GameServer.Connection;
 public partial class AgentServer
 {
     public const int MAXIMUM_MESSAGE_QUEUE_SIZE = 11;
-    public const int TIMEOUT_MILLISEC = 10;
 
     public event EventHandler<AfterMessageReceiveEventArgs>? AfterMessageReceiveEvent = delegate { };
 
@@ -19,21 +17,11 @@ public partial class AgentServer
     public bool WhiteListMode { get; init; } = false;
     public List<string> WhiteList { get; init; } = new();
 
-    public Task? TaskForPublishingMessage { get; private set; } = null;
-
-    public TimeSpan MppsCheckInterval => TimeSpan.FromSeconds(10);
-    public double RealMpps { get; private set; }
-
-    private DateTime _lastMppsCheckTime = DateTime.UtcNow;
-
     private readonly ILogger _logger = Log.Logger.ForContext("Component", "AgentServer");
 
-    /// <summary>
-    /// Message to publish to clients
-    /// </summary>
-    private readonly ConcurrentQueue<Message> _messageToPublish = new();
     private bool _isRunning = false;
     private IWebSocketServer? _wsServer = null;
+
     private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _sockets = new();
     private readonly ConcurrentDictionary<Guid, string> _socketTokens = new();
 
@@ -53,51 +41,6 @@ public partial class AgentServer
             StartWsServer();
 
             _isRunning = true;
-
-            Action actionForPublishingMessage = new(() =>
-            {
-                DateTime lastPublishTime = DateTime.UtcNow;
-
-                while (_isRunning)
-                {
-                    if (_messageToPublish.Count > MAXIMUM_MESSAGE_QUEUE_SIZE)
-                    {
-                        _logger.Warning("Message queue is full. The messages in queue will be cleared.");
-                        _messageToPublish.Clear();
-                    }
-
-                    if (_messageToPublish.IsEmpty == false && _messageToPublish.TryDequeue(out Message? message))
-                    {
-                        if (message is null)
-                        {
-                            _logger.Warning("A null message is dequeued. This message will be ignored.");
-                            continue;
-                        }
-
-                        _logger.Debug($"Dequeued message \"{message.MessageType}\".");
-                        _logger.Verbose(message.Json);
-
-                        Publish(message);
-                    }
-                    else
-                    {
-                        Task.Delay(10).Wait();
-                    }
-
-                    DateTime currentTime = DateTime.UtcNow;
-                    RealMpps = 1.0D / (double)(currentTime - lastPublishTime).TotalSeconds;
-                    lastPublishTime = currentTime;
-
-                    // Check MessagePublishedPerSecond.
-                    if (DateTime.UtcNow - _lastMppsCheckTime > MppsCheckInterval)
-                    {
-                        _lastMppsCheckTime = DateTime.UtcNow;
-                        _logger.Debug($"Current MessagePublishedPerSsecond: {RealMpps:0.00} msg/s");
-                    }
-                }
-            });
-
-            TaskForPublishingMessage = Task.Run(actionForPublishingMessage);
 
             _logger.Information("AgentServer started. Waiting for connections...");
         }
@@ -120,8 +63,18 @@ public partial class AgentServer
 
         try
         {
-            TaskForPublishingMessage?.Dispose();
-            TaskForPublishingMessage = null;
+
+            foreach (KeyValuePair<Guid, Task> kvp in _tasksForParsingMessage)
+            {
+                kvp.Value?.Dispose();
+            }
+            _tasksForParsingMessage.Clear();
+
+            foreach (KeyValuePair<Guid, Task> kvp in _tasksForSendingMessage)
+            {
+                kvp.Value?.Dispose();
+            }
+            _tasksForSendingMessage.Clear();
 
             _wsServer?.Dispose();
             _wsServer = null;
@@ -130,181 +83,12 @@ public partial class AgentServer
 
             _sockets.Clear();
 
-            _messageToPublish.Clear();
-
             _logger.Information("Stopped.");
         }
         catch (Exception ex)
         {
             _logger.Error($"Failed to stop AgentServer: {ex.Message}");
             _logger.Debug($"{ex}");
-        }
-    }
-
-    public void Publish(Message message, string? token = null)
-    {
-        try
-        {
-            string jsonString = message.Json;
-
-            List<Task> sendTasks = new();
-
-            foreach (Guid connectionId in _sockets.Keys)
-            {
-                try
-                {
-                    if (token is null || (_socketTokens.TryGetValue(connectionId, out string? val) && val == token))
-                    {
-                        Task task = _sockets[connectionId].Send(jsonString);
-                        sendTasks.Add(task);
-                        _logger.Debug($"Task {task.Id} created to send message to socket {connectionId}.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Failed to create task to send message to socket {connectionId}: {ex.Message}");
-                    _logger.Debug($"{ex}");
-                }
-            }
-
-            DateTime startTime = DateTime.UtcNow;
-            Task.Delay(TIMEOUT_MILLISEC).Wait();
-
-            foreach (Task task in sendTasks)
-            {
-                if (task.IsCompleted == false)
-                {
-                    _logger.Debug($"Timeout (Task {task.Id}).");
-                    continue;
-                }
-            }
-
-            _logger.Debug($"Message \"{message.MessageType}\" published");
-            _logger.Verbose(jsonString);
-        }
-        catch (Exception ex)
-        {
-            _logger.Error($"Failed to publish message: {ex.Message}");
-            _logger.Debug($"{ex}");
-        }
-    }
-
-    /// <summary>
-    /// Parse the message
-    /// </summary>
-    /// <param name="text">Message to parse</param>
-    private void ParseMessage(string text, Guid socketId)
-    {
-        try
-        {
-            Message? message = JsonSerializer.Deserialize<Message>(text)
-                               ?? throw new Exception("failed to deserialize Message");
-
-            _logger.Debug(
-                $"Received message: {(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}"
-            );
-            _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
-
-            switch (message.MessageType)
-            {
-                case "PERFORM_ABANDON":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformAbandonMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformAbandonMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "PERFORM_PICK_UP":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformPickUpMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformPickUpMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "PERFORM_SWITCH_ARM":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformSwitchArmMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformSwitchArmMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "PERFORM_USE_MEDICINE":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformUseMedicineMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformUseMedicineMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "PERFORM_USE_GRENADE":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformUseGrenadeMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformUseGrenadeMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "PERFORM_MOVE":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformMoveMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformMoveMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "PERFORM_STOP":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformStopMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformStopMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "PERFORM_ATTACK":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<PerformAttackMessage>(text)
-                        ?? throw new Exception("failed to deserialize PerformAttackMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "GET_PLAYER_INFO":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<GetPlayerInfoMessage>(text)
-                        ?? throw new Exception("failed to deserialize GetPlayerInfoMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "GET_MAP_INFO":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<GetMapMessage>(text)
-                        ?? throw new Exception("failed to deserialize GetMapInfoMessage"),
-                        socketId
-                    ));
-                    break;
-
-                case "CHOOSE_ORIGIN":
-                    AfterMessageReceiveEvent?.Invoke(this, new AfterMessageReceiveEventArgs(
-                        JsonSerializer.Deserialize<ChooseOriginMessage>(text)
-                        ?? throw new Exception("failed to deserialize ChooseOriginMessage"),
-                        socketId
-                    ));
-                    break;
-
-                default:
-                    throw new InvalidOperationException(
-                        $"Invalid message type {(message.MessageType.Length > 32 ? string.Concat(message.MessageType.AsSpan(0, 32), "...") : message.MessageType)}."
-                    );
-            }
-        }
-        catch (Exception exception)
-        {
-            _logger.Error($"Failed to parse message: {exception.Message}");
-            _logger.Debug($"{exception}");
         }
     }
 
@@ -329,9 +113,40 @@ public partial class AgentServer
 
                 // Remove the socket if it already exists.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
-
                 // Add the socket.
                 _sockets.TryAdd(socket.ConnectionInfo.Id, socket);
+
+                _socketRawTextReceivingQueue.AddOrUpdate(
+                    socket.ConnectionInfo.Id,
+                    new ConcurrentQueue<string>(),
+                    (key, oldValue) => new ConcurrentQueue<string>()
+                );
+
+                Task parsingTask = CreateTaskForParsingMessage(socket.ConnectionInfo.Id);
+                parsingTask.Start();
+
+                _tasksForParsingMessage.AddOrUpdate(
+                    socket.ConnectionInfo.Id,
+                    parsingTask,
+                    (key, oldValue) =>
+                    {
+                        oldValue?.Dispose();
+                        return parsingTask;
+                    }
+                );
+
+                Task sendingTask = CreateTaskForSendingMessage(socket.ConnectionInfo.Id);
+                sendingTask.Start();
+
+                _tasksForSendingMessage.AddOrUpdate(
+                    socket.ConnectionInfo.Id,
+                    sendingTask,
+                    (key, oldValue) =>
+                    {
+                        oldValue?.Dispose();
+                        return sendingTask;
+                    }
+                );
             };
 
             socket.OnClose = () =>
@@ -343,39 +158,68 @@ public partial class AgentServer
                 // Remove the socket.
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
                 _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketRawTextReceivingQueue.TryRemove(socket.ConnectionInfo.Id, out _);
+
+                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? parsingTask);
+                parsingTask?.Dispose();
+
+                _tasksForSendingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? sendingTask);
+                sendingTask?.Dispose();
             };
 
             socket.OnMessage = text =>
             {
-                _logger.Debug(
-                    $"Received text message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
-                );
-
                 try
                 {
-                    ParseMessage(text, socket.ConnectionInfo.Id);
+                    if (_socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Count
+                         > MAXIMUM_MESSAGE_QUEUE_SIZE)
+                    {
+                        _logger.Warning(
+                            $"Received too many nessages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
+                        );
+                        _logger.Warning("Messages in queue will be cleared.");
+                        _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
+                    }
+
+                    _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Enqueue(text);
+                    _logger.Debug(
+                        $"Received text message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                    );
                 }
                 catch (Exception exception)
                 {
-                    _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Error(
+                        $"Failed to receive message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}.: {exception.Message}"
+                    );
                     _logger.Debug($"{exception}");
                 }
             };
 
             socket.OnBinary = bytes =>
             {
-                _logger.Debug(
-                    $"Received binary message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
-                );
-
                 try
                 {
+                    if (_socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Count
+                         > MAXIMUM_MESSAGE_QUEUE_SIZE)
+                    {
+                        _logger.Warning(
+                            $"Received too many nessages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} is full."
+                        );
+                        _logger.Warning("Messages in queue will be cleared.");
+                        _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
+                    }
+
                     string text = Encoding.UTF8.GetString(bytes);
-                    ParseMessage(text, socket.ConnectionInfo.Id);
+                    _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Enqueue(text);
+                    _logger.Debug(
+                        $"Received binary message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                    );
                 }
                 catch (Exception exception)
                 {
-                    _logger.Error($"Failed to parse message: {exception.Message}");
+                    _logger.Error(
+                        $"Failed to receive message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}: {exception.Message}"
+                    );
                     _logger.Debug($"{exception}");
                 }
             };
@@ -388,6 +232,13 @@ public partial class AgentServer
                 socket.Close();
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
                 _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
+                _socketRawTextReceivingQueue.TryRemove(socket.ConnectionInfo.Id, out _);
+
+                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? parsingTask);
+                parsingTask?.Dispose();
+
+                _tasksForSendingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? sendingTask);
+                sendingTask?.Dispose();
             };
         });
     }

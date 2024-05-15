@@ -279,7 +279,7 @@ public partial class Game
     {
         if (Stage != GameStage.Finished)
         {
-            throw new InvalidOperationException("The game should be finished before judging.");
+            _logger.Error("The game should be finished before judging.");
         }
 
         _logger.Information("Judging the game.");
