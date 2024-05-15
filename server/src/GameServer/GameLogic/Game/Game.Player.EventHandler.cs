@@ -1,10 +1,9 @@
-using System.Security.Principal;
 using GameServer.Geometry;
 using GameServer.Geometry.Shapes;
 
 namespace GameServer.GameLogic;
 
-public partial class Game : IGame
+public partial class Game
 {
     public void SubscribePlayerEvents(Player player)
     {

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using GameServer.Geometry;
 
 namespace GameServer.GameLogic;
@@ -18,19 +17,37 @@ public partial class Game
             return false;
         }
 
-        AllPlayers.Add(player);
-        SubscribePlayerEvents(player);
-        return true;
+        try
+        {
+            lock (_lock)
+            {
+                AllPlayers.Add(player);
+                SubscribePlayerEvents(player);
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.Error($"Cannot add player: {e.Message}");
+            _logger.Debug($"{e}");
+            return false;
+        }
     }
 
     public void RemovePlayer(Player player)
     {
-        AllPlayers.Remove(player);
-    }
-
-    public List<Player> GetPlayers()
-    {
-        return AllPlayers;
+        try
+        {
+            lock (_lock)
+            {
+                AllPlayers.Remove(player);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.Error($"Cannot remove player: {e.Message}");
+            _logger.Debug($"{e}");
+        }
     }
 
     private void UpdatePlayers()
