@@ -1,4 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
 using GameServer.GameController;
 using GameServer.GameLogic;
 
@@ -64,7 +63,6 @@ public partial class AgentServer
 
             if (player.PlayerArmor != null)
                 _current_armor_health = player.PlayerArmor.Health;
-
 
             // Add inventory
             foreach (IItem item in player.PlayerBackPack.Items)

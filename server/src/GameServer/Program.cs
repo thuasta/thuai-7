@@ -214,6 +214,8 @@ class Program
         catch (Exception ex)
         {
             _logger.Fatal($"GameServer crashed with exception: {ex}");
+            _logger.Fatal("Press Ctrl+C to exit.");
+            Task.Delay(-1).Wait();
         }
     }
 

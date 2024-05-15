@@ -1,9 +1,11 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace GameServer.Connection;
 
 public partial class AgentServer
 {
+    private ConcurrentDictionary<Guid, Task> _tasksForParsingMessage = new();
 
     /// <summary>
     /// Parse the message
@@ -124,4 +126,24 @@ public partial class AgentServer
         }
     }
 
+    private Task CreateTaskForParsingMessage(Guid socketId)
+    {
+        return new(() =>
+        {
+            while (_isRunning)
+            {
+                if (_socketRawTextReceivingQueue.TryGetValue(socketId, out ConcurrentQueue<string>? queue))
+                {
+                    if (queue.TryDequeue(out string? text))
+                    {
+                        ParseMessage(text, socketId);
+                    }
+                    else
+                    {
+                        Task.Delay(MESSAGE_PARSE_INTERVAL).Wait();
+                    }
+                }
+            }
+        });
+    }
 }
