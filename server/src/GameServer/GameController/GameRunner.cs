@@ -18,6 +18,9 @@ public partial class GameRunner
     public double TpsLowerBound => 0.9 * ExpectedTicksPerSecond;
     public double TpsUpperBound => 1.1 * ExpectedTicksPerSecond;
 
+    // In milliseconds.
+    private const int NEW_TICK_CHECK_INTERVAL = 1000 / (10 * Constant.TICKS_PER_SECOND);
+
     private DateTime _lastTpsCheckTime = DateTime.UtcNow;
 
     private Task? _tickTask = null;
@@ -45,10 +48,14 @@ public partial class GameRunner
             {
                 Game.Tick();
 
-                if (DateTime.UtcNow < expectedNextTickTime)
+                while (DateTime.UtcNow < expectedNextTickTime)
                 {
                     // Wait for the next tick
-                    Task.Delay(expectedNextTickTime - DateTime.UtcNow).Wait();
+                    if (expectedNextTickTime - DateTime.UtcNow > TimeSpan.FromMilliseconds(NEW_TICK_CHECK_INTERVAL))
+                    {
+                        Task.Delay(NEW_TICK_CHECK_INTERVAL).Wait();
+                    }
+                    // else: just wait for the next tick
                 }
 
                 DateTime currentTime = DateTime.UtcNow;

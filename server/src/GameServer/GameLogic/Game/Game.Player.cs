@@ -63,28 +63,28 @@ public partial class Game
             // Update motion of players
             if (player.PlayerTargetPosition != null)
             {
-                if ((player.PlayerTargetPosition - player.PlayerPosition).Length() <= 1e-6)
+                // Calculate the direction of the player (normalized vector)
+                Position direction = (player.PlayerTargetPosition - player.PlayerPosition).Normalize();
+                if (direction.Length() == 0)
                 {
                     player.PlayerTargetPosition = null;
                 }
                 else
                 {
-                    // Calculate the direction of the player (normalized vector)
-                    Position direction = (player.PlayerTargetPosition - player.PlayerPosition).Normalize();
-                    if (direction.Length() == 0)
+                    Position expectedEndPosition = player.PlayerPosition + direction * player.Speed;
+                    if ((direction * player.Speed).Length()
+                        >= (player.PlayerTargetPosition - player.PlayerPosition).Length())
+                    {
+                        expectedEndPosition = player.PlayerTargetPosition;
+                    }
+
+                    Position realEndPosition = GameMap.GetRealEndPositon(
+                        player.PlayerPosition, expectedEndPosition, independentAxisCauculating: true
+                    );
+                    player.PlayerPosition = realEndPosition;
+                    if (Position.Distance(player.PlayerPosition, player.PlayerTargetPosition) < Constant.DISTANCE_ERROR)
                     {
                         player.PlayerTargetPosition = null;
-                    }
-                    else
-                    {
-                        Position expectedEndPosition = player.PlayerPosition + direction * player.Speed;
-                        if ((direction * player.Speed).Length()
-                            >= (player.PlayerTargetPosition - player.PlayerPosition).Length())
-                        {
-                            expectedEndPosition = player.PlayerTargetPosition;
-                        }
-                        Position realEndPosition = GameMap.GetRealEndPositon(player.PlayerPosition, expectedEndPosition);
-                        player.PlayerPosition = realEndPosition;
                     }
                 }
             }

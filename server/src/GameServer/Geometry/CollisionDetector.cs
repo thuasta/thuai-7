@@ -5,6 +5,8 @@ namespace GameServer.Geometry;
 
 public class CollisionDetector
 {
+    public const double SIMULATION_STEP = 0.01;
+
     public static double CrossProduct(Position a, Position b, Position c)
     {
         return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
@@ -48,7 +50,8 @@ public class CollisionDetector
 
         Position direction = new Position(b.x - a.x, b.y - a.y).Normalize();
         double distance = Position.Distance(a, b);
-        double step = 0.02;
+        double step = SIMULATION_STEP;
+
         Position currentPosition = new(a.x, a.y);
         while (distance > 0)
         {
