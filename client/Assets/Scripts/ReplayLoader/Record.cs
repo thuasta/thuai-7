@@ -25,7 +25,7 @@ public class Record : MonoBehaviour
         // 20 frame per second
         public const float FrameTime = 0.05f;
         public PlayState NowPlayState = PlayState.Pause;
-        public int NowTick = 0;
+        public int NowTick = 200;
         /// <summary>
         /// Now record serial number
         /// </summary>
@@ -683,13 +683,22 @@ private void Start()
         }
 
         int recordTick = _recordInfo.NowTick;
-        while (recordTick == _recordInfo.NowTick) { 
+
+        while (recordTick == _recordInfo.NowTick) {
+
             if (_recordArray[_recordInfo.NowRecordNum].Value<string>("currentTicks") != null &&
                 _recordArray[_recordInfo.NowRecordNum]["messageType"].ToString() == "COMPETITION_UPDATE")
             {
+
                 //Debug.Log(_recordArray[_recordInfo.NowRecordNum]["currentTicks"].ToString());
-                UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
                 _recordInfo.NowTick = (int)(_recordArray[_recordInfo.NowRecordNum]["currentTicks"]);
+                //if (_recordInfo.NowTick < 200)
+                //{
+                //_recordInfo.NowRecordNum++;
+                //    continue;
+                //}
+                UpdatePlayers((JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["players"]);
+
                 _currentTickText.text = $"{_recordInfo.NowTick}";
                 JArray events = (JArray)_recordArray[_recordInfo.NowRecordNum]["data"]["events"];
                 if (events != null)

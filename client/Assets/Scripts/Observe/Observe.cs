@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Observe : MonoBehaviour
@@ -16,6 +17,9 @@ public class Observe : MonoBehaviour
     Vector3 offset;//��������ƫ����
     public float rotationSpeed;//�������ת�ٶ�
     public Vector3 velocity = Vector3.zero;
+    public Vector3 lookatPositionvelocity = Vector3.zero;
+    public Vector3 lookatPosition;
+
     void Start()
     {
         offset = new Vector3(5, 5, 5);
@@ -23,7 +27,7 @@ public class Observe : MonoBehaviour
         _players = new();
         RotateSpeed = 100f;
         rotationSpeed = 75f;
-        MoveSpeed = 0.3f;
+        MoveSpeed = 0.1f;
         FreeMoveSpeed = 10f;
         _cameraStatus = CameraStatus.freeCamera;
         _target = null;
@@ -43,7 +47,6 @@ public class Observe : MonoBehaviour
             Move();
             ExchangeStatus();
         }
-
     }
     void visualAngleReset(Vector3 from, Vector3 to)
     {
@@ -101,10 +104,12 @@ public class Observe : MonoBehaviour
             offset -= zoom * offset;
         }
         //��ͷ����
-        transform.LookAt(GetHeadPos(_target.playerObj.transform.position));
-        transform.position = Vector3.SmoothDamp(transform.position, GetHeadPos(_target.playerObj.transform.position) + offset, ref velocity, MoveSpeed);
-        // transform.position = GetHeadPos(_target.playerObj.transform.position) - offset;
+        Vector3 headPosition = GetHeadPos(new Vector3(_target.PlayerPosition.x, 0f, _target.PlayerPosition.y));
+        transform.position = Vector3.SmoothDamp(transform.position, headPosition + offset, ref velocity, MoveSpeed);
+        lookatPosition = Vector3.SmoothDamp(lookatPosition, headPosition, ref lookatPositionvelocity, MoveSpeed);
+        transform.LookAt(lookatPosition);
 
+        // transform.position = GetHeadPos(_target.playerObj.transform.position) - offset;
     }
 
     //������ת��������ת����:
