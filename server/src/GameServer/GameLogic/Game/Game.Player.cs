@@ -60,31 +60,58 @@ public partial class Game
                 weapon.UpdateCoolDown();
             }
 
+            if (GameMap.GetBlock(player.PlayerPosition) is null
+                || GameMap.GetBlock(player.PlayerPosition)?.IsWall == true)
+            {
+                _logger.Warning($"Player {player.PlayerId} is stuck in wall. Bouncing player back.");
+
+                Position[] possiblePositions = [
+                    player.PlayerPosition + new Position(0, Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(0, -Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(Constant.BOUNCE_DISTANCE, 0),
+                    player.PlayerPosition + new Position(-Constant.BOUNCE_DISTANCE, 0),
+                    player.PlayerPosition + new Position(Constant.BOUNCE_DISTANCE, Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(Constant.BOUNCE_DISTANCE, -Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(-Constant.BOUNCE_DISTANCE, Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(-Constant.BOUNCE_DISTANCE, -Constant.BOUNCE_DISTANCE)
+                ];
+
+                foreach (Position position in possiblePositions)
+                {
+                    if (GameMap.GetBlock(position) is not null
+                        && GameMap.GetBlock(position)?.IsWall == false)
+                    {
+                        player.PlayerPosition = position;
+                        break;
+                    }
+                }
+            }
+
             // Update motion of players
             if (player.PlayerTargetPosition != null)
             {
-                if ((player.PlayerTargetPosition - player.PlayerPosition).Length() <= 1e-6)
+                // Calculate the direction of the player (normalized vector)
+                Position direction = (player.PlayerTargetPosition - player.PlayerPosition).Normalize();
+                if (direction.Length() == 0)
                 {
                     player.PlayerTargetPosition = null;
                 }
                 else
                 {
-                    // Calculate the direction of the player (normalized vector)
-                    Position direction = (player.PlayerTargetPosition - player.PlayerPosition).Normalize();
-                    if (direction.Length() == 0)
+                    Position expectedEndPosition = player.PlayerPosition + direction * player.Speed;
+                    if ((direction * player.Speed).Length()
+                        >= (player.PlayerTargetPosition - player.PlayerPosition).Length())
+                    {
+                        expectedEndPosition = player.PlayerTargetPosition;
+                    }
+
+                    Position realEndPosition = GameMap.GetRealEndPositon(
+                        player.PlayerPosition, expectedEndPosition, independentAxisCauculating: true
+                    );
+                    player.PlayerPosition = realEndPosition;
+                    if (Position.Distance(player.PlayerPosition, player.PlayerTargetPosition) < Constant.DISTANCE_ERROR)
                     {
                         player.PlayerTargetPosition = null;
-                    }
-                    else
-                    {
-                        Position expectedEndPosition = player.PlayerPosition + direction * player.Speed;
-                        if ((direction * player.Speed).Length()
-                            >= (player.PlayerTargetPosition - player.PlayerPosition).Length())
-                        {
-                            expectedEndPosition = player.PlayerTargetPosition;
-                        }
-                        Position realEndPosition = GameMap.GetRealEndPositon(player.PlayerPosition, expectedEndPosition);
-                        player.PlayerPosition = realEndPosition;
                     }
                 }
             }
