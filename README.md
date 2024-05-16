@@ -6,10 +6,6 @@ Platform for the 7th Tsinghua University Artificial Intelligence Challenge
 
 See <https://thuasta.github.io/thuai-7>.
 
-## API
-
-See <https://thuasta.github.io/thuai-7/api>.
-
 ## Contributing
 
 Ask questions by creating an issue.

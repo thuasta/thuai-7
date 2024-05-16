@@ -1,12 +1,13 @@
 site_name: THUAI7
 
 nav:
-  - 背景与规则: index.md
-  - 快速开始: quickstart.md
-  - 前端使用说明: viewer.md
-  - Python SDK: python_sdk.md
-  - C++ SDK: C++_sdk.md
-  - 常见问题: Q&A.md
+  - index.md
+  - quickstart.md
+  - supplies.md
+  - viewer.md
+  - python_sdk.md
+  - cpp_sdk.md
+  - faq.md
 theme:
   name: material
   
