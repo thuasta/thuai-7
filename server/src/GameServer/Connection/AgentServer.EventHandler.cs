@@ -127,6 +127,22 @@ public partial class AgentServer
             );
         }
 
+        List<GrenadesMessage.Grenade> grenades = new();
+        foreach (Grenade grenade in e.Grenades)
+        {
+            grenades.Add(
+                new GrenadesMessage.Grenade
+                {
+                    ThrowTick = grenade.ThrowTick,
+                    EvaluatedPosition = new GrenadesMessage.Grenade.Position
+                    {
+                        X = grenade.EvaluatedPosition.x,
+                        Y = grenade.EvaluatedPosition.y
+                    }
+                }
+            );
+        }
+
         // Append map message, supplies message, players info message, and safe zone message to _messageToPublish
         if (e.CurrentTick % 100 == 0)
         {
@@ -161,6 +177,12 @@ public partial class AgentServer
                     Y = e.GameMap.SafeZone.Center.y
                 },
                 Radius = e.GameMap.SafeZone.Radius
+            }
+        );
+        Publish(
+            new GrenadesMessage
+            {
+                Grenades = new(grenades)
             }
         );
     }

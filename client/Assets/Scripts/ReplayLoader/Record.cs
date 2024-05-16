@@ -190,6 +190,7 @@ private void Start()
             { "Go", Resources.Load<AudioClip>("Music/Audio/go") },
             { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
             { "Grenade", Resources.Load<AudioClip>("Music/Audio/grenade") },
+            { "Pickup", Resources.Load<AudioClip>("Music/Audio/pickup") },
         };
         _grenadeExplosionPrefab = Resources.Load<GameObject>("Prefabs/BigExplosionEffect");
         _grenadeBeamPrefab = Resources.Load<GameObject>("Beam/GrenadeBeam");
@@ -478,7 +479,7 @@ private void Start()
         foreach (JObject player in players)
         {
             int playerId = player["playerId"].ToObject<int>();
-            string playerToken = player["token"].ToString();
+            string playerToken = player["token"] == null ? playerId.ToString()  : player["token"].ToString();
             Position playerPosition = new Position((float)player["position"]["x"], (float)player["position"]["y"]);
 
             // Check if the player is in dict
@@ -557,6 +558,7 @@ private void Start()
                     {
                         itemInstances.Remove(itemName);
                     }
+                    _as.PlayOneShot(_audioClipDict["Pickup"]);
                     break;
                 }
             }

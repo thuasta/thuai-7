@@ -42,7 +42,7 @@ public interface IWeapon
     /// <summary>
     /// Whether the weapon requires bullets.
     /// </summary>
-    public bool RequiresBullet { get; }
+    public int RequiredBulletNum { get; }
 
     /// <summary>
     /// Get Bullet Directions.

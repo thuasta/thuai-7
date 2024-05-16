@@ -34,9 +34,11 @@ public partial class Map
         {
             Position nextPosition = GenerateValidPosition();
 
-            int itemCount = _random.Next(_minItemsPerSupply, _maxItemsPerSupply + 1);
             string itemSpecificName = allAvailableSupplies[_random.Next(0, allAvailableSupplies.Length)];
             IItem.ItemKind itemType = IItem.GetItemKind(itemSpecificName);
+
+            (int, int) range = GetItemCountRange(itemSpecificName);
+            int itemCount = _random.Next(range.Item1, range.Item2 + 1);
 
             // Add the generated item to the supply point
             AddSupplies(
@@ -49,14 +51,8 @@ public partial class Map
 
             if (itemType == IItem.ItemKind.Weapon)
             {
-                int bulletCount = itemSpecificName switch
-                {
-                    Constant.Names.S686 => 8,
-                    Constant.Names.M16 => 16,
-                    Constant.Names.VECTOR => 16,
-                    Constant.Names.AWM => 4,
-                    _ => _random.Next(_minItemsPerSupply, _maxItemsPerSupply + 1)
-                };
+                (int, int) bulletCountRange = GetItemCountRange(Constant.Names.BULLET);
+                int bulletCount = _random.Next(bulletCountRange.Item1, bulletCountRange.Item2 + 1);
 
                 AddSupplies(
                     (int)nextPosition.x,
@@ -84,6 +80,18 @@ public partial class Map
                 // Successfully placed the obstacle shape
                 // Continue to the next iteration
                 continue;
+            }
+        }
+    }
+
+    public void Clear()
+    {
+        // Clear the map
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                MapChunk[x, y] = new Block(false);
             }
         }
     }
@@ -141,17 +149,14 @@ public partial class Map
         return true;
     }
 
-
-    public void Clear()
+    private (int, int) GetItemCountRange(string itemName)
     {
-        // Clear the map
-        for (int x = 0; x < Width; x++)
+        return itemName switch
         {
-            for (int y = 0; y < Height; y++)
-            {
-                MapChunk[x, y] = new Block(false);
-            }
-        }
+            Constant.Names.BANDAGE => (1, 10),
+            Constant.Names.FIRST_AID => (1, 2),
+            Constant.Names.BULLET => (5, 15),
+            _ => (_minItemsPerSupply, _maxItemsPerSupply)
+        };
     }
-
 }

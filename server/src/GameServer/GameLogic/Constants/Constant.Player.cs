@@ -6,7 +6,7 @@ public partial class Constant
     public const double PLAYER_COLLISION_BOX = 0.5;
 
     // Initial backpack size of player
-    public const int PLAYER_INITIAL_BACKPACK_SIZE = 100;
+    public const int PLAYER_INITIAL_BACKPACK_SIZE = 170;
 
     public const double PLAYER_SPEED_PER_TICK = 0.25;
 
@@ -17,4 +17,6 @@ public partial class Constant
     public const int PLAYER_USE_GRENADE_COOLDOWN = 20;
 
     public const int PLAYER_PICK_UP_OR_ABANDON_COOLDOWN = 3;
+
+    public const int PLAYER_FIREARM_PREPARATION_TICK = 10;
 }

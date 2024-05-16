@@ -6,6 +6,16 @@ public partial class Game
 
     private void UpdateGrenades()
     {
+        // Remove all exploded grenades
+        for (int i = 0; i < _allGrenades.Count; i++)
+        {
+            if (_allGrenades[i].HasExploded == true)
+            {
+                _allGrenades.RemoveAt(i);
+                i--;
+            }
+        }
+
         // Update all grenades
         foreach (Grenade grenade in _allGrenades)
         {

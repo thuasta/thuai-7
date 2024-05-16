@@ -32,6 +32,7 @@ public partial class Player
 
     public int? LastPickUpOrAbandonTick { get; set; } = null;
     public int? LastUseGrenadeTick { get; set; } = null;
+    public int? LastSwitchArmTick { get; set; } = null;
 
     private readonly ILogger _logger;
 
@@ -77,6 +78,10 @@ public partial class Player
         if (PlayerArmor != null && ignoreArmor == false)
         {
             Health -= PlayerArmor.Hurt(damage);
+            if (PlayerArmor.Health == 0)
+            {
+                PlayerArmor = Armor.DefaultArmor;
+            }
         }
         else
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,7 +16,9 @@ public class BGM : MonoBehaviour
         {
             Resources.Load<AudioClip>("Music/Sound/BGM/1"),
             Resources.Load<AudioClip>("Music/Sound/BGM/2"),
-            Resources.Load<AudioClip>("Music/Sound/BGM/3")
+            Resources.Load<AudioClip>("Music/Sound/BGM/3"),
+            Resources.Load<AudioClip>("Music/Sound/BGM/4"),
+            Resources.Load<AudioClip>("Music/Sound/BGM/5"),
         };
         _as = GetComponent<AudioSource>();
     }
@@ -25,13 +28,10 @@ public class BGM : MonoBehaviour
     {
         if (!_as.isPlaying)
         {
+            _num = UnityEngine.Random.Range(0, _audios.Count);
             _as.clip = _audios[_num];
             _as.Play();
-            _num += 1;
-            if (_num >= _audios.Count)
-            {
-                _num = 0;
-            }
+            
         }
     }
 }
