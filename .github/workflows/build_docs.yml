@@ -4,7 +4,6 @@ on:
       - main
     paths:
       - .github/workflows/build_docs.yml
-      - api/**
       - docs/**
       - mkdocs.yml
 
@@ -20,16 +19,6 @@ jobs:
 
       - run: |
           mkdocs build
-
-      - run: |
-          mkdir -p site/api/
-
-      - uses: asyncapi/github-action-for-cli@v3.1.1
-        with:
-          command: generate
-          filepath: api/asyncapi.yaml
-          template: '@asyncapi/html-template@2.1.7'
-          output: site/api/
 
       - uses: actions/upload-artifact@v4
         with:
