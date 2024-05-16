@@ -4,11 +4,12 @@ on:
       - .github/workflows/build.yml
       - client/**
       - server/**
-  pull_request_target:
+  pull_request:
   workflow_dispatch:
 
 jobs:
   build-client:
+    if: ${{ github.event_name != 'pull_request' }} 
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -110,6 +111,7 @@ jobs:
         working-directory: server
 
   test-client:
+    if: ${{ github.event_name != 'pull_request' }} 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
