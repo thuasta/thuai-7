@@ -526,6 +526,17 @@ private void Start()
             
             infoString += $"Armor: {player["armor"]}\n";
             infoString += $"Firearm: {player["firearm"]["name"]}\n";
+            if (player.ContainsKey("firearmsPool"))
+            {
+                infoString += $"Firearm Pool: ";
+                foreach (JObject firearm in (JArray)player["firearmsPool"])
+                {
+                    infoString += $"{firearm["name"]}  ";
+                }
+                infoString += "\n";
+            }
+            infoString += $"Speed: {player["speed"]}\n";
+            infoString += $"-----------------------\n";
             infoString += $"-----------------------\n";
         }
         _infoText.text = infoString;

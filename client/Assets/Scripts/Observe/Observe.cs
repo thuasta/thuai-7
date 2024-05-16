@@ -5,15 +5,17 @@ public class Observe : MonoBehaviour
 {
     public float RotateSpeed;
     public float MoveSpeed;
+    public float FreeMoveSpeed;
     public const float FreeMaxPitch = 80;
     public enum CameraStatus {freeCamera=0,player};
     public CameraStatus _cameraStatus;
-    public Player _target;//Ä¿±êÎïÌå
+    public Player _target;//Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     private List<Player> _players;
     public UnityEngine.Transform initialTransform;
     private int _playerNumber;
-    Vector3 offset;//Ïà»ú¸úËæµÄÆ«ÒÆÁ¿
-    public float rotationSpeed;//ÉãÏñ»úÐý×ªËÙ¶È
+    Vector3 offset;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½
+    public float rotationSpeed;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½Ù¶ï¿½
+    public Vector3 velocity = Vector3.zero;
     void Start()
     {
         offset = new Vector3(5, 5, 5);
@@ -21,15 +23,10 @@ public class Observe : MonoBehaviour
         _players = new();
         RotateSpeed = 100f;
         rotationSpeed = 75f;
-        MoveSpeed = 10f;
+        MoveSpeed = 0.3f;
+        FreeMoveSpeed = 10f;
         _cameraStatus = CameraStatus.freeCamera;
         _target = null;
-        //±£Ö¤ÉãÏñ»ú¿´ÏòÄ¿±êÎïÌå£¬ÇÒzÖáÐý×ª¶ÈÊÇ0
-        // transform.position = _target.playerObj.transform.position - offset;
-        //transform.LookAt(_target.playerObj.transform.position);
-        //transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 0);
-        //µÃµ½ÉãÏñ»úÓëÎïÌåÖ®¼äµÄ³õÊ¼Æ«ÒÆÁ¿
-
     }
 
     void Update()
@@ -48,14 +45,11 @@ public class Observe : MonoBehaviour
         }
 
     }
-    void visualAngleReset()
+    void visualAngleReset(Vector3 from, Vector3 to)
     {
-        offset = new Vector3(-5, 5, -5);
-        transform.position = _target.playerObj.transform.position + offset;
-        transform.LookAt(new Vector3(_target.playerObj.transform.position.x, _target.playerObj.transform.position.y+1.5f, _target.playerObj.transform.position.z));
-        //transform.eulerAngles = new Vector3(initialTransform.eulerAngles.x, initialTransform.eulerAngles.y, 0);
+        offset = (from - to) * 8 / (from - to).magnitude;
     }
-    //ÉãÏñ»ú¸úËæ¡¢¹öÂÖËõ·Å¹¦ÄÜ:
+
     void ExchangeStatus()
     {
         if (Input.GetMouseButtonDown(0))
@@ -74,7 +68,7 @@ public class Observe : MonoBehaviour
                     _target = _players[_playerNumber];
                     Debug.Log(transform.position);
                     Debug.Log($"target {_target.playerObj.transform.position}");
-                    visualAngleReset();
+                    visualAngleReset(transform.position, GetHeadPos(_target.playerObj.transform.position));
                     Debug.Log($"after {transform.position}");
                     _playerNumber += 1;
                 }
@@ -89,29 +83,31 @@ public class Observe : MonoBehaviour
             {
                 _cameraStatus = CameraStatus.player;
                 _target = _players[_playerNumber];
-                visualAngleReset();
+                Vector3 newOffset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
+                newOffset *= 8 / newOffset.magnitude;
+                visualAngleReset(transform.position, GetHeadPos(_target.playerObj.transform.position));
                 _playerNumber += 1;
             }
         }
     }
-    public float zoomSpeed = 1f; // ÊÓÒ°µÄËõ·ÅËÙ¶È
-    float zoom;//¹öÂÖ¹ö¶¯Á¿
+    public float zoomSpeed = 1f; // ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
+    float zoom;//ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½
     void Follow()
     {
-        //ÊÓÒ°Ëõ·Å
-        zoom = Input.GetAxis("Mouse ScrollWheel") * zoomSpeed; // »ñÈ¡¹öÂÖ¹ö¶¯Á¿
-        if (zoom != 0) // Èç¹ûÓÐ¹ö¶¯
+        //ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ï¿½
+        zoom = Input.GetAxis("Mouse ScrollWheel") * zoomSpeed; // ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½
+        if (zoom != 0) // ï¿½ï¿½ï¿½ï¿½Ð¹ï¿½ï¿½ï¿½
         {
             offset -= zoom * offset;
         }
-        //¾µÍ·¸úËæ
+        //ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½
         transform.LookAt(GetHeadPos(_target.playerObj.transform.position));
-
-        transform.position = GetHeadPos(_target.playerObj.transform.position) - offset;
+        transform.position = Vector3.SmoothDamp(transform.position, GetHeadPos(_target.playerObj.transform.position) + offset, ref velocity, MoveSpeed);
+        // transform.position = GetHeadPos(_target.playerObj.transform.position) - offset;
 
     }
 
-    //×óÓÒÐý×ª¡¢ÉÏÏÂÐý×ª¹¦ÄÜ:
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½:
 
 
     public bool isRotating, lookup;
@@ -123,7 +119,7 @@ public class Observe : MonoBehaviour
     }
     void Rotate()
     {
-        /*if (Input.GetMouseButtonDown(1))//³¤°´Êó±êÓÒ¼ü
+        /*if (Input.GetMouseButtonDown(1))//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¼ï¿½
         {
             isRotating = true;
         }
@@ -134,18 +130,18 @@ public class Observe : MonoBehaviour
         isRotating = true;
         if (isRotating)
         {
-            //µÃµ½Êó±êx·½ÏòÒÆ¶¯¾àÀë
+            //ï¿½Ãµï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½
             mousex = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
-            //Ðý×ªÖáµÄÎ»ÖÃÊÇÄ¿±êÎïÌå´¦£¬·½ÏòÊÇÊÀ½ç×ø±êÏµµÄyÖá
+            //ï¿½ï¿½×ªï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½å´¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½yï¿½ï¿½
 
             transform.RotateAround(GetHeadPos(_target.playerObj.transform.position), Vector3.up, mousex);
-            //Ã¿´ÎÐý×ªºó¸üÐÂÆ«ÒÆÁ¿
-            offset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
+            offset = Quaternion.AngleAxis(mousex, Vector3.up) * offset;
+            //offset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
         }
     }
     void Rollup()
     {
-        /*if (Input.GetMouseButtonDown(2))//³¤°´Êó±êÖÐ¼ü
+        /*if (Input.GetMouseButtonDown(2))//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¼ï¿½
         {
             lookup = true;
         }
@@ -156,13 +152,14 @@ public class Observe : MonoBehaviour
         lookup = true;
         if (lookup)
         {
-            //µÃµ½Êó±êy·½ÏòÒÆ¶¯¾àÀë
+            //ï¿½Ãµï¿½ï¿½ï¿½ï¿½yï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½
             mousey = -Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
-            //Ðý×ªÖáµÄÎ»ÖÃÔÚÄ¿±êÎïÌå´¦£¬·½ÏòÊÇÉãÏñ»úµÄxÖá
+            //ï¿½ï¿½×ªï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½å´¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½
             if (Mathf.Abs(transform.rotation.x + mousey-initialTransform.rotation.x) > 90) mousey = 0;
             transform.RotateAround(GetHeadPos(_target.playerObj.transform.position), transform.right, mousey);
-            //Ã¿´ÎÐý×ªºó¸üÐÂÆ«ÒÆÁ¿
-            offset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
+            offset = Quaternion.AngleAxis(mousey, transform.right) * offset;
+            //Ã¿ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½
+            // offset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
         }
 
     }
@@ -177,25 +174,25 @@ public class Observe : MonoBehaviour
             Vector3 fowardVector = transform.forward;
             fowardVector = new Vector3(fowardVector.x, 0, fowardVector.z).normalized;
             // move forward
-            transform.Translate(MoveSpeed * Time.deltaTime * vertical * fowardVector, Space.World);
+            transform.Translate(FreeMoveSpeed * Time.deltaTime * vertical * fowardVector, Space.World);
         }
         if (Mathf.Abs(horizontal) > 0.01)
         {
             Vector3 rightVector = transform.right;
             rightVector = new Vector3(rightVector.x, 0, rightVector.z).normalized;
             // move aside 
-            transform.Translate(MoveSpeed * Time.deltaTime * horizontal * rightVector, Space.World);
+            transform.Translate(FreeMoveSpeed * Time.deltaTime * horizontal * rightVector, Space.World);
         }
 
         // Fly up if space is clicked
         if (Input.GetKey(KeyCode.Space))
         {
-            transform.Translate(MoveSpeed * Time.deltaTime * Vector3.up, Space.World);
+            transform.Translate(FreeMoveSpeed * Time.deltaTime * Vector3.up, Space.World);
         }
         // Fly down if left shift is clicked
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            transform.Translate(MoveSpeed * Time.deltaTime * Vector3.down, Space.World);
+            transform.Translate(FreeMoveSpeed * Time.deltaTime * Vector3.down, Space.World);
         }
 
     }
