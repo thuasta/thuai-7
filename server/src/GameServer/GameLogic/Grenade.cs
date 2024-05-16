@@ -23,16 +23,18 @@ public class Grenade
         ThrowTick = throwTick;
         ExplodeTick = throwTick + Constant.GRENADE_EXPLODE_TICK;
 
-        double evaluatedRadius = Constant.GRENADE_MAX_RADIUS * _random.NextDouble();
+        double evalX = 2 * (_random.NextDouble() - 0.5) * Constant.GRENADE_MAX_RADIUS;
+        double evalY = 2 * (_random.NextDouble() - 0.5) * Constant.GRENADE_MAX_RADIUS;
 
-        double evalX = _random.NextDouble() - 0.5;
-        double evalY = _random.NextDouble() - 0.5;
-        Position evalDirection = new(evalX, evalY);
-        evalDirection = evalDirection.Normalize();
+        while (new Position(evalX, evalY).Length() > Constant.GRENADE_MAX_RADIUS)
+        {
+            evalX = 2 * (_random.NextDouble() - 0.5) * Constant.GRENADE_MAX_RADIUS;
+            evalY = 2 * (_random.NextDouble() - 0.5) * Constant.GRENADE_MAX_RADIUS;
+        }
 
         EvaluatedPosition = new(
-            Position.x + evalDirection.x * evaluatedRadius,
-            Position.y + evalDirection.y * evaluatedRadius
+            Position.x + evalX,
+            Position.y + evalY
         );
     }
 
