@@ -478,7 +478,7 @@ private void Start()
         foreach (JObject player in players)
         {
             int playerId = player["playerId"].ToObject<int>();
-            string playerToken = player["token"].ToString();
+            string playerToken = player["token"] == null ? playerId.ToString()  : player["token"].ToString();
             Position playerPosition = new Position((float)player["position"]["x"], (float)player["position"]["y"]);
 
             // Check if the player is in dict
