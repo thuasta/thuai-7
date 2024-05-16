@@ -185,6 +185,7 @@ public partial class AgentServer
                     _logger.Debug(
                         $"Received text message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                     );
+                    _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
                 }
                 catch (Exception exception)
                 {
@@ -214,6 +215,7 @@ public partial class AgentServer
                     _logger.Debug(
                         $"Received binary message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                     );
+                    _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
                 }
                 catch (Exception exception)
                 {
