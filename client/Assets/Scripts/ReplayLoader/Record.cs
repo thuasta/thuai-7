@@ -190,6 +190,7 @@ private void Start()
             { "Go", Resources.Load<AudioClip>("Music/Audio/go") },
             { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
             { "Grenade", Resources.Load<AudioClip>("Music/Audio/grenade") },
+            { "Pickup", Resources.Load<AudioClip>("Music/Audio/pickup") },
         };
         _grenadeExplosionPrefab = Resources.Load<GameObject>("Prefabs/BigExplosionEffect");
         _grenadeBeamPrefab = Resources.Load<GameObject>("Beam/GrenadeBeam");
@@ -557,6 +558,7 @@ private void Start()
                     {
                         itemInstances.Remove(itemName);
                     }
+                    _as.PlayOneShot(_audioClipDict["Pickup"]);
                     break;
                 }
             }
