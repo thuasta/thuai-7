@@ -12,7 +12,7 @@ Thank you for your contribution to the repository.
 Before submitting this PR, please make sure:
 
 - [ ] Your code builds clean without any errors or warnings
-- [ ] Your code follows the code style of [Common C# code conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions), [LLVM Coding Standards](https://llvm.org/docs/CodingStandards.html) and [LeviLamina C++ Style Guide](https://github.com/LiteLDev/LeviLamina/wiki/CPP-Style-Guide)
+- [ ] Your code follows the code style of [Common C# code conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
 - [ ] You have tested all functions
 - [ ] You have not used code without license
 - [ ] You have added statement for third-party code
