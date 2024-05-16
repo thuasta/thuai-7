@@ -60,6 +60,33 @@ public partial class Game
                 weapon.UpdateCoolDown();
             }
 
+            if (GameMap.GetBlock(player.PlayerPosition) is null
+                || GameMap.GetBlock(player.PlayerPosition)?.IsWall == true)
+            {
+                _logger.Warning($"Player {player.PlayerId} is stuck in wall. Bouncing player back.");
+
+                Position[] possiblePositions = [
+                    player.PlayerPosition + new Position(0, Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(0, -Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(Constant.BOUNCE_DISTANCE, 0),
+                    player.PlayerPosition + new Position(-Constant.BOUNCE_DISTANCE, 0),
+                    player.PlayerPosition + new Position(Constant.BOUNCE_DISTANCE, Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(Constant.BOUNCE_DISTANCE, -Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(-Constant.BOUNCE_DISTANCE, Constant.BOUNCE_DISTANCE),
+                    player.PlayerPosition + new Position(-Constant.BOUNCE_DISTANCE, -Constant.BOUNCE_DISTANCE)
+                ];
+
+                foreach (Position position in possiblePositions)
+                {
+                    if (GameMap.GetBlock(position) is not null
+                        && GameMap.GetBlock(position)?.IsWall == false)
+                    {
+                        player.PlayerPosition = position;
+                        break;
+                    }
+                }
+            }
+
             // Update motion of players
             if (player.PlayerTargetPosition != null)
             {
