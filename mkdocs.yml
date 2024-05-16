@@ -3,6 +3,7 @@ site_name: THUAI7
 nav:
   - index.md
   - quickstart.md
+  - supplies.md
   - viewer.md
   - python_sdk.md
   - cpp_sdk.md
