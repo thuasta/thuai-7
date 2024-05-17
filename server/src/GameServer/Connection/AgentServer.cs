@@ -174,10 +174,10 @@ public partial class AgentServer
                     if (_socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Count
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
-                        _logger.Warning(
+                        _logger.Debug(
                             $"Received too many messages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                         );
-                        _logger.Warning("Messages in queue will be cleared.");
+                        _logger.Debug("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
                     }
 
@@ -185,6 +185,7 @@ public partial class AgentServer
                     _logger.Debug(
                         $"Received text message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                     );
+                    _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
                 }
                 catch (Exception exception)
                 {
@@ -202,10 +203,10 @@ public partial class AgentServer
                     if (_socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Count
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
-                        _logger.Warning(
+                        _logger.Debug(
                             $"Received too many messages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                         );
-                        _logger.Warning("Messages in queue will be cleared.");
+                        _logger.Debug("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
                     }
 
@@ -214,6 +215,7 @@ public partial class AgentServer
                     _logger.Debug(
                         $"Received binary message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
                     );
+                    _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
                 }
                 catch (Exception exception)
                 {

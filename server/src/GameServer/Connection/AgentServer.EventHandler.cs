@@ -185,6 +185,18 @@ public partial class AgentServer
                 Grenades = new(grenades)
             }
         );
+
+        // Publish player ids
+        foreach (Player player in e.AllPlayers)
+        {
+            Publish(
+                new PlayerIdMessage
+                {
+                    PlayerId = player.PlayerId
+                },
+                player.Token
+            );
+        }
     }
 
     public void HandleAfterPlayerConnectEvent(object? sender, AfterPlayerConnect e)
@@ -204,10 +216,5 @@ public partial class AgentServer
         }
 
         _socketTokens.AddOrUpdate(e.SocketId, e.Token, (key, oldValue) => e.Token);
-
-        Publish(
-            new PlayerIdMessage() { PlayerId = e.PlayerId },
-            e.Token
-        );
     }
 }
