@@ -66,7 +66,7 @@ public partial class GameRunner
         }
     }
 
-    public void AllocatePlayer(string[] tokens)
+    public void AllocatePlayer(IEnumerable<string> tokens)
     {
         foreach (string token in tokens)
         {
