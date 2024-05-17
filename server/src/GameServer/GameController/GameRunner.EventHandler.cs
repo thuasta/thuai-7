@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-
 using GameServer.Connection;
 using GameServer.GameLogic;
 using GameServer.Geometry;
@@ -8,10 +6,6 @@ namespace GameServer.GameController;
 
 public partial class GameRunner
 {
-
-    private readonly ConcurrentDictionary<string, int> _tokenToPlayerId = new();
-    private int _nextPlayerId = 0;
-
     public void HandleAfterMessageReceiveEvent(object? sender, AfterMessageReceiveEventArgs e)
     {
         _logger.Debug($"Handling message: \"{e.Message.MessageType}\"");
@@ -49,38 +43,15 @@ public partial class GameRunner
             }
             else
             {
-                _logger.Information(
-                    $"Adding player {_nextPlayerId} with token \"{playerTokenForLogging}\" to the game."
-                );
                 try
                 {
-                    if (
-                        Game.AddPlayer(
-                            new Player(
-                                getPlayerInfoMessage.Token,
-                                _nextPlayerId,
-                                Constant.PLAYER_MAXIMUM_HEALTH,
-                                Constant.PLAYER_SPEED_PER_TICK,
-                                new Position(0, 0)
-                            )
-                        ) == false
-                    )
-                    {
-                        _logger.Error(
-                            $"Failed to add player with token \"{playerTokenForLogging}\" to the game."
-                        );
-                        return;
-                    }
-
-                    _tokenToPlayerId[getPlayerInfoMessage.Token] = _nextPlayerId;
+                    AllocatePlayer(getPlayerInfoMessage.Token);
 
                     AfterPlayerConnectEvent?.Invoke(this, new AfterPlayerConnect(
-                        _nextPlayerId,
+                        _tokenToPlayerId[getPlayerInfoMessage.Token],
                         getPlayerInfoMessage.Token,
                         e.SocketId
                     ));
-
-                    _nextPlayerId++;
                 }
                 catch (Exception ex)
                 {
