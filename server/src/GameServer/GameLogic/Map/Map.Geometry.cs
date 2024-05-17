@@ -124,7 +124,7 @@ public partial class Map
                     double x = k * (y - a.y) + a.x;
                     if (GetBlock(x, y + offset + deltaY) is null || GetBlock(x, y + offset + deltaY)?.IsWall == true)
                     {
-                        firstHitY = new Position(x, y) - direction * diseps;;
+                        firstHitY = new Position(x, y) - direction * diseps;
                         break;
                     }
                 }
