@@ -14,17 +14,22 @@ public partial class Map
     {
         List<string> weaponNames =
         [
-            Constant.Names.S686, Constant.Names.M16, Constant.Names.VECTOR, Constant.Names.AWM
+            Constant.Names.S686,
+            Constant.Names.M16,
+            Constant.Names.VECTOR,
+            Constant.Names.AWM
         ];
 
         List<string> medicineNames =
         [
-            Constant.Names.BANDAGE, Constant.Names.FIRST_AID
+            Constant.Names.BANDAGE,
+            Constant.Names.FIRST_AID
         ];
 
         List<string> armorNames =
         [
-            Constant.Names.PRIMARY_ARMOR, Constant.Names.PREMIUM_ARMOR
+            Constant.Names.PRIMARY_ARMOR,
+            Constant.Names.PREMIUM_ARMOR
         ];
 
         List<string> grenadeNames =
