@@ -59,6 +59,10 @@ public partial class Map
         {
             allAvailableSupplyProba[key] /= sum;
         }
+        for (int i = 1; i < allAvailableSupplyProba.Count; i++)
+        {
+            allAvailableSupplyProba[allAvailableSupplyProba.Keys.ElementAt(i)] += allAvailableSupplyProba[allAvailableSupplyProba.Keys.ElementAt(i - 1)];
+        }
 
         List<string> allAvailableSupplies = [];
 
