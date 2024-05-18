@@ -12,29 +12,70 @@ public partial class Map
 
     public void GenerateSupplies()
     {
-        string[] allAvailableSupplies = new string[]
-        {
-            // Weapons
-            Constant.Names.S686, Constant.Names.M16, Constant.Names.VECTOR, Constant.Names.AWM,
+        List<string> weaponNames =
+        [
+            Constant.Names.S686,
+            Constant.Names.M16,
+            Constant.Names.VECTOR,
+            Constant.Names.AWM
+        ];
 
-            // Medicines
-            Constant.Names.BANDAGE, Constant.Names.FIRST_AID,
+        List<string> medicineNames =
+        [
+            Constant.Names.BANDAGE,
+            Constant.Names.FIRST_AID
+        ];
 
-            // Armors
-            Constant.Names.PRIMARY_ARMOR, Constant.Names.PREMIUM_ARMOR,
+        List<string> armorNames =
+        [
+            Constant.Names.PRIMARY_ARMOR,
+            Constant.Names.PREMIUM_ARMOR
+        ];
 
-            // Bullets will be generated with weapons
-
-            // Grenades
+        List<string> grenadeNames =
+        [
             Constant.Names.GRENADE
+        ];
+
+        Dictionary<string, List<string>> supplyNames = new()
+        {
+            { "weapon", weaponNames },
+            { "medicine", medicineNames },
+            { "armor", armorNames },
+            { "grenade", grenadeNames }
         };
+
+        List<string> allAvailableSupplyTypes = [];
+
+        for (int i = 0; i < 1000; i++)
+        {
+            // Random choose a type of item
+            string itemType = supplyNames.Keys.ElementAt(_random.Next(0, supplyNames.Count));
+
+            // Add the item to the list
+            allAvailableSupplyTypes.Add(itemType);
+        }
+
+        List<string> allAvailableSupplies = [];
+
+        for (int i = 0; i < 1000; i++)
+        {
+            // Random choose a type of item
+            string itemType = allAvailableSupplyTypes[_random.Next(0, allAvailableSupplyTypes.Count)];
+
+            // Random choose a specific item
+            string itemSpecificName = supplyNames[itemType][_random.Next(0, supplyNames[itemType].Count)];
+
+            // Add the item to the list
+            allAvailableSupplies.Add(itemSpecificName);
+        }
 
         // Iterate to generate the desired number of supply points
         for (int i = 0; i < _numSupplyPoints; i++)
         {
             Position nextPosition = GenerateValidPosition();
 
-            string itemSpecificName = allAvailableSupplies[_random.Next(0, allAvailableSupplies.Length)];
+            string itemSpecificName = allAvailableSupplies[_random.Next(0, allAvailableSupplies.Count)];
             IItem.ItemKind itemType = IItem.GetItemKind(itemSpecificName);
 
             (int, int) range = GetItemCountRange(itemSpecificName);

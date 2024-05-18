@@ -3,8 +3,8 @@ public partial class Constant
 {
 
     public const float FIST_RANGE = 1;
-    public const int FIST_DAMAGE = 18;
-    public const int FIST_COOLDOWNTICKS = 0;
+    public const int FIST_DAMAGE = 38;
+    public const int FIST_COOLDOWNTICKS = 1;
     public const float S686_RANGE = 7;
     public const int S686_SINGLE_BULLET_DAMAGE = 26;
     //弹头数目
