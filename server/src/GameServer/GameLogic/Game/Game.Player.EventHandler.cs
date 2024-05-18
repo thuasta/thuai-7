@@ -192,7 +192,11 @@ public partial class Game
                         return;
                     }
 
-                    e.Player.PlayerBackPack.RemoveItems(IItem.ItemKind.Bullet, Constant.Names.BULLET, 1);
+                    e.Player.PlayerBackPack.RemoveItems(
+                        IItem.ItemKind.Bullet,
+                        Constant.Names.BULLET,
+                        e.Player.PlayerWeapon.RequiredBulletNum
+                    );
                 }
 
                 // Attack the target
