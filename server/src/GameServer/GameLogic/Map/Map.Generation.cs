@@ -45,23 +45,28 @@ public partial class Map
             { "grenade", grenadeNames }
         };
 
-        List<string> allAvailableSupplyTypes = [];
-
-        for (int i = 0; i < 1000; i++)
+        Dictionary<string, double> allAvailableSupplyProba = new()
         {
-            // Random choose a type of item
-            string itemType = supplyNames.Keys.ElementAt(_random.Next(0, supplyNames.Count));
+            { "weapon", _random.NextDouble() },
+            { "medicine", _random.NextDouble() },
+            { "armor", _random.NextDouble() },
+            { "grenade", _random.NextDouble() }
+        };
 
-            // Add the item to the list
-            allAvailableSupplyTypes.Add(itemType);
+        // Normalize the probabilities
+        double sum = allAvailableSupplyProba.Values.Sum();
+        foreach (string key in allAvailableSupplyProba.Keys.ToList())
+        {
+            allAvailableSupplyProba[key] /= sum;
         }
 
         List<string> allAvailableSupplies = [];
 
         for (int i = 0; i < 1000; i++)
         {
-            // Random choose a type of item
-            string itemType = allAvailableSupplyTypes[_random.Next(0, allAvailableSupplyTypes.Count)];
+            // Random choose a type of item by its probability
+            double randomValue = _random.NextDouble();
+            string itemType = allAvailableSupplyProba.First(x => x.Value >= randomValue).Key;
 
             // Random choose a specific item
             string itemSpecificName = supplyNames[itemType][_random.Next(0, supplyNames[itemType].Count)];
