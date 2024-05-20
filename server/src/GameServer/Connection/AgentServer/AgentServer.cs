@@ -107,9 +107,7 @@ public partial class AgentServer
         {
             socket.OnOpen = () =>
             {
-                _logger.Information(
-                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened (with Id {socket.ConnectionInfo.Id})."
-                );
+                _logger.Information($"Connection from {GetAddress(socket)} opened.");
 
                 // Remove the socket if it already exists.
                 RemoveSocket(socket.ConnectionInfo.Id);
@@ -119,9 +117,7 @@ public partial class AgentServer
 
             socket.OnClose = () =>
             {
-                _logger.Debug(
-                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} closed."
-                );
+                _logger.Debug($"Connection from {GetAddress(socket)} closed.");
 
                 // Remove the socket.
                 RemoveSocket(socket.ConnectionInfo.Id);
@@ -135,7 +131,7 @@ public partial class AgentServer
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
                         _logger.Debug(
-                            $"Received too many messages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                            $"Received too many messages from {GetAddress(socket)}."
                         );
                         _logger.Debug("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
@@ -143,14 +139,14 @@ public partial class AgentServer
 
                     _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Enqueue(text);
                     _logger.Debug(
-                        $"Received text message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                        $"Received text message from {GetAddress(socket)}."
                     );
                     _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
                 }
                 catch (Exception exception)
                 {
                     _logger.Error(
-                        $"Failed to receive message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}.: {exception.Message}"
+                        $"Failed to receive message from {GetAddress(socket)}: {exception.Message}"
                     );
                     _logger.Debug($"{exception}");
                 }
@@ -164,7 +160,7 @@ public partial class AgentServer
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
                         _logger.Debug(
-                            $"Received too many messages from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                            $"Received too many messages from {GetAddress(socket)}."
                         );
                         _logger.Debug("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
@@ -173,14 +169,14 @@ public partial class AgentServer
                     string text = Encoding.UTF8.GetString(bytes);
                     _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Enqueue(text);
                     _logger.Debug(
-                        $"Received binary message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}."
+                        $"Received binary message from {GetAddress(socket)}."
                     );
                     _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
                 }
                 catch (Exception exception)
                 {
                     _logger.Error(
-                        $"Failed to receive message from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}: {exception.Message}"
+                        $"Failed to receive message from {GetAddress(socket)}: {exception.Message}"
                     );
                     _logger.Debug($"{exception}");
                 }
@@ -188,7 +184,7 @@ public partial class AgentServer
 
             socket.OnError = exception =>
             {
-                _logger.Error($"Socket error: {exception.Message}");
+                _logger.Error($"[{GetAddress(socket)}] Socket error: {exception.Message}");
 
                 // Close and remove the socket.
                 socket.Close();

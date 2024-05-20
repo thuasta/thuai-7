@@ -132,7 +132,7 @@ public partial class AgentServer
 
     private Task CreateTaskForParsingMessage(Guid socketId)
     {
-        _logger.Debug($"Creating task for parsing message from {socketId}...");
+        _logger.Debug($"Creating task for parsing message from {GetAddress(socketId)}...");
 
         CancellationTokenSource cts = new();
         _ctsForParsingMessage.AddOrUpdate(
@@ -151,7 +151,7 @@ public partial class AgentServer
             {
                 if (cts.IsCancellationRequested == true)
                 {
-                    _logger.Debug($"Request task for parsing message from {socketId} to be cancelled.");
+                    _logger.Debug($"Request task for parsing message from {GetAddress(socketId)} to be cancelled.");
                     return;
                 }
 
@@ -171,7 +171,7 @@ public partial class AgentServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Failed to parse message from socket {socketId}: {ex.Message}");
+                    _logger.Error($"Failed to parse message from {GetAddress(socketId)}: {ex.Message}");
                     _logger.Debug($"{ex}");
                 }
             }

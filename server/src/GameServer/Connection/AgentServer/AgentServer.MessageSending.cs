@@ -56,7 +56,7 @@ public partial class AgentServer
 
     private Task CreateTaskForSendingMessage(Guid socketId)
     {
-        _logger.Debug($"Creating task for sending message to socket {socketId}...");
+        _logger.Debug($"Creating task for sending message to {GetAddress(socketId)}...");
 
         CancellationTokenSource cts = new();
         _ctsForSendingMessage.AddOrUpdate(
@@ -75,7 +75,7 @@ public partial class AgentServer
             {
                 if (cts.IsCancellationRequested == true)
                 {
-                    _logger.Debug($"Request task for sending message to socket {socketId} to be cancelled.");
+                    _logger.Debug($"Request task for sending message to {GetAddress(socketId)} to be cancelled.");
                     return;
                 }
 
@@ -85,14 +85,14 @@ public partial class AgentServer
                     {
                         if (queue.Count > MAXIMUM_MESSAGE_QUEUE_SIZE)
                         {
-                            _logger.Warning($"Message queue for sending to socket {socketId} is full. The messages in queue will be cleared.");
+                            _logger.Warning($"Message queue for sending to {GetAddress(socketId)} is full. The messages in queue will be cleared.");
                             queue.Clear();
                         }
 
                         if (queue.TryDequeue(out Message? message) && message is not null)
                         {
                             _sockets[socketId].Send(message.Json);
-                            _logger.Debug($"Sent message \"{message.MessageType}\" to socket {socketId}.");
+                            _logger.Debug($"Sent message \"{message.MessageType}\" to {GetAddress(socketId)}.");
                         }
                         else
                         {
@@ -102,7 +102,7 @@ public partial class AgentServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Failed to send message to socket {socketId}: {ex.Message}");
+                    _logger.Error($"Failed to send message to {GetAddress(socketId)}: {ex.Message}");
                     _logger.Debug($"{ex}");
                 }
             }

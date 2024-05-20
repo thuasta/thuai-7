@@ -82,4 +82,21 @@ public partial class AgentServer
         _socketMessageSendingQueue.TryRemove(socketId, out _);
         _socketRawTextReceivingQueue.TryRemove(socketId, out _);
     }
+
+    private string GetAddress(IWebSocketConnection socket)
+    {
+        return $"{socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort}";
+    }
+
+    private string GetAddress(Guid socketId)
+    {
+        if (_sockets.TryGetValue(socketId, out IWebSocketConnection? socket) && socket is not null)
+        {
+            return GetAddress(socket);
+        }
+        else
+        {
+            return "UNKNOWN";
+        }
+    }
 }
