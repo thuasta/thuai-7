@@ -130,24 +130,19 @@ public partial class AgentServer
                     if (_socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Count
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
-                        _logger.Debug(
-                            $"Received too many messages from {GetAddress(socket)}."
+                        _logger.Warning(
+                            $"Received too many messages from {GetAddress(socket)}. Messages in queue will be cleared."
                         );
-                        _logger.Debug("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
                     }
 
                     _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Enqueue(text);
-                    _logger.Debug(
-                        $"Received text message from {GetAddress(socket)}."
-                    );
+                    _logger.Debug($"Received text message from {GetAddress(socket)}.");
                     _logger.Verbose(text.Length > 65536 ? string.Concat(text.AsSpan(0, 65536), "...") : text);
                 }
                 catch (Exception exception)
                 {
-                    _logger.Error(
-                        $"Failed to receive message from {GetAddress(socket)}: {exception.Message}"
-                    );
+                    _logger.Error($"Failed to receive message from {GetAddress(socket)}: {exception.Message}");
                     _logger.Debug($"{exception}");
                 }
             };
@@ -159,10 +154,9 @@ public partial class AgentServer
                     if (_socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Count
                          > MAXIMUM_MESSAGE_QUEUE_SIZE)
                     {
-                        _logger.Debug(
-                            $"Received too many messages from {GetAddress(socket)}."
+                        _logger.Warning(
+                            $"Received too many messages from {GetAddress(socket)}. Messages in queue will be cleared."
                         );
-                        _logger.Debug("Messages in queue will be cleared.");
                         _socketRawTextReceivingQueue[socket.ConnectionInfo.Id].Clear();
                     }
 
