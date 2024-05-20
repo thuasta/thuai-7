@@ -71,12 +71,7 @@ public partial class AgentServer
         ctsForSendingMessage?.Cancel();
         _ctsForSendingMessage.TryRemove(socketId, out _);
 
-        _tasksForParsingMessage.TryGetValue(socketId, out Task? taskForParsingMessage);
-        taskForParsingMessage?.Dispose();
         _tasksForParsingMessage.TryRemove(socketId, out _);
-
-        _tasksForSendingMessage.TryGetValue(socketId, out Task? taskForSendingMessage);
-        taskForSendingMessage?.Dispose();
         _tasksForSendingMessage.TryRemove(socketId, out _);
 
         _socketMessageSendingQueue.TryRemove(socketId, out _);
