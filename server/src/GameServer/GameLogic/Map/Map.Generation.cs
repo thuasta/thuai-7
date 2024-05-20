@@ -136,7 +136,7 @@ public partial class Map
         // Clear the map
         Clear();
 
-        for (int i = 0; i < 32; i++)
+        for (int i = 0; i < 8; i++)
         {
             ObstacleShape shape = _longWallShapes[_random.Next(0, _longWallShapes.Count)];
             PlaceObstacleShape(shape);
