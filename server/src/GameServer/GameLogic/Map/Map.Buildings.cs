@@ -498,6 +498,11 @@ public partial class Map
 
         public override IBlock GetBlock(int x, int y)
         {
+            var random = new Random();
+            if (random.NextDouble() < 0.1)
+            {
+                return new Block(false);
+            }
             // Implement the shape of the tree here
             // For simplicity, I'm just using a placeholder
             return new Block(IsSolid(x, y)); // Assuming Wall is a class that implements IBlock
@@ -536,6 +541,13 @@ public partial class Map
 
         public override IBlock GetBlock(int x, int y)
         {
+            var random = new Random();
+
+            if (random.NextDouble() < 0.1)
+            {
+                return new Block(false);
+            }
+
             // Implement the shape of the tree here
             // For simplicity, I'm just using a placeholder
             return new Block(IsSolid(x, y)); // Assuming Wall is a class that implements IBlock
@@ -570,7 +582,7 @@ public partial class Map
 
             var random = new Random();
 
-            for (int tryCount = 0; tryCount < length / 2; tryCount++)
+            for (int tryCount = 0; tryCount < Math.Pow(length, 0.25) * 10; tryCount++)
             {
                 // Position starts from an empty cell.
                 Tuple<int, int> currentPosition = new(random.Next(0, length), random.Next(0, length));

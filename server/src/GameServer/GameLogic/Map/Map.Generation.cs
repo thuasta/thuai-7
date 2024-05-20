@@ -138,11 +138,12 @@ public partial class Map
 
         for (int i = 0; i < 8; i++)
         {
-            ObstacleShape shape = _longWallShapes[_random.Next(0, _longWallShapes.Count)];
+
+            ObstacleShape shape = _randomSquareShapes[_random.Next(0, _randomSquareShapes.Count)];
             PlaceObstacleShape(shape);
 
-            shape = _randomSquareShapes[_random.Next(0, _randomSquareShapes.Count)];
-            PlaceObstacleShape(shape);
+            ObstacleShape shape1 = _longWallShapes[_random.Next(0, _longWallShapes.Count)];
+            PlaceObstacleShape(shape1);
         }
 
 
@@ -177,8 +178,8 @@ public partial class Map
     private bool PlaceObstacleShape(ObstacleShape shape)
     {
         // Randomly select position for the obstacle shape
-        int startX = _random.Next(0, Width - shape.MaxWidth);
-        int startY = _random.Next(0, Height - shape.MaxHeight);
+        int startX = _random.Next(0, Width - shape.MaxWidth + 1);
+        int startY = _random.Next(0, Height - shape.MaxHeight + 1);
 
         // Check if the selected position is valid
         if (IsPositionValid(startX, startY, shape))
