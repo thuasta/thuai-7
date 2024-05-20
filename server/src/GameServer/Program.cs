@@ -10,6 +10,8 @@ namespace GameServer;
 
 class Program
 {
+    const int TIMEOUT_EXIT_CODE = 2;
+
     const string SerilogTemplate
         = "[{@t:HH:mm:ss.fff} {@l:u3}] {#if Component is not null}{Component,-13} {#end}{@m}\n{@x}";
     const string SerilogFileOutputTemplate
@@ -50,7 +52,7 @@ class Program
                 _logger.Error(
                     $"GameServer has been running for {config.MaxRunningSeconds} seconds. Stopping..."
                 );
-                Environment.Exit(1);
+                Environment.Exit(TIMEOUT_EXIT_CODE);
             }
         );
 
@@ -105,7 +107,7 @@ class Program
                         _logger.Error(
                             $"Connected clients are not enough. Stopping..."
                         );
-                        Environment.Exit(1);
+                        Environment.Exit(TIMEOUT_EXIT_CODE);
                     }
                 }
             });

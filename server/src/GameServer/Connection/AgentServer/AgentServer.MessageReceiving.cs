@@ -9,6 +9,7 @@ public partial class AgentServer
 
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<string>> _socketRawTextReceivingQueue = new();
     private readonly ConcurrentDictionary<Guid, Task> _tasksForParsingMessage = new();
+    private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _ctsForParsingMessage = new();
 
     /// <summary>
     /// Parse the message
@@ -131,10 +132,29 @@ public partial class AgentServer
 
     private Task CreateTaskForParsingMessage(Guid socketId)
     {
+        _logger.Debug($"Creating task for parsing message from {GetAddress(socketId)}...");
+
+        CancellationTokenSource cts = new();
+        _ctsForParsingMessage.AddOrUpdate(
+            socketId,
+            cts,
+            (key, oldValue) =>
+            {
+                oldValue?.Cancel();
+                return cts;
+            }
+        );
+
         return new(() =>
         {
             while (_isRunning)
             {
+                if (cts.IsCancellationRequested == true)
+                {
+                    _logger.Debug($"Request task for parsing message from {GetAddress(socketId)} to be cancelled.");
+                    return;
+                }
+
                 try
                 {
                     if (_socketRawTextReceivingQueue.TryGetValue(socketId, out ConcurrentQueue<string>? queue))
@@ -151,7 +171,7 @@ public partial class AgentServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Failed to parse message from socket {socketId}: {ex.Message}");
+                    _logger.Error($"Failed to parse message from {GetAddress(socketId)}: {ex.Message}");
                     _logger.Debug($"{ex}");
                 }
             }
