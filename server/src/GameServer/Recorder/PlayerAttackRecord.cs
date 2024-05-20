@@ -25,6 +25,9 @@ public record PlayerAttackRecord : IRecord
 
         [JsonPropertyName("turgetPosition")]
         public positionType? turgetPosition { get; init; }
+
+        [JsonPropertyName("range")]
+        public double range { get; init; }
     }
 
     public record positionType
