@@ -1,4 +1,5 @@
 using GameServer.Geometry;
+using Serilog;
 
 namespace GameServer.GameLogic;
 
@@ -10,11 +11,15 @@ public partial class Map
     public ISafeZone SafeZone { get; private set; }
     private readonly Random _random = new();
     private readonly List<ObstacleShape> _obstacleShapes;
+    private readonly List<ObstacleShape> _longWallShapes;
+    private readonly List<ObstacleShape> _randomSquareShapes;
 
     private readonly int _tryTimes;
     private readonly int _numSupplyPoints;
     private readonly int _minItemsPerSupply;
     private readonly int _maxItemsPerSupply;
+
+    private readonly ILogger _logger = Log.ForContext("Component", "Map");
 
     public Map(int width, int height, float safeZoneMaxRadius, int safeZoneTicksUntilDisappear, int damageOutsideSafeZone)
     {
@@ -27,8 +32,8 @@ public partial class Map
         int centerY = 128;
         SafeZone = new SafeZone(new Position(centerX, centerY), safeZoneMaxRadius, safeZoneTicksUntilDisappear, damageOutsideSafeZone);
 
-        _obstacleShapes = new List<ObstacleShape>
-        {
+        _obstacleShapes =
+        [
             // Define obstacle shapes here, for example:
             new HouseShape(),
             new TreeShape(),
@@ -46,8 +51,62 @@ public partial class Map
             new Corner2Shape(),
             new Corner3Shape(),
             new Corner4Shape(),
-            new CarShape()
-        };
+            new CarShape(),
+        ];
+
+        _longWallShapes =
+        [
+            new LongWallNSShape(64),
+            new LongWallNSShape(128),
+            new LongWallNSShape(256),
+            new LongWallWEShape(64),
+            new LongWallWEShape(128),
+            new LongWallWEShape(256),
+        ];
+
+        _randomSquareShapes =
+        [
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+            new RandomSquareShape(32),
+            new RandomSquareShape(64),
+            new RandomSquareShape(128),
+            new RandomSquareShape(256),
+        ];
 
         _tryTimes = Constant.WALL_GENERATE_TRY_TIMES;
         _numSupplyPoints = Constant.NUM_SUPPLY_POINTS;

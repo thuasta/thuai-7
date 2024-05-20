@@ -465,4 +465,142 @@ public partial class Map
             return new Block(IsSolid(x, y)); // Assuming Wall is a class that implements IBlock
         }
     }
+
+    public class LongWallNSShape : ObstacleShape
+    {
+        public override int MaxWidth => _shape.GetLength(0);
+        public override int MaxHeight => _shape.GetLength(1);
+
+        private readonly char[,] _shape;
+
+        public LongWallNSShape(int length)
+        {
+            _shape = new char[3, length];
+            for (int i = 0; i < length; i++)
+            {
+                if (i == 0 || i == length - 1)
+                {
+                    _shape[1, i] = ' ';
+                }
+                else
+                {
+                    _shape[1, i] = '#';
+                }
+                _shape[0, i] = ' ';
+                _shape[2, i] = ' ';
+            }
+        }
+
+        public override bool IsSolid(int x, int y)
+        {
+            return _shape[x, y] == '#';
+        }
+
+        public override IBlock GetBlock(int x, int y)
+        {
+            // Implement the shape of the tree here
+            // For simplicity, I'm just using a placeholder
+            return new Block(IsSolid(x, y)); // Assuming Wall is a class that implements IBlock
+        }
+    }
+
+    public class LongWallWEShape : ObstacleShape
+    {
+        public override int MaxWidth => _shape.GetLength(0);
+        public override int MaxHeight => _shape.GetLength(1);
+
+        private readonly char[,] _shape;
+
+        public LongWallWEShape(int length)
+        {
+            _shape = new char[length, 3];
+            for (int i = 0; i < length; i++)
+            {
+                if (i == 0 || i == length - 1)
+                {
+                    _shape[i, 1] = ' ';
+                }
+                else
+                {
+                    _shape[i, 1] = '#';
+                }
+                _shape[i, 0] = ' ';
+                _shape[i, 2] = ' ';
+            }
+        }
+
+        public override bool IsSolid(int x, int y)
+        {
+            return _shape[x, y] == '#';
+        }
+
+        public override IBlock GetBlock(int x, int y)
+        {
+            // Implement the shape of the tree here
+            // For simplicity, I'm just using a placeholder
+            return new Block(IsSolid(x, y)); // Assuming Wall is a class that implements IBlock
+        }
+    }
+
+
+    public class RandomSquareShape : ObstacleShape
+    {
+        public override int MaxWidth => _shape.GetLength(0);
+        public override int MaxHeight => _shape.GetLength(1);
+
+        private readonly char[,] _shape;
+
+        public RandomSquareShape(int length)
+        {
+            _shape = new char[length, length];
+            for (int i = 0; i < length; i++)
+            {
+                for (int j = 0; j < length; j++)
+                {
+                    if (i == 0 || i == length - 1 || j == 0 || j == length - 1)
+                    {
+                        _shape[i, j] = ' ';
+                    }
+                    else
+                    {
+                        _shape[i, j] = '#';
+                    }
+                }
+            }
+
+            var random = new Random();
+
+            for (int tryCount = 0; tryCount < length / 2; tryCount++)
+            {
+                // Position starts from an empty cell.
+                Tuple<int, int> currentPosition = new(random.Next(0, length), random.Next(0, length));
+
+                // Random walk until empty and set the path to empty.
+                while (currentPosition.Item1 != 0 && currentPosition.Item1 != length - 1 && currentPosition.Item2 != 0 && currentPosition.Item2 != length - 1)
+                {
+                    _shape[currentPosition.Item1, currentPosition.Item2] = ' ';
+                    if (random.Next(0, 2) == 0)
+                    {
+                        currentPosition = new(currentPosition.Item1 + (random.Next(0, 2) == 0 ? -1 : 1), currentPosition.Item2);
+                    }
+                    else
+                    {
+                        currentPosition = new(currentPosition.Item1, currentPosition.Item2 + (random.Next(0, 2) == 0 ? -1 : 1));
+                    }
+                }
+            }
+        }
+
+        public override bool IsSolid(int x, int y)
+        {
+            return _shape[x, y] == '#';
+        }
+
+        public override IBlock GetBlock(int x, int y)
+        {
+            // Implement the shape of the tree here
+            // For simplicity, I'm just using a placeholder
+            return new Block(IsSolid(x, y)); // Assuming Wall is a class that implements IBlock
+        }
+    }
 }
