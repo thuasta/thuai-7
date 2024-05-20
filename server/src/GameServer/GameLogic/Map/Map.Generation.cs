@@ -6,8 +6,26 @@ public partial class Map
 {
     public void GenerateMap()
     {
-        GenerateWalls();
-        GenerateSupplies();
+        try
+        {
+            GenerateWalls();
+            GenerateSupplies();
+
+            // DEBUG: print the map
+            for (int y = 0; y < Height; y++)
+            {
+                string outputStr = "";
+                for (int x = 0; x < Width; x++)
+                {
+                    outputStr += MapChunk[x, y].IsWall ? "#" : " ";
+                }
+                _logger.Information(outputStr);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.Error(e, "Failed to generate map");
+        }
     }
 
     public void GenerateSupplies()
@@ -118,6 +136,16 @@ public partial class Map
         // Clear the map
         Clear();
 
+        for (int i = 0; i < 32; i++)
+        {
+            ObstacleShape shape = _longWallShapes[_random.Next(0, _longWallShapes.Count)];
+            PlaceObstacleShape(shape);
+
+            shape = _randomSquareShapes[_random.Next(0, _randomSquareShapes.Count)];
+            PlaceObstacleShape(shape);
+        }
+
+
         // Iterate _tryTimes and place them on the map
         for (int i = 0; i < _tryTimes; i++)
         {
@@ -156,9 +184,9 @@ public partial class Map
         if (IsPositionValid(startX, startY, shape))
         {
             // Place the obstacle shape on the map
-            for (int x = 0; x < shape.MaxWidth; x++)
+            for (int x = 0; x < shape.MaxWidth && startX + x < MapChunk.GetLength(0); x++)
             {
-                for (int y = 0; y < shape.MaxHeight; y++)
+                for (int y = 0; y < shape.MaxHeight && startY + y < MapChunk.GetLength(1); y++)
                 {
                     if (shape.IsSolid(x, y))
                     {
@@ -176,15 +204,15 @@ public partial class Map
     private bool IsPositionValid(int startX, int startY, ObstacleShape shape)
     {
         // Check if the position is within the map boundaries
-        if (startX < 0 || startY < 0 || startX + shape.MaxWidth >= Width || startY + shape.MaxHeight >= Height)
+        if (startX < 0 || startY < 0 || startX >= Width || startY >= Height)
         {
             return false;
         }
 
         // Check if the position overlaps with existing obstacles
-        for (int x = 0; x < shape.MaxWidth; x++)
+        for (int x = 0; x < shape.MaxWidth && startX + x < MapChunk.GetLength(0); x++)
         {
-            for (int y = 0; y < shape.MaxHeight; y++)
+            for (int y = 0; y < shape.MaxHeight && startY + y < MapChunk.GetLength(1); y++)
             {
                 if (MapChunk[startX + x, startY + y] != null && MapChunk[startX + x, startY + y].IsWall)
                 {
