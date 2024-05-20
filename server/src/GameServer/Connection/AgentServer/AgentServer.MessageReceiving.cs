@@ -175,6 +175,6 @@ public partial class AgentServer
                     _logger.Debug($"{ex}");
                 }
             }
-        });
+        }, cts.Token);
     }
 }
