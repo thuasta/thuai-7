@@ -8,6 +8,7 @@ public partial class AgentServer
 
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<Message>> _socketMessageSendingQueue = new();
     private readonly ConcurrentDictionary<Guid, Task> _tasksForSendingMessage = new();
+    private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _ctsForSendingMessage = new();
 
     public void Publish(Message message, string? token = null)
     {
@@ -55,24 +56,43 @@ public partial class AgentServer
 
     private Task CreateTaskForSendingMessage(Guid socketId)
     {
+        _logger.Debug($"Creating task for sending message to {GetAddress(socketId)}...");
+
+        CancellationTokenSource cts = new();
+        _ctsForSendingMessage.AddOrUpdate(
+            socketId,
+            cts,
+            (key, oldValue) =>
+            {
+                oldValue?.Cancel();
+                return cts;
+            }
+        );
+
         return new(() =>
         {
             while (_isRunning)
             {
+                if (cts.IsCancellationRequested == true)
+                {
+                    _logger.Debug($"Request task for sending message to {GetAddress(socketId)} to be cancelled.");
+                    return;
+                }
+
                 try
                 {
                     if (_socketMessageSendingQueue.TryGetValue(socketId, out ConcurrentQueue<Message>? queue))
                     {
                         if (queue.Count > MAXIMUM_MESSAGE_QUEUE_SIZE)
                         {
-                            _logger.Warning($"Message queue for sending to socket {socketId} is full. The messages in queue will be cleared.");
+                            _logger.Warning($"Message queue for sending to {GetAddress(socketId)} is full. The messages in queue will be cleared.");
                             queue.Clear();
                         }
 
                         if (queue.TryDequeue(out Message? message) && message is not null)
                         {
                             _sockets[socketId].Send(message.Json);
-                            _logger.Debug($"Sent message \"{message.MessageType}\" to socket {socketId}.");
+                            _logger.Debug($"Sent message \"{message.MessageType}\" to {GetAddress(socketId)}.");
                         }
                         else
                         {
@@ -82,10 +102,10 @@ public partial class AgentServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Failed to send message to socket {socketId}: {ex.Message}");
+                    _logger.Error($"Failed to send message to {GetAddress(socketId)}: {ex.Message}");
                     _logger.Debug($"{ex}");
                 }
             }
-        });
+        }, cts.Token);
     }
 }
