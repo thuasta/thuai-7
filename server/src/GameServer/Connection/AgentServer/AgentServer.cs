@@ -191,17 +191,8 @@ public partial class AgentServer
                 _logger.Error($"Socket error: {exception.Message}");
 
                 // Close and remove the socket.
-                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
-                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
-                _socketRawTextReceivingQueue.TryRemove(socket.ConnectionInfo.Id, out _);
-
-                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? parsingTask);
-                parsingTask?.Dispose();
-
-                _tasksForSendingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? sendingTask);
-                sendingTask?.Dispose();
-
                 socket.Close();
+                RemoveSocket(socket.ConnectionInfo.Id);
             };
         });
     }
