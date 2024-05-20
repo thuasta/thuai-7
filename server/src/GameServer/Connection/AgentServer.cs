@@ -107,46 +107,14 @@ public partial class AgentServer
         {
             socket.OnOpen = () =>
             {
-                _logger.Debug(
-                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened."
+                _logger.Information(
+                    $"Connection from {socket.ConnectionInfo.ClientIpAddress}: {socket.ConnectionInfo.ClientPort} opened (with Id {socket.ConnectionInfo.Id})."
                 );
 
                 // Remove the socket if it already exists.
-                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
+                RemoveSocket(socket.ConnectionInfo.Id);
                 // Add the socket.
-                _sockets.TryAdd(socket.ConnectionInfo.Id, socket);
-
-                _socketRawTextReceivingQueue.AddOrUpdate(
-                    socket.ConnectionInfo.Id,
-                    new ConcurrentQueue<string>(),
-                    (key, oldValue) => new ConcurrentQueue<string>()
-                );
-
-                Task parsingTask = CreateTaskForParsingMessage(socket.ConnectionInfo.Id);
-                parsingTask.Start();
-
-                _tasksForParsingMessage.AddOrUpdate(
-                    socket.ConnectionInfo.Id,
-                    parsingTask,
-                    (key, oldValue) =>
-                    {
-                        oldValue?.Dispose();
-                        return parsingTask;
-                    }
-                );
-
-                Task sendingTask = CreateTaskForSendingMessage(socket.ConnectionInfo.Id);
-                sendingTask.Start();
-
-                _tasksForSendingMessage.AddOrUpdate(
-                    socket.ConnectionInfo.Id,
-                    sendingTask,
-                    (key, oldValue) =>
-                    {
-                        oldValue?.Dispose();
-                        return sendingTask;
-                    }
-                );
+                AddSocket(socket.ConnectionInfo.Id, socket);
             };
 
             socket.OnClose = () =>
@@ -156,15 +124,7 @@ public partial class AgentServer
                 );
 
                 // Remove the socket.
-                _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
-                _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
-                _socketRawTextReceivingQueue.TryRemove(socket.ConnectionInfo.Id, out _);
-
-                _tasksForParsingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? parsingTask);
-                parsingTask?.Dispose();
-
-                _tasksForSendingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? sendingTask);
-                sendingTask?.Dispose();
+                RemoveSocket(socket.ConnectionInfo.Id);
             };
 
             socket.OnMessage = text =>
@@ -231,7 +191,6 @@ public partial class AgentServer
                 _logger.Error($"Socket error: {exception.Message}");
 
                 // Close and remove the socket.
-                socket.Close();
                 _sockets.TryRemove(socket.ConnectionInfo.Id, out _);
                 _socketTokens.TryRemove(socket.ConnectionInfo.Id, out _);
                 _socketRawTextReceivingQueue.TryRemove(socket.ConnectionInfo.Id, out _);
@@ -241,7 +200,87 @@ public partial class AgentServer
 
                 _tasksForSendingMessage.TryRemove(socket.ConnectionInfo.Id, out Task? sendingTask);
                 sendingTask?.Dispose();
+
+                socket.Close();
             };
         });
+    }
+
+    private void AddSocket(Guid socketId, IWebSocketConnection socket)
+    {
+        _sockets.TryAdd(socketId, socket);
+
+        _socketRawTextReceivingQueue.AddOrUpdate(
+            socketId,
+            new ConcurrentQueue<string>(),
+            (key, oldValue) => new ConcurrentQueue<string>()
+        );
+
+        _socketMessageSendingQueue.AddOrUpdate(
+            socketId,
+            new ConcurrentQueue<Message>(),
+            (key, oldValue) => new ConcurrentQueue<Message>()
+        );
+
+        // Cancel the previous task if it exists
+        _ctsForParsingMessage.TryGetValue(socketId, out CancellationTokenSource? ctsForParsingMessage);
+        ctsForParsingMessage?.Cancel();
+        _ctsForParsingMessage.TryRemove(socketId, out _);
+
+        _ctsForSendingMessage.TryGetValue(socketId, out CancellationTokenSource? ctsForSendingMessage);
+        ctsForSendingMessage?.Cancel();
+        _ctsForSendingMessage.TryRemove(socketId, out _);
+
+        // Create new tasks for parsing and sending messages
+        Task parsingTask = CreateTaskForParsingMessage(socketId);
+        parsingTask.Start();
+
+        _tasksForParsingMessage.AddOrUpdate(
+            socket.ConnectionInfo.Id,
+            parsingTask,
+            (key, oldValue) =>
+            {
+                oldValue?.Dispose();
+                return parsingTask;
+            }
+        );
+
+        Task sendingTask = CreateTaskForSendingMessage(socketId);
+        sendingTask.Start();
+
+        _tasksForSendingMessage.AddOrUpdate(
+            socketId,
+            sendingTask,
+            (key, oldValue) =>
+            {
+                oldValue?.Dispose();
+                return sendingTask;
+            }
+        );
+    }
+
+    private void RemoveSocket(Guid socketId)
+    {
+        _sockets.TryRemove(socketId, out _);
+        _socketTokens.TryRemove(socketId, out _);
+
+        _ctsForParsingMessage.TryGetValue(socketId, out CancellationTokenSource? ctsForParsingMessage);
+        ctsForParsingMessage?.Cancel();
+        _ctsForParsingMessage.TryRemove(socketId, out _);
+
+        _ctsForSendingMessage.TryGetValue(socketId, out CancellationTokenSource? ctsForSendingMessage);
+        ctsForSendingMessage?.Cancel();
+        _ctsForSendingMessage.TryRemove(socketId, out _);
+
+        _tasksForParsingMessage.TryGetValue(socketId, out Task? taskForParsingMessage);
+        taskForParsingMessage?.Dispose();
+        _tasksForParsingMessage.TryRemove(socketId, out _);
+
+        _tasksForSendingMessage.TryGetValue(socketId, out Task? taskForSendingMessage);
+        taskForSendingMessage?.Dispose();
+        _tasksForSendingMessage.TryRemove(socketId, out _);
+
+        _socketMessageSendingQueue.TryRemove(socketId, out _);
+        _socketRawTextReceivingQueue.TryRemove(socketId, out _);
     }
 }

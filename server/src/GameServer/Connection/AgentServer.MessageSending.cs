@@ -8,6 +8,7 @@ public partial class AgentServer
 
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<Message>> _socketMessageSendingQueue = new();
     private readonly ConcurrentDictionary<Guid, Task> _tasksForSendingMessage = new();
+    private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _ctsForSendingMessage = new();
 
     public void Publish(Message message, string? token = null)
     {
@@ -55,10 +56,29 @@ public partial class AgentServer
 
     private Task CreateTaskForSendingMessage(Guid socketId)
     {
+        _logger.Debug($"Creating task for sending message to socket {socketId}...");
+
+        CancellationTokenSource cts = new();
+        _ctsForSendingMessage.AddOrUpdate(
+            socketId,
+            cts,
+            (key, oldValue) =>
+            {
+                oldValue?.Cancel();
+                return cts;
+            }
+        );
+
         return new(() =>
         {
             while (_isRunning)
             {
+                if (cts.IsCancellationRequested == true)
+                {
+                    _logger.Debug($"Request task for sending message to socket {socketId} to be cancelled.");
+                    return;
+                }
+
                 try
                 {
                     if (_socketMessageSendingQueue.TryGetValue(socketId, out ConcurrentQueue<Message>? queue))
@@ -86,6 +106,6 @@ public partial class AgentServer
                     _logger.Debug($"{ex}");
                 }
             }
-        });
+        }, cts.Token);
     }
 }
