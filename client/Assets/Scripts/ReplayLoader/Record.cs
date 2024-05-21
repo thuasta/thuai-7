@@ -213,8 +213,8 @@ private void Start()
            }
            else if (_recordInfo.NowPlayState == PlayState.Pause)
            {
-               _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
-               _recordInfo.NowPlayState = PlayState.Play;
+                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
+                _recordInfo.NowPlayState = PlayState.Play;
                 _recordInfo.NowTime = System.DateTime.Now.Ticks;
                 _as.PlayOneShot(_audioClipDict["Go"]);
            }
@@ -606,7 +606,18 @@ private void Start()
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Position targetPosition = new Position((float)eventJson["data"]["turgetPosition"]["x"], (float)eventJson["data"]["turgetPosition"]["y"]);
         Player player = PlayerSource.GetPlayers()[playerId];
-        player.Attack(targetPosition, player.FirearmRange);
+
+        if (eventJson["data"]["range"] == null)
+        {
+            Debug.Log("Range is null!");
+            player.Attack(targetPosition, player.FirearmRange);
+            return;
+        }
+        else
+        {
+            player.Attack(targetPosition, eventJson["data"]["range"].ToObject<float>());
+        }
+
         string firearmString = player.Firearm switch
         {
             FirearmTypes.S686 => "S686",

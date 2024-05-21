@@ -67,7 +67,7 @@ public class JsonUtility
             {
                 try
                 {
-                    if (!file.Contains("level.dat") && !file.EndsWith("/") && !file.Contains(".meta"))
+                    if (!file.EndsWith("/") && !file.Contains(".meta"))
                     {
                         using (Stream stream = File.OpenRead(file))
                         {
@@ -128,37 +128,47 @@ public class JsonUtility
             JArray records = (JArray)jsonObject["records"];
             if (records != null && records.Count > 0)
             {
-                string messageType = records[0]["messageType"].ToString();
-                if (messageType != null && messageType == "MAP" && records.Count > 1)
+                foreach (JToken recordInfo in records)
                 {
-                    JValue tick = (JValue)records[1]["currentTicks"];
+                    JValue tick = (JValue)recordInfo["currentTicks"];
                     if (tick != null)
                     {
                         // The first tick
                         indexAndTicks[nowRecordIndex].Item2 = (int)tick;
-                    }
-                    else
-                    {
-                        indexAndTicks[nowRecordIndex].Item2 = -1;
+                        break;
                     }
                 }
-                else
-                {
-                    foreach (JToken recordInfo in records)
-                    {
-                        JValue tick = (JValue)recordInfo["currentTicks"];
-                        if (tick != null)
-                        {
-                            // The first tick
-                            indexAndTicks[nowRecordIndex].Item2 = (int)tick;
-                            break;
-                        }
-                        else
-                        {
-                            indexAndTicks[nowRecordIndex].Item2 = -2;
-                        }
-                    }
-                }
+                // string messageType = records[0]["messageType"].ToString();
+                // if (messageType != null && messageType == "MAP" && records.Count > 1)
+                // {
+                //     JValue tick = (JValue)records[1]["currentTicks"];
+                //     if (tick != null)
+                //     {
+                //         // The first tick
+                //         indexAndTicks[nowRecordIndex].Item2 = (int)tick;
+                //     }
+                //     else
+                //     {
+                //         indexAndTicks[nowRecordIndex].Item2 = -1;
+                //     }
+                // }
+                // else
+                // {
+                //     foreach (JToken recordInfo in records)
+                //     {
+                //         JValue tick = (JValue)recordInfo["currentTicks"];
+                //         if (tick != null)
+                //         {
+                //             // The first tick
+                //             indexAndTicks[nowRecordIndex].Item2 = (int)tick;
+                //             break;
+                //         }
+                //         else
+                //         {
+                //             indexAndTicks[nowRecordIndex].Item2 = -2;
+                //         }
+                //     }
+                // }
             }
             nowRecordIndex++;
         }
