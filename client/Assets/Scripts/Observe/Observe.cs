@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Observe : MonoBehaviour
 {
@@ -57,12 +59,29 @@ public class Observe : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+
+            PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
+            List<RaycastResult> results = new List<RaycastResult>();
+
+            EventSystem.current.RaycastAll(pointerEventData, results);
+
+            foreach (RaycastResult result in results)
+            {
+                if (result.gameObject.GetComponent<Button>() != null)
+                {
+                    return;
+                }
+            }
+
             Dictionary<int ,Player> dict= PlayerSource.GetPlayers();
             _players.Clear();
             foreach (KeyValuePair<int, Player> player in dict)
             {
                 _players.Add(player.Value);
-            }
+            } 
             if(_cameraStatus == CameraStatus.player)
             {
                 // Retry target
@@ -86,8 +105,9 @@ public class Observe : MonoBehaviour
             {
                 _cameraStatus = CameraStatus.player;
                 _target = _players[_playerNumber];
-                Vector3 newOffset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
-                newOffset *= 8 / newOffset.magnitude;
+                //Vector3 newOffset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
+                //newOffset *= 8 / newOffset.magnitude;
+                Debug.Log(_target == null ? "Target is null" : "Target is not null");
                 visualAngleReset(transform.position, GetHeadPos(_target.playerObj.transform.position));
                 _playerNumber += 1;
             }
