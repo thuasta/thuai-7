@@ -213,8 +213,8 @@ private void Start()
            }
            else if (_recordInfo.NowPlayState == PlayState.Pause)
            {
-               _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
-               _recordInfo.NowPlayState = PlayState.Play;
+                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
+                _recordInfo.NowPlayState = PlayState.Play;
                 _recordInfo.NowTime = System.DateTime.Now.Ticks;
                 _as.PlayOneShot(_audioClipDict["Go"]);
            }
