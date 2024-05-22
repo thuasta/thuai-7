@@ -14,5 +14,5 @@ public partial class Constant
 
     public const double DISTANCE_ERROR = 1e-3;
     public const double CALCULATION_ERROR = 1e-6;
-    public const double BOUNCE_DISTANCE = 0.01;
+    public const double BOUNCE_DISTANCE = 0.3;
 }
