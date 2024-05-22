@@ -652,7 +652,6 @@ private void Start()
         {
             Debug.Log("Range is null!");
             player.Attack(targetPosition, player.FirearmRange);
-            return;
         }
         else
         {
