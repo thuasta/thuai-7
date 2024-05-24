@@ -202,6 +202,9 @@ private void Start()
             { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
             { "Grenade", Resources.Load<AudioClip>("Music/Audio/grenade") },
             { "Pickup", Resources.Load<AudioClip>("Music/Audio/pickup") },
+            { "Heal", Resources.Load<AudioClip>("Music/Audio/heal") },
+            { "Hurt", Resources.Load<AudioClip>("Music/Audio/hurt") },
+            { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
         };
         _grenadeExplosionPrefab = Resources.Load<GameObject>("Prefabs/BigExplosionEffect");
         _grenadeBeamPrefab = Resources.Load<GameObject>("Beam/GrenadeBeam");
@@ -534,6 +537,19 @@ private void Start()
                 }
             }
             int health = player["health"].ToObject<int>();
+            Player nowPlayer = PlayerSource.GetPlayers()[playerId];
+            if(nowPlayer is not null)
+            {
+                if (nowPlayer.Health- health > 5)
+                {
+                    // Play hurt audio
+                    _as.PlayOneShot(_audioClipDict["Hurt"]);
+                }
+                if (health < 1)
+                {
+                    _as.PlayOneShot(_audioClipDict["Die"]);
+                }
+            }
             PlayerSource.UpdatePlayer(
                 playerId,
                 health,
@@ -674,6 +690,7 @@ private void Start()
     private void AfterPlayerUseMedicineEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        _as.PlayOneShot(_audioClipDict["Heal"]);
         PlayerSource.GetPlayers()[playerId].UseMedicine();
     }
 
