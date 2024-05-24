@@ -203,8 +203,7 @@ private void Start()
             { "Grenade", Resources.Load<AudioClip>("Music/Audio/grenade") },
             { "Pickup", Resources.Load<AudioClip>("Music/Audio/pickup") },
             { "Heal", Resources.Load<AudioClip>("Music/Audio/heal") },
-            { "Hurt", Resources.Load<AudioClip>("Music/Audio/hurt") },
-            { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
+            { "Hurt", Resources.Load<AudioClip>("Music/Audio/hurt") }
         };
         _grenadeExplosionPrefab = Resources.Load<GameObject>("Prefabs/BigExplosionEffect");
         _grenadeBeamPrefab = Resources.Load<GameObject>("Beam/GrenadeBeam");
