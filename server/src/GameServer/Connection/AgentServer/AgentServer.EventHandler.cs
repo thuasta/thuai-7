@@ -96,7 +96,7 @@ public partial class AgentServer
                     Y = 0
                 };
             }
-            else if (player.Health < 0)
+            else if (player.Health <= 0)
             {
                 tempPosition = new PlayersInfoMessage.Player.PositionInfo
                 {
