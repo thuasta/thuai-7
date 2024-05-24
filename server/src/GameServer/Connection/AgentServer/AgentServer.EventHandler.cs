@@ -96,6 +96,14 @@ public partial class AgentServer
                     Y = 0
                 };
             }
+            else if (player.Health < 0)
+            {
+                tempPosition = new PlayersInfoMessage.Player.PositionInfo
+                {
+                    X = -1000,
+                    Y = -1000
+                };
+            }
             else
             {
                 tempPosition = new PlayersInfoMessage.Player.PositionInfo
