@@ -8,6 +8,61 @@ on:
   workflow_dispatch:
 
 jobs:
+  build-agent-cpp:
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x86_64
+            platform: linux
+            runs-on: ubuntu-latest
+          - architecture: arm64
+            platform: macosx
+            runs-on: macos-latest
+          - architecture: x64
+            platform: windows
+            runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: xmake-io/github-action-setup-xmake@v1
+
+      - run: |
+          xmake repo -u -y
+        working-directory: agent-cpp
+
+      - run: |
+          xmake f -m release -v -y
+        working-directory: agent-cpp
+
+      - run: |
+          xmake -v -y
+        working-directory: agent-cpp
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ matrix.platform }}-${{ matrix.architecture }}-${{ github.sha }}
+          path: agent-cpp/build/${{ matrix.platform }}/${{ matrix.architecture }}/release/
+
+  build-agent-cpp-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: agent-cpp
+
+  build-agent-python-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: agent-python
+
   build-client:
     if: ${{ github.event_name != 'pull_request' }} 
     runs-on: ubuntu-latest
@@ -85,6 +140,26 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: server
+
+  check-style-agent-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jidicula/clang-format-action@v4.11.0
+        with:
+          check-path: agent-cpp/src
+          clang-format-version: 18
+
+  check-style-agent-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: agent-python
 
   check-style-server:
     runs-on: ubuntu-latest
