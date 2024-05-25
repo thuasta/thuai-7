@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using TMPro;
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Record : MonoBehaviour
@@ -72,6 +73,11 @@ public class Record : MonoBehaviour
     public RecordInfo _recordInfo;
 
     // GUI
+    private Button _backButton;
+    private Sprite _backButtonSprite;
+    private Button _showBorderButton;
+    private Sprite _showBorderButtonSprite;
+    private Sprite _hideBorderButtonSprite;
     private Button _stopButton;
     private Sprite _stopButtonSprite;
     private Sprite _continueButtonSprite;
@@ -92,6 +98,9 @@ public class Record : MonoBehaviour
     private GameObject _spotLight;
 
     private readonly List<GameObject> _obstaclePrefabs = new List<GameObject>();
+    private GameObject _borderPrefab;
+    private GameObject _borderParent;
+    // private readonly List<GameObject> _borders = new List<GameObject>();
     private readonly Dictionary<string, List<GameObject>> itemInstances = new Dictionary<string, List<GameObject>>();
     // record data
     private readonly string _recordFilePath = null;
@@ -161,6 +170,8 @@ private void Start()
         _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_01"));
         _obstaclePrefabs.Add(Resources.Load<GameObject>("Prefabs/Bush_02"));
 
+        _borderPrefab = Resources.Load<GameObject>("Square/Square");
+
         _currentTickText = GameObject.Find("Canvas/Tick").GetComponent<TMP_Text>();
 
         _poisonousCircle = GameObject.Find("PoisonousCircle").GetComponent<ParticleSystem>();
@@ -191,6 +202,8 @@ private void Start()
             { "Die", Resources.Load<AudioClip>("Music/Audio/die") },
             { "Grenade", Resources.Load<AudioClip>("Music/Audio/grenade") },
             { "Pickup", Resources.Load<AudioClip>("Music/Audio/pickup") },
+            { "Heal", Resources.Load<AudioClip>("Music/Audio/heal") },
+            { "Hurt", Resources.Load<AudioClip>("Music/Audio/hurt") }
         };
         _grenadeExplosionPrefab = Resources.Load<GameObject>("Prefabs/BigExplosionEffect");
         _grenadeBeamPrefab = Resources.Load<GameObject>("Beam/GrenadeBeam");
@@ -213,13 +226,39 @@ private void Start()
            }
            else if (_recordInfo.NowPlayState == PlayState.Pause)
            {
-               _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
-               _recordInfo.NowPlayState = PlayState.Play;
+                _stopButton.GetComponent<Image>().sprite = _stopButtonSprite;
+                _recordInfo.NowPlayState = PlayState.Play;
                 _recordInfo.NowTime = System.DateTime.Now.Ticks;
                 _as.PlayOneShot(_audioClipDict["Go"]);
            }
         });
 
+        _showBorderButton = GameObject.Find("Canvas/ShowBorderButton").GetComponent<Button>();
+        _showBorderButtonSprite = Resources.Load<Sprite>("GUI/Button/ShowButton");
+        _hideBorderButtonSprite = Resources.Load<Sprite>("GUI/Button/HideButton");
+        _showBorderButton.GetComponent<Image>().sprite = _showBorderButtonSprite;
+        _showBorderButton.onClick.AddListener(() =>
+        {
+            if (_borderParent.activeSelf)
+            {
+                _showBorderButton.GetComponent<Image>().sprite = _showBorderButtonSprite;
+                _borderParent.SetActive(false);
+            }
+            else
+            {
+                _showBorderButton.GetComponent<Image>().sprite = _hideBorderButtonSprite;
+                _borderParent.SetActive(true);
+            }
+        });
+
+        _backButton = GameObject.Find("Canvas/BackButton").GetComponent<Button>();
+        _backButtonSprite = Resources.Load<Sprite>("GUI/Button/BackButton");
+        _backButton.GetComponent<Image>().sprite = _backButtonSprite;
+        _backButton.onClick.AddListener(() =>
+        {
+            PlayerSource.Clear();
+            SceneManager.LoadScene("UI");
+        });
 
         _spotLight = GameObject.Find("Light");
 
@@ -384,6 +423,8 @@ private void Start()
         }
         // Randomly initialize the walls according to the _isWalls
         Transform obstacleParent = GameObject.Find("Map/Obstacles").transform;
+        _borderParent = GameObject.Find("Map/Borders");
+        _borderParent.SetActive(false);
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -402,6 +443,8 @@ private void Start()
                         obstacle.transform.localScale.y* UnityEngine.Random.Range(1.0f,1.8f),
                         obstacle.transform.localScale.z* UnityEngine.Random.Range(0.7f,1.4f)
                     );
+                    GameObject newborder = Instantiate(_borderPrefab, new Vector3(i + 0.5f, 0f, j + 0.5f), Quaternion.identity);
+                    newborder.transform.SetParent(_borderParent.transform);
                 }
             }
         }
@@ -493,6 +536,19 @@ private void Start()
                 }
             }
             int health = player["health"].ToObject<int>();
+            Player nowPlayer = PlayerSource.GetPlayers()[playerId];
+            if(nowPlayer is not null)
+            {
+                if (nowPlayer.Health- health > 5)
+                {
+                    // Play hurt audio
+                    _as.PlayOneShot(_audioClipDict["Hurt"]);
+                }
+                if (health < 1)
+                {
+                    _as.PlayOneShot(_audioClipDict["Die"]);
+                }
+            }
             PlayerSource.UpdatePlayer(
                 playerId,
                 health,
@@ -606,7 +662,17 @@ private void Start()
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
         Position targetPosition = new Position((float)eventJson["data"]["turgetPosition"]["x"], (float)eventJson["data"]["turgetPosition"]["y"]);
         Player player = PlayerSource.GetPlayers()[playerId];
-        player.Attack(targetPosition, player.FirearmRange);
+
+        if (eventJson["data"]["range"] == null)
+        {
+            Debug.Log("Range is null!");
+            player.Attack(targetPosition, player.FirearmRange);
+        }
+        else
+        {
+            player.Attack(targetPosition, eventJson["data"]["range"].ToObject<float>());
+        }
+
         string firearmString = player.Firearm switch
         {
             FirearmTypes.S686 => "S686",
@@ -623,6 +689,7 @@ private void Start()
     private void AfterPlayerUseMedicineEvent(JObject eventJson)
     {
         int playerId = eventJson["data"]["playerId"].ToObject<int>();
+        _as.PlayOneShot(_audioClipDict["Heal"]);
         PlayerSource.GetPlayers()[playerId].UseMedicine();
     }
 

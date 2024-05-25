@@ -173,7 +173,8 @@ public class MenuController : MonoBehaviour
         {
             Debug.Log($"{_projectPath}");
             // Prior: find folders 
-            List<string> LevelFolders = Directory.GetFiles($"{_projectPath}/Records", "*", SearchOption.AllDirectories).ToList();
+            List<string> LevelFolders = Directory.GetFiles($"{_projectPath}/Records", "*", SearchOption.TopDirectoryOnly).ToList();
+            LevelFolders.AddRange(Directory.GetDirectories($"{_projectPath}/Records", "*", SearchOption.TopDirectoryOnly).ToList());
             // Next: find files
             // string[] allLevels = Directory.GetFiles($"{_projectPath}/record", "*.dat", SearchOption.AllDirectories);
             // Compare them

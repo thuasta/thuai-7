@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Observe : MonoBehaviour
 {
@@ -10,12 +12,12 @@ public class Observe : MonoBehaviour
     public const float FreeMaxPitch = 80;
     public enum CameraStatus {freeCamera=0,player};
     public CameraStatus _cameraStatus;
-    public Player _target;//Ŀ������
+    public Player _target;
     private List<Player> _players;
     public UnityEngine.Transform initialTransform;
     private int _playerNumber;
-    Vector3 offset;//��������ƫ����
-    public float rotationSpeed;//�������ת�ٶ�
+    Vector3 offset;
+    public float rotationSpeed;
     public Vector3 velocity = Vector3.zero;
     public Vector3 lookatPositionvelocity = Vector3.zero;
     public Vector3 lookatPosition;
@@ -57,12 +59,29 @@ public class Observe : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+
+            PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
+            List<RaycastResult> results = new List<RaycastResult>();
+
+            EventSystem.current.RaycastAll(pointerEventData, results);
+
+            foreach (RaycastResult result in results)
+            {
+                if (result.gameObject.GetComponent<Button>() != null)
+                {
+                    return;
+                }
+            }
+
             Dictionary<int ,Player> dict= PlayerSource.GetPlayers();
             _players.Clear();
             foreach (KeyValuePair<int, Player> player in dict)
             {
                 _players.Add(player.Value);
-            }
+            } 
             if(_cameraStatus == CameraStatus.player)
             {
                 // Retry target
@@ -86,33 +105,30 @@ public class Observe : MonoBehaviour
             {
                 _cameraStatus = CameraStatus.player;
                 _target = _players[_playerNumber];
-                Vector3 newOffset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
-                newOffset *= 8 / newOffset.magnitude;
+                //Vector3 newOffset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
+                //newOffset *= 8 / newOffset.magnitude;
+                Debug.Log(_target == null ? "Target is null" : "Target is not null");
                 visualAngleReset(transform.position, GetHeadPos(_target.playerObj.transform.position));
                 _playerNumber += 1;
             }
         }
     }
-    public float zoomSpeed = 1f; // ��Ұ�������ٶ�
-    float zoom;//���ֹ�����
+    public float zoomSpeed = 1f;
+    float zoom;
     void Follow()
     {
-        //��Ұ����
-        zoom = Input.GetAxis("Mouse ScrollWheel") * zoomSpeed; // ��ȡ���ֹ�����
-        if (zoom != 0) // ����й���
+        zoom = Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
+        if (zoom != 0)
         {
             offset -= zoom * offset;
         }
         //��ͷ����
-        Vector3 headPosition = GetHeadPos(new Vector3(_target.PlayerPosition.x, 0f, _target.PlayerPosition.y));
+       Vector3 headPosition = GetHeadPos(new Vector3(_target.PlayerPosition.x, 0f, _target.PlayerPosition.y));
         transform.position = Vector3.SmoothDamp(transform.position, headPosition + offset, ref velocity, MoveSpeed);
         lookatPosition = Vector3.SmoothDamp(lookatPosition, headPosition, ref lookatPositionvelocity, MoveSpeed);
         transform.LookAt(lookatPosition);
-
         // transform.position = GetHeadPos(_target.playerObj.transform.position) - offset;
     }
-
-    //������ת��������ת����:
 
 
     public bool isRotating, lookup;
@@ -124,20 +140,10 @@ public class Observe : MonoBehaviour
     }
     void Rotate()
     {
-        /*if (Input.GetMouseButtonDown(1))//��������Ҽ�
-        {
-            isRotating = true;
-        }
-        if (Input.GetMouseButtonUp(1))
-        {
-            isRotating = false;
-        }*/
         isRotating = true;
         if (isRotating)
         {
-            //�õ����x�����ƶ�����
             mousex = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
-            //��ת���λ����Ŀ�����崦����������������ϵ��y��
 
             transform.RotateAround(GetHeadPos(_target.playerObj.transform.position), Vector3.up, mousex);
             offset = Quaternion.AngleAxis(mousex, Vector3.up) * offset;
@@ -146,25 +152,14 @@ public class Observe : MonoBehaviour
     }
     void Rollup()
     {
-        /*if (Input.GetMouseButtonDown(2))//��������м�
-        {
-            lookup = true;
-        }
-        if (Input.GetMouseButtonUp(2))
-        {
-            lookup = false;
-        }*/
         lookup = true;
         if (lookup)
         {
-            //�õ����y�����ƶ�����
             mousey = -Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
-            //��ת���λ����Ŀ�����崦���������������x��
+
             if (Mathf.Abs(transform.rotation.x + mousey-initialTransform.rotation.x) > 90) mousey = 0;
             transform.RotateAround(GetHeadPos(_target.playerObj.transform.position), transform.right, mousey);
             offset = Quaternion.AngleAxis(mousey, transform.right) * offset;
-            //ÿ����ת�����ƫ����
-            // offset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
         }
 
     }
