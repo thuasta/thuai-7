@@ -711,9 +711,8 @@ private void Start()
         GameObject beamPrefab = Instantiate(_grenadeBeamPrefab);
         Vector3 endPoint = new Vector3(x, 0, y) ;
         beamPrefab.transform.position = endPoint;
-        beamPrefab.GetComponentInChildren<MeshRenderer>().material.color = playerId == 0 ? Color.blue : Color.red;
+        beamPrefab.GetComponentInChildren<MeshRenderer>().material.color = PlayerSource.GetPlayers()[playerId].playerColor;
         beamPrefab.GetComponent<BeamAnimations>().Blink(5.0f);
-        
     }
 
     private void AfterGrenadeExplosionEvent(JObject eventJson)
