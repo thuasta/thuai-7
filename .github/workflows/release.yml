@@ -139,3 +139,38 @@ jobs:
         with:
           body: |
             ${{ steps.extract-release-notes.outputs.release_notes }}
+
+  pack-agent-cpp:
+    needs: create-release-notes
+    permissions:
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          zip -r ../${{ github.event.repository.name }}-agent-cpp.zip agent-cpp *
+        working-directory: agent-cpp
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ github.event.repository.name }}-agent-cpp.zip
+
+  pack-agent-python:
+    needs: create-release-notes
+    permissions:
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          zip -r ../${{ github.event.repository.name }}-agent-python.zip agent-python *
+        working-directory: agent-python
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ github.event.repository.name }}-agent-python.zip
+
