@@ -41,6 +41,12 @@ public class PlayerAnimations : MonoBehaviour
             _animator.SetBool("Running", false);
     }
 
+    public void Stop()
+    {
+        TryGetAnimator();
+        _animator.SetBool("Running", false);
+    }
+
     /// <summary>
     /// Play the dead animation
     /// </summary>
@@ -48,14 +54,15 @@ public class PlayerAnimations : MonoBehaviour
     {
         TryGetAnimator();
 
-        _animator.SetBool("IsDead", false);
+        _animator.SetTrigger("Death");
     }
     public void SetDead()
     {
         TryGetAnimator();
-
-        _animator.SetBool("IsDead", true);
-        Invoke(nameof(SetNotDead), DeadTime);
+        SetNotFiring();
+        SetNotDrinking();
+        _animator.SetTrigger("Death");
+        //Invoke(nameof(SetNotDead), DeadTime);
     }
 
     public void SetNotFiring()

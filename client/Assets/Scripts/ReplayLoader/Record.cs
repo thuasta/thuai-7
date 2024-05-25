@@ -544,7 +544,7 @@ private void Start()
                     // Play hurt audio
                     _as.PlayOneShot(_audioClipDict["Hurt"]);
                 }
-                if (health < 1)
+                if (health < 1 && !nowPlayer.IsDead)
                 {
                     _as.PlayOneShot(_audioClipDict["Die"]);
                 }
@@ -573,27 +573,30 @@ private void Start()
                 playerPosition,
                 (float)player["firearm"]["distance"]
             );
-            infoString += $"<Player {(PlayerSource.GetPlayers()[playerId].Name.Length <= 6 ? PlayerSource.GetPlayers()[playerId].Name : PlayerSource.GetPlayers()[playerId].Name.Substring(0, 6) + "...") }> Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\nInventory: ";
-            foreach(KeyValuePair<string, int> keyValue in inventory)
+            if (players.Count <= 2 || (_observe.cameraStatus == Observe.CameraStatus.player && playerId == _observe.PlayerNumber))
             {
-                infoString += $"{keyValue.Key} {keyValue.Value}; ";
-            }
-            infoString += "\n";
-            
-            infoString += $"Armor: {player["armor"]}\n";
-            infoString += $"Firearm: {player["firearm"]["name"]}\n";
-            if (player.ContainsKey("firearmsPool"))
-            {
-                infoString += $"Firearm Pool: ";
-                foreach (JObject firearm in (JArray)player["firearmsPool"])
+                infoString += $"<Player {(PlayerSource.GetPlayers()[playerId].Name.Length <= 6 ? PlayerSource.GetPlayers()[playerId].Name : PlayerSource.GetPlayers()[playerId].Name.Substring(0, 6) + "...") }> Health {health}\nPosition ({playerPosition.x:F2}, {playerPosition.y.ToString("F2")})\nInventory: ";
+                foreach(KeyValuePair<string, int> keyValue in inventory)
                 {
-                    infoString += $"{firearm["name"]}  ";
+                    infoString += $"{keyValue.Key} {keyValue.Value}; ";
                 }
                 infoString += "\n";
+                
+                infoString += $"Armor: {player["armor"]}\n";
+                infoString += $"Firearm: {player["firearm"]["name"]}\n";
+                if (player.ContainsKey("firearmsPool"))
+                {
+                    infoString += $"Firearm Pool: ";
+                    foreach (JObject firearm in (JArray)player["firearmsPool"])
+                    {
+                        infoString += $"{firearm["name"]}  ";
+                    }
+                    infoString += "\n";
+                }
+                infoString += $"Speed: {player["speed"]}\n";
+                infoString += $"-----------------------\n";
+                infoString += $"-----------------------\n";
             }
-            infoString += $"Speed: {player["speed"]}\n";
-            infoString += $"-----------------------\n";
-            infoString += $"-----------------------\n";
         }
         _infoText.text = infoString;
     }
@@ -708,9 +711,8 @@ private void Start()
         GameObject beamPrefab = Instantiate(_grenadeBeamPrefab);
         Vector3 endPoint = new Vector3(x, 0, y) ;
         beamPrefab.transform.position = endPoint;
-        beamPrefab.GetComponentInChildren<MeshRenderer>().material.color = playerId == 0 ? Color.blue : Color.red;
+        beamPrefab.GetComponentInChildren<MeshRenderer>().material.color = PlayerSource.GetPlayers()[playerId].playerColor;
         beamPrefab.GetComponent<BeamAnimations>().Blink(5.0f);
-        
     }
 
     private void AfterGrenadeExplosionEvent(JObject eventJson)
@@ -817,16 +819,10 @@ private void Start()
             }
             _recordInfo.NowRecordNum++;
         }
-        //}
-        //catch
-        //{
-
-        //}
     }
 
     private void FixedUpdate()
     {
-
         if (!(_recordInfo.NowPlayState == PlayState.Play && _recordInfo.NowTick < _recordInfo.MaxTick))
         {
             return;
