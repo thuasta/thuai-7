@@ -151,7 +151,7 @@ jobs:
           check-path: agent-cpp/src
           clang-format-version: 18
 
-  check-style-agent-template:
+  check-style-agent-python:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
