@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Thubg.Messages.CompetitionUpdate;
 
+using TMPro;
+
 public class Player
 {
     public int Id;
@@ -17,9 +19,36 @@ public class Player
     public BeamAnimations beamAnimations;
     public GameObject playerObj;
     public GameObject beam;
-    public GameObject playertitle;
-    public Color lineColor;
+    public GameObject playerTitle;
+    public GameObject uiCanvasGo;
+    public Color playerColor;
     public float FirearmRange;
+
+    public bool IsDead { get; private set; } = false;
+
+    public class FaceCamera : MonoBehaviour
+    {
+        private GameObject _camera;
+        private void LateUpdate()
+        {
+            if(_camera == null)
+            {
+                _camera = GameObject.Find("Camera");
+            }
+            transform.forward = _camera.transform.forward;
+        }
+    }
+
+    public Player(int id, string name, Color color, GameObject playerPrefab, GameObject beamPrefab)
+    {
+        Id = id;
+        Name = name;
+        playerColor = color;
+        CreatePlayerObj(playerPrefab);
+        CreateBeam(beamPrefab);
+        CreateTitleUI();
+    }
+
 
     public void TryGetPlayerAnimations()
     {
@@ -31,6 +60,7 @@ public class Player
 
     public void Attack(Position targetPosition, float range)
     {
+        if(IsDead) return;
         FaceTo(targetPosition);
         ShowGunFire(targetPosition, range);
         playerAnimations.SetFiring();
@@ -38,7 +68,18 @@ public class Player
 
     public void UseMedicine()
     {
+        if(IsDead) return;
         playerAnimations.SetDrinking();
+    }
+
+    public void Die(Color deadColor)
+    {
+        playerAnimations.Stop();
+        if (IsDead) return;
+        playerAnimations.SetDead();
+        IsDead = true;
+        playerColor = deadColor;
+        UpdateUiColor();
     }
 
     public void FaceTo(Position pos)
@@ -66,6 +107,7 @@ public class Player
 
     public void UpdatePosition(Position pos)
     {
+        if(IsDead) return;
         PlayerPosition = pos;
         // Compute Delta
         Vector3 newPos = new Vector3(pos.x, playerObj.transform.position.y, pos.y);
@@ -77,9 +119,41 @@ public class Player
     }
     public void CreateTitleUI()
     {
-        GameObject canvastitle = playertitle;
-        canvastitle.name = "Player_title";
+        uiCanvasGo = new GameObject("PlayerIDCanvas");
+        uiCanvasGo.transform.SetParent(playerObj.transform); // Set the canvas as a child of the player object
+        uiCanvasGo.transform.localPosition = new Vector3(0, 3.0f, 0); // Adjust as needed for positioning
+        Canvas canvas = uiCanvasGo.AddComponent<Canvas>();
+        canvas.sortingLayerID = LayerMask.NameToLayer("UI");
+        canvas.renderMode = RenderMode.WorldSpace; // Set the render mode to World Space
+        TextMeshProUGUI textComponent = uiCanvasGo.AddComponent<TextMeshProUGUI>();
+        textComponent.text = "" + (Name.Length <= 6 ? Name : Name.Substring(0, 6) + "..."); // Set the initial text to the player's token
+        textComponent.fontSize = 2; // Set the font size
+        textComponent.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        textComponent.color = playerColor; // Set the font color
+        textComponent.alignment = TextAlignmentOptions.Center;
+        textComponent.rectTransform.pivot = new Vector2(0.5f, 0.5f); // Ensure text is centered
+        canvas.transform.localRotation = Quaternion.Euler(new Vector3(0, 180, 0));
+        // Ensure the UI text always faces the camera
+        uiCanvasGo.AddComponent<FaceCamera>();
+    }
 
-        GameObject titletext = canvastitle.transform.Find("Text").gameObject;
+    public void UpdateUiColor()
+    {
+        uiCanvasGo.GetComponent<TextMeshProUGUI>().color = playerColor;
+    }
+
+    public void CreatePlayerObj(GameObject playerPrefab)
+    {
+        playerObj = GameObject.Instantiate(playerPrefab);
+        playerObj.transform.position = Vector3.zero;
+    }
+
+    public void CreateBeam(GameObject beamPrefab)
+    {
+        beam = GameObject.Instantiate(beamPrefab);
+        beam.SetActive(false);
+        beam.GetComponentInChildren<MeshRenderer>().material.color = playerColor;
+        beamAnimations = beam.GetComponent<BeamAnimations>();
+        playerAnimations = playerObj.GetComponent<PlayerAnimations>();
     }
 }

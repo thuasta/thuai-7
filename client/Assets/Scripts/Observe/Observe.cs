@@ -10,12 +10,12 @@ public class Observe : MonoBehaviour
     public float MoveSpeed;
     public float FreeMoveSpeed;
     public const float FreeMaxPitch = 80;
-    public enum CameraStatus {freeCamera=0,player};
-    public CameraStatus _cameraStatus;
+    public enum CameraStatus {freeCamera=0, player};
+    public CameraStatus cameraStatus {get; private set;}
     public Player _target;
     private List<Player> _players;
     public UnityEngine.Transform initialTransform;
-    private int _playerNumber;
+    public int PlayerNumber {get; private set; }
     Vector3 offset;
     public float rotationSpeed;
     public Vector3 velocity = Vector3.zero;
@@ -31,13 +31,13 @@ public class Observe : MonoBehaviour
         rotationSpeed = 75f;
         MoveSpeed = 0.1f;
         FreeMoveSpeed = 10f;
-        _cameraStatus = CameraStatus.freeCamera;
+        cameraStatus = CameraStatus.freeCamera;
         _target = null;
     }
 
     void Update()
     {
-        if (_cameraStatus == CameraStatus.player)
+        if (cameraStatus == CameraStatus.player)
         {
             Rotate();
             Rollup();
@@ -82,34 +82,34 @@ public class Observe : MonoBehaviour
             {
                 _players.Add(player.Value);
             } 
-            if(_cameraStatus == CameraStatus.player)
+            if(cameraStatus == CameraStatus.player)
             {
                 // Retry target
-                if (_players.Count-1 >= _playerNumber)
+                if (_players.Count - 1 > PlayerNumber)
                 {
-                    _target = _players[_playerNumber];
+                    PlayerNumber++;
+                    _target = _players[PlayerNumber];
                     Debug.Log(transform.position);
                     Debug.Log($"target {_target.playerObj.transform.position}");
                     visualAngleReset(transform.position, GetHeadPos(_target.playerObj.transform.position));
                     Debug.Log($"after {transform.position}");
-                    _playerNumber += 1;
                 }
                 else
                 {
-                    _cameraStatus = CameraStatus.freeCamera;
-                    _playerNumber = 0;
+                    PlayerNumber = -1;
+                    cameraStatus = CameraStatus.freeCamera;
                 }
 
             }
-            else if(_cameraStatus == CameraStatus.freeCamera && _players.Count !=0)
+            else if(cameraStatus == CameraStatus.freeCamera && _players.Count != 0)
             {
-                _cameraStatus = CameraStatus.player;
-                _target = _players[_playerNumber];
+                PlayerNumber++;
+                cameraStatus = CameraStatus.player;
+                _target = _players[PlayerNumber];
                 //Vector3 newOffset = GetHeadPos(_target.playerObj.transform.position) - transform.position;
                 //newOffset *= 8 / newOffset.magnitude;
                 Debug.Log(_target == null ? "Target is null" : "Target is not null");
                 visualAngleReset(transform.position, GetHeadPos(_target.playerObj.transform.position));
-                _playerNumber += 1;
             }
         }
     }
